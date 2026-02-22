@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   # Add Google Fonts for professional typography
   google_fonts: ^6.1.0
   # (Optional) If you use SVGs for illustrations later

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'main.dart'; // Your constants
+import 'main.dart';
 
 class HomeDashboard extends StatefulWidget {
   const HomeDashboard({super.key});
@@ -12,20 +12,24 @@ class _HomeDashboardState extends State<HomeDashboard> {
   int _selectedIndex = 0;
   bool _isFabOpen = false;
 
-  final List<Widget> _pages = const [
-    Center(child: Text("Dashboard Home Content")),
-    Center(child: Text("Profile Settings Content")),
-  ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     String t(String key) => AppTranslations.t(context, key);
+
+    final List<Widget> pages = [
+      Center(
+        child: Text(
+          t('home_content'),
+          style: const TextStyle(fontSize: 18),
+        ),
+      ),
+      Center(
+        child: Text(
+          t('profile_content'),
+          style: const TextStyle(fontSize: 18),
+        ),
+      ),
+    ];
 
     return Scaffold(
       appBar: AppBar(
@@ -48,9 +52,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
 
       body: Stack(
         children: [
-          _pages[_selectedIndex],
-
-          // Optional slight background dim when menu open
+          pages[_selectedIndex],
           if (_isFabOpen)
             GestureDetector(
               onTap: () {
@@ -63,18 +65,16 @@ class _HomeDashboardState extends State<HomeDashboard> {
         ],
       ),
 
-      // 🔥 Modern Expanding FAB
       floatingActionButton: SizedBox(
         width: 200,
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
 
             if (_isFabOpen) ...[
               _buildFabOption(
                 icon: Icons.child_care,
-                label: "Child Screening",
+                label: t('child_module'),
                 color: Colors.blue,
                 onTap: () {
                   setState(() => _isFabOpen = false);
@@ -90,7 +90,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
               const SizedBox(height: 12),
               _buildFabOption(
                 icon: Icons.pregnant_woman,
-                label: "Pregnant Women",
+                label: t('pregnant_module'),
                 color: Colors.pink,
                 onTap: () {
                   setState(() => _isFabOpen = false);
@@ -125,7 +125,6 @@ class _HomeDashboardState extends State<HomeDashboard> {
       floatingActionButtonLocation:
       FloatingActionButtonLocation.centerDocked,
 
-      // Bottom Navigation
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         notchMargin: 8.0,
@@ -138,10 +137,11 @@ class _HomeDashboardState extends State<HomeDashboard> {
             MainAxisAlignment.spaceAround,
             children: [
 
-              // Home
               Expanded(
                 child: InkWell(
-                  onTap: () => _onItemTapped(0),
+                  onTap: () => setState(() {
+                    _selectedIndex = 0;
+                  }),
                   child: Column(
                     mainAxisAlignment:
                     MainAxisAlignment.center,
@@ -151,7 +151,6 @@ class _HomeDashboardState extends State<HomeDashboard> {
                         color: _selectedIndex == 0
                             ? kPrimaryBlue
                             : Colors.grey,
-                        size: 28,
                       ),
                       Text(
                         t('home_tab'),
@@ -170,10 +169,11 @@ class _HomeDashboardState extends State<HomeDashboard> {
 
               const SizedBox(width: 80),
 
-              // Profile
               Expanded(
                 child: InkWell(
-                  onTap: () => _onItemTapped(1),
+                  onTap: () => setState(() {
+                    _selectedIndex = 1;
+                  }),
                   child: Column(
                     mainAxisAlignment:
                     MainAxisAlignment.center,
@@ -183,7 +183,6 @@ class _HomeDashboardState extends State<HomeDashboard> {
                         color: _selectedIndex == 1
                             ? kPrimaryBlue
                             : Colors.grey,
-                        size: 28,
                       ),
                       Text(
                         t('profile_tab'),
@@ -206,7 +205,6 @@ class _HomeDashboardState extends State<HomeDashboard> {
     );
   }
 
-  // 🔹 Option Button UI
   Widget _buildFabOption({
     required IconData icon,
     required String label,
@@ -235,7 +233,6 @@ class _HomeDashboardState extends State<HomeDashboard> {
                 label,
                 style: const TextStyle(
                   fontWeight: FontWeight.w600,
-                  fontSize: 14,
                 ),
               ),
             ],
@@ -246,21 +243,17 @@ class _HomeDashboardState extends State<HomeDashboard> {
   }
 }
 
-//
 // Placeholder Pages
-//
-
 class ChildScreeningPage extends StatelessWidget {
   const ChildScreeningPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    String t(String key) => AppTranslations.t(context, key);
+
     return Scaffold(
-      appBar:
-      AppBar(title: const Text("Child Screening")),
-      body: const Center(
-        child: Text("Child Screening Module"),
-      ),
+      appBar: AppBar(title: Text(t('child_module'))),
+      body: Center(child: Text(t('child_module'))),
     );
   }
 }
@@ -270,12 +263,11 @@ class PregnantWomenPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String t(String key) => AppTranslations.t(context, key);
+
     return Scaffold(
-      appBar:
-      AppBar(title: const Text("Pregnant Women")),
-      body: const Center(
-        child: Text("Pregnant Women Module"),
-      ),
+      appBar: AppBar(title: Text(t('pregnant_module'))),
+      body: Center(child: Text(t('pregnant_module'))),
     );
   }
 }
