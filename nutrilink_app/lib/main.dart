@@ -21,7 +21,7 @@ class AppTranslations {
       'mobile_label': 'Mobile Number',
       'pin_label': 'PIN',
       'login_btn': 'Log In',
-      'help_link': 'Need Help Logging In?',
+      'register_redirect': 'Not a User? Register',
       'home_tab': 'Home',
       'profile_tab': 'Profile',
       'home_content': 'Dashboard Home Content',
