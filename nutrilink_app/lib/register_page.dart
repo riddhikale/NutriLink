@@ -157,22 +157,27 @@ class _RegisterPageState extends State<RegisterPage> {
                   /// 🔵 Register Button
                   ElevatedButton(
                     onPressed: () async {
-                      final result = await ApiService.registerUser(
-                        name: nameController.text,
-                        phone: phoneController.text,
-                        pin: pinController.text,
-                        role: "FIELD_WORKER",
-                        assignedAreaId: "AREA01",
-                      );
+                      try {
+                        final result = await ApiService.registerUser(
+                          name: nameController.text,
+                          phone: phoneController.text,
+                          pin: pinController.text,
+                          role: "FIELD_WORKER",
+                          assignedAreaId: "AREA01",
+                        );
 
-                      print(result);
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const HomeDashboard(),
-                        ),
-                        (route) => false,
-                      );
+                        print(result);
+
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const HomeDashboard(),
+                          ),
+                          (route) => false,
+                        );
+                      } catch (e) {
+                        print("Registration error: $e");
+                      }
                     },
                     child: Text(t("register_btn")),
                   ),
