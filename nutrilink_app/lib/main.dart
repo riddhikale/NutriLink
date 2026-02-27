@@ -22,6 +22,10 @@ class AppTranslations {
       'pin_label': 'PIN',
       'login_btn': 'Log In',
       'register_redirect': 'Not a User? Register',
+      'full_name': 'Full Name',
+      'create_pin': 'Create Pin',
+      'login_redirect': 'Already have an account?Login',
+      'register_btn': 'Register',
       'home_tab': 'Home',
       'profile_tab': 'Profile',
       'home_content': 'Dashboard Home Content',
@@ -35,7 +39,11 @@ class AppTranslations {
       'mobile_label': 'मोबाइल नंबर',
       'pin_label': 'पिन',
       'login_btn': 'लॉग इन करें',
-      'help_link': 'लॉगिन करने में सहायता चाहिए?',
+      'register_redirect': 'उपयोगकर्ता नहीं? पंजीकरण करवाना',
+      'full_name': 'पूरा नाम',
+      'create_pin': 'पिन बनाएं',
+      'login_redirect': 'क्या आपके पास पहले से ही खाता है?लॉग इन करें',
+      'register_btn': 'पंजीकरण करवाना',
       'home_tab': 'होम',
       'profile_tab': 'प्रोफ़ाइल',
       'home_content': 'डैशबोर्ड होम सामग्री',
@@ -49,7 +57,11 @@ class AppTranslations {
       'mobile_label': 'मोबाईल क्रमांक',
       'pin_label': 'पिन',
       'login_btn': 'लॉग इन करा',
-      'help_link': 'लॉगिन करण्यासाठी मदत हवी आहे?',
+      'register_redirect': 'वापरकर्ता नाही? नोंदणी करा',
+      'full_name': 'पूर्ण नाव',
+      'create_pin': 'पिन तयार करा',
+      'login_redirect': 'आधीच खाते आहे?लॉगिन',
+      'register_btn': 'नोंदणी करा',
       'home_tab': 'मुख्यपृष्ठ',
       'profile_tab': 'प्रोफाइल',
       'home_content': 'डॅशबोर्ड मुख्य सामग्री',
@@ -68,13 +80,13 @@ class AppTranslations {
 }
 
 class NutriLinkApp extends StatefulWidget {
-  const NutriLinkApp({super.key});
-
   static void setLocale(BuildContext context, Locale newLocale) {
     _NutriLinkAppState? state =
     context.findAncestorStateOfType<_NutriLinkAppState>();
     state?.setLocale(newLocale);
   }
+
+  const NutriLinkApp({super.key});
 
   @override
   State<NutriLinkApp> createState() => _NutriLinkAppState();
@@ -107,7 +119,9 @@ class _NutriLinkAppState extends State<NutriLinkApp> {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-
+        home: LoginPage(
+          key: ValueKey(_locale.languageCode),
+        ),
       theme: ThemeData(
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.white,
@@ -150,8 +164,6 @@ class _NutriLinkAppState extends State<NutriLinkApp> {
           ),
         ),
       ),
-
-      home: const LoginPage(),
     );
   }
 }
@@ -164,6 +176,7 @@ class LanguageSwitcherBtn extends StatelessWidget {
   Widget build(BuildContext context) {
     Locale currentLocale =
     Localizations.localeOf(context);
+    print("Login rebuilt: ${Localizations.localeOf(context)}");
 
     String label;
     if (currentLocale.languageCode == 'en') {
@@ -174,17 +187,10 @@ class LanguageSwitcherBtn extends StatelessWidget {
       label = 'मराठी';
     }
 
-    return Container(
-      margin: const EdgeInsets.only(right: 10),
-      padding: const EdgeInsets.symmetric(
-          horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: kPrimaryBlue.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-            color: kPrimaryBlue.withOpacity(0.3)),
-      ),
+    return Material(
+      color: Colors.transparent,
       child: InkWell(
+        borderRadius: BorderRadius.circular(20),
         onTap: () {
           Locale current = Localizations.localeOf(context);
 
@@ -200,24 +206,30 @@ class LanguageSwitcherBtn extends StatelessWidget {
 
           NutriLinkApp.setLocale(context, newLocale);
         },
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.translate,
-                color: kPrimaryBlue, size: 18),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: GoogleFonts.notoSans(
+        child: Container(
+          margin: const EdgeInsets.only(right: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: kPrimaryBlue.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: kPrimaryBlue.withOpacity(0.3)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.translate, color: kPrimaryBlue, size: 18),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: GoogleFonts.notoSans(
                   color: kPrimaryBlue,
-                  fontWeight:
-                  FontWeight.bold),
-            ),
-            const Icon(Icons.arrow_drop_down,
-                color: kPrimaryBlue),
-          ],
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Icon(Icons.arrow_drop_down, color: kPrimaryBlue),
+            ],
+          ),
         ),
       ),
-    );
-  }
+    );  }
 }

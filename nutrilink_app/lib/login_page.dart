@@ -4,186 +4,185 @@ import 'main.dart';
 import 'home_dashboard.dart';
 import 'register_page.dart';
 
-class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+class LoginPage extends StatefulWidget {
+  LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+
     String t(String key) => AppTranslations.t(context, key);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6F8),
-      body: Stack(
-        children: [
 
-          /// 🔵 Top Curved Blue Background
-          Container(
-            height: 230,
-            decoration: const BoxDecoration(
-              color: kLightBlueBg,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(60),
-                bottomRight: Radius.circular(60),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+
+            /// 🔵 HEADER SECTION
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.only(
+                top: 50,
+                bottom: 40,
+                left: 20,
+                right: 20,
               ),
-            ),
-          ),
+              decoration: const BoxDecoration(
+                color: kLightBlueBg,
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(60),
+                  bottomRight: Radius.circular(60),
+                ),
+              ),
+              child: Column(
+                children: [
 
-          /// 🌐 Language Switch Button (inside header)
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 10,
-            right: 20,
-            child: const LanguageSwitcherBtn(),
-          ),
+                  /// 🌐 Language Button (Top Right)
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: const LanguageSwitcherBtn(),
+                  ),
 
-          /// 📄 Main Content
-          SafeArea(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 28),
-                child: Column(
-                  children: [
+                  const SizedBox(height: 20),
 
-                    const SizedBox(height: 60),
-
-                    /// 👩‍👦 Illustration Circle
-                    Container(
-                      height: 180,
-                      width: 180,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: kPrimaryBlue.withOpacity(0.15),
-                            blurRadius: 25,
-                            offset: const Offset(0, 15),
-                          ),
-                        ],
-                      ),
-                      padding: const EdgeInsets.all(20),
-                      child: ClipOval(
-                        child: Image.asset(
-                          'assets/images/mother_child.png',
-                          fit: BoxFit.contain,
+                  /// 👩‍👦 Mother-Child Image
+                  Container(
+                    height: 140,
+                    width: 140,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: kPrimaryBlue.withOpacity(0.15),
+                          blurRadius: 25,
+                          offset: const Offset(0, 15),
                         ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(20),
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/images/mother_child.png',
+                        fit: BoxFit.contain,
                       ),
                     ),
+                  ),
 
-                    const SizedBox(height: 30),
+                  const SizedBox(height: 25),
 
-                    /// 🏷 Title
-                    Text(
-                      t('title'),
-                      style: GoogleFonts.notoSans(
-                        fontSize: 30,
-                        fontWeight: FontWeight.w800,
+                  /// 🏷 Title (Below Image)
+                  Text(
+                    t('title'),
+                    style: GoogleFonts.notoSans(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.2,
+                      color: kPrimaryBlue,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  /// ✏ Tagline
+                  Text(
+                    t('tagline'),
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.notoSans(
+                      fontSize: 14,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            /// 🔽 FORM SECTION
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 28),
+              child: Column(
+                children: [
+
+                  const SizedBox(height: 40),
+
+                  /// 📱 Mobile Field
+                  TextField(
+                    keyboardType: TextInputType.phone,
+                    decoration: InputDecoration(
+                      labelText: t('mobile_label'),
+                      prefixIcon: const Icon(
+                        Icons.phone_android,
                         color: kPrimaryBlue,
                       ),
                     ),
+                  ),
 
-                    const SizedBox(height: 8),
+                  const SizedBox(height: 18),
 
-                    /// ✏ Tagline
-                    Text(
-                      t('tagline'),
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.notoSans(
-                        fontSize: 14,
-                        color: Colors.grey[600],
+                  /// 🔐 PIN Field
+                  TextField(
+                    obscureText: true,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: t('pin_label'),
+                      prefixIcon: const Icon(
+                        Icons.lock_outline,
+                        color: kPrimaryBlue,
                       ),
                     ),
+                  ),
 
-                    const SizedBox(height: 40),
+                  const SizedBox(height: 30),
 
-                    /// 📱 Mobile Field
-                    TextField(
-                      keyboardType: TextInputType.phone,
-                      decoration: InputDecoration(
-                        labelText: t('mobile_label'),
-                        prefixIcon: const Icon(
-                          Icons.phone_android,
-                          color: kPrimaryBlue,
+                  /// 🔵 Login Button
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                          const HomeDashboard(),
                         ),
+                      );
+                    },
+                    child: Text(t('login_btn')),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  /// ❓ Register Redirect
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                          const RegisterPage(),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      t('register_redirect'),
+                      style: const TextStyle(
+                        color: kPrimaryBlue,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
+                  ),
 
-                    const SizedBox(height: 18),
-
-                    /// 🔐 PIN Field
-                    TextField(
-                      obscureText: true,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: t('pin_label'),
-                        prefixIcon: const Icon(
-                          Icons.lock_outline,
-                          color: kPrimaryBlue,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    /// 🔵 Login Button
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                            const HomeDashboard(),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: kPrimaryBlue,
-                        foregroundColor: Colors.white,
-                        minimumSize:
-                        const Size(double.infinity, 55),
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                          BorderRadius.circular(14),
-                        ),
-                        elevation: 3,
-                      ),
-                      child: Text(
-                        t('login_btn'),
-                        style: GoogleFonts.notoSans(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    /// ❓ Help Text
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const RegisterPage(),
-                          ),
-                        );
-                      },
-                      child: Text(
-                        t('register_redirect'),
-                        style: GoogleFonts.notoSans(
-                          fontSize: 13,
-                          color: kPrimaryBlue,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-                  ],
-                ),
+                  const SizedBox(height: 40),
+                ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
