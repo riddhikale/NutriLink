@@ -2,7 +2,7 @@ name: nutrilink_app
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -28,10 +28,12 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  http: ^1.6.0
   flutter:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
+
   # Add Google Fonts for professional typography
   google_fonts: ^6.1.0
   # (Optional) If you use SVGs for illustrations later

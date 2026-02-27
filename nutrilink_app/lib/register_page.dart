@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'main.dart';
 import 'home_dashboard.dart';
+import 'services/api_service.dart';
+
+final TextEditingController nameController = TextEditingController();
+final TextEditingController phoneController = TextEditingController();
+final TextEditingController pinController = TextEditingController();
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -11,10 +16,8 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-
   @override
   Widget build(BuildContext context) {
-
     String t(String key) => AppTranslations.t(context, key);
 
     return Scaffold(
@@ -23,7 +26,6 @@ class _RegisterPageState extends State<RegisterPage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-
             /// 🔵 HEADER SECTION (Same as Login)
             Container(
               width: double.infinity,
@@ -42,7 +44,6 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
               child: Column(
                 children: [
-
                   /// 🌐 Language Button (Scrollable + Works)
                   Align(
                     alignment: Alignment.topRight,
@@ -78,28 +79,28 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(height: 25),
 
                   /// 🏷 Title
-          /// 🏷 Title (Same as Login)
-          Text(
-            t('title'),
-            style: GoogleFonts.notoSans(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.2,
-              color: kPrimaryBlue,
-            ),
-          ),
+                  /// 🏷 Title (Same as Login)
+                  Text(
+                    t('title'),
+                    style: GoogleFonts.notoSans(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.2,
+                      color: kPrimaryBlue,
+                    ),
+                  ),
 
-          const SizedBox(height: 8),
+                  const SizedBox(height: 8),
 
-          /// ✏ Tagline
-          Text(
-            t('tagline'),
-            textAlign: TextAlign.center,
-            style: GoogleFonts.notoSans(
-              fontSize: 14,
-              color: Colors.grey[700],
-            ),
-          ),
+                  /// ✏ Tagline
+                  Text(
+                    t('tagline'),
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.notoSans(
+                      fontSize: 14,
+                      color: Colors.grey[700],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -109,7 +110,6 @@ class _RegisterPageState extends State<RegisterPage> {
               padding: const EdgeInsets.symmetric(horizontal: 28),
               child: Column(
                 children: [
-
                   const SizedBox(height: 40),
 
                   /// 👤 Name Field
@@ -156,14 +156,22 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   /// 🔵 Register Button
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
+                      final result = await ApiService.registerUser(
+                        name: nameController.text,
+                        phone: phoneController.text,
+                        pin: pinController.text,
+                        role: "FIELD_WORKER",
+                        assignedAreaId: "AREA01",
+                      );
+
+                      print(result);
                       Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                          const HomeDashboard(),
+                          builder: (context) => const HomeDashboard(),
                         ),
-                            (route) => false,
+                        (route) => false,
                       );
                     },
                     child: Text(t("register_btn")),
@@ -176,7 +184,8 @@ class _RegisterPageState extends State<RegisterPage> {
                     onPressed: () {
                       Navigator.pop(context);
                     },
-                    child: Text(t("login_redirect"),
+                    child: Text(
+                      t("login_redirect"),
                       style: TextStyle(
                         color: kPrimaryBlue,
                         fontWeight: FontWeight.w600,
