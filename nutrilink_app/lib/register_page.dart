@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'main.dart';
 import 'home_dashboard.dart';
-import 'register_page.dart';
 
-class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+class RegisterPage extends StatelessWidget {
+  const RegisterPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +27,7 @@ class LoginPage extends StatelessWidget {
             ),
           ),
 
-          /// 🌐 Language Switch Button (inside header)
+          /// 🌐 Language Switch Button
           Positioned(
             top: MediaQuery.of(context).padding.top + 10,
             right: 20,
@@ -45,7 +44,7 @@ class LoginPage extends StatelessWidget {
 
                     const SizedBox(height: 60),
 
-                    /// 👩‍👦 Illustration Circle
+                    /// 👩‍👦 Illustration
                     Container(
                       height: 180,
                       width: 180,
@@ -73,33 +72,34 @@ class LoginPage extends StatelessWidget {
 
                     /// 🏷 Title
                     Text(
-                      t('title'),
+                      "Register",
                       style: GoogleFonts.notoSans(
-                        fontSize: 30,
+                        fontSize: 28,
                         fontWeight: FontWeight.w800,
                         color: kPrimaryBlue,
                       ),
                     ),
 
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 30),
 
-                    /// ✏ Tagline
-                    Text(
-                      t('tagline'),
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.notoSans(
-                        fontSize: 14,
-                        color: Colors.grey[600],
+                    /// 👤 Name Field
+                    TextField(
+                      decoration: InputDecoration(
+                        labelText: "Full Name",
+                        prefixIcon: const Icon(
+                          Icons.person_outline,
+                          color: kPrimaryBlue,
+                        ),
                       ),
                     ),
 
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 18),
 
                     /// 📱 Mobile Field
                     TextField(
                       keyboardType: TextInputType.phone,
                       decoration: InputDecoration(
-                        labelText: t('mobile_label'),
+                        labelText: "Mobile Number",
                         prefixIcon: const Icon(
                           Icons.phone_android,
                           color: kPrimaryBlue,
@@ -114,7 +114,7 @@ class LoginPage extends StatelessWidget {
                       obscureText: true,
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
-                        labelText: t('pin_label'),
+                        labelText: "Create PIN",
                         prefixIcon: const Icon(
                           Icons.lock_outline,
                           color: kPrimaryBlue,
@@ -124,15 +124,16 @@ class LoginPage extends StatelessWidget {
 
                     const SizedBox(height: 30),
 
-                    /// 🔵 Login Button
+                    /// 🔵 Register Button
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.push(
+                        Navigator.pushAndRemoveUntil(
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
                             const HomeDashboard(),
                           ),
+                              (route) => false,
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -144,10 +145,9 @@ class LoginPage extends StatelessWidget {
                           borderRadius:
                           BorderRadius.circular(14),
                         ),
-                        elevation: 3,
                       ),
                       child: Text(
-                        t('login_btn'),
+                        "Register",
                         style: GoogleFonts.notoSans(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -157,18 +157,13 @@ class LoginPage extends StatelessWidget {
 
                     const SizedBox(height: 20),
 
-                    /// ❓ Help Text
+                    /// 🔙 Back To Login
                     TextButton(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const RegisterPage(),
-                          ),
-                        );
+                        Navigator.pop(context);
                       },
                       child: Text(
-                        t('register_redirect'),
+                        "Already have an account? Login",
                         style: GoogleFonts.notoSans(
                           fontSize: 13,
                           color: kPrimaryBlue,
