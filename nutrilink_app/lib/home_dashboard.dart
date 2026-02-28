@@ -63,45 +63,54 @@ class _HomeDashboardState extends State<HomeDashboard> {
       ),
 
       // ✅ FIXED FAB (Removed SizedBox width to avoid overflow)
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
+      floatingActionButton: Stack(
+        alignment: Alignment.bottomCenter,
+        clipBehavior: Clip.none,
         children: [
 
-          if (_isFabOpen) ...[
-            _buildFabOption(
-              icon: Icons.child_care,
-              label: t('child_module'),
-              color: Colors.blue,
-              onTap: () {
-                setState(() => _isFabOpen = false);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                    const ChildScreeningPage(),
+          // 🔹 Expanded Options (Positioned Above FAB)
+          if (_isFabOpen)
+            Positioned(
+              bottom: 80, // distance above FAB
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildFabOption(
+                    icon: Icons.child_care,
+                    label: "Child Screening",
+                    color: Colors.blue,
+                    onTap: () {
+                      setState(() => _isFabOpen = false);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                          const ChildScreeningPage(),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
-            const SizedBox(height: 12),
-            _buildFabOption(
-              icon: Icons.pregnant_woman,
-              label: t('pregnant_module'),
-              color: Colors.pink,
-              onTap: () {
-                setState(() => _isFabOpen = false);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                    const PregnantWomenPage(),
+                  const SizedBox(height: 12),
+                  _buildFabOption(
+                    icon: Icons.pregnant_woman,
+                    label: "Pregnant Women",
+                    color: Colors.pink,
+                    onTap: () {
+                      setState(() => _isFabOpen = false);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                          const PregnantWomenPage(),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
+                ],
+              ),
             ),
-            const SizedBox(height: 16),
-          ],
 
+          // 🔹 Main FAB (Always Fixed)
           FloatingActionButton(
             backgroundColor: kPrimaryBlue,
             onPressed: () {
@@ -116,7 +125,6 @@ class _HomeDashboardState extends State<HomeDashboard> {
           ),
         ],
       ),
-
       floatingActionButtonLocation:
       FloatingActionButtonLocation.centerDocked,
 
