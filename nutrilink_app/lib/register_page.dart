@@ -4,10 +4,6 @@ import 'main.dart';
 import 'home_dashboard.dart';
 import 'services/api_service.dart';
 
-final TextEditingController nameController = TextEditingController();
-final TextEditingController phoneController = TextEditingController();
-final TextEditingController pinController = TextEditingController();
-
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
 
@@ -16,17 +12,88 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController pinController = TextEditingController();
+
+  static const String defaultRole = "FIELD_WORKER";
+
+  bool isLoading = false;
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    phoneController.dispose();
+    pinController.dispose();
+    super.dispose();
+  }
+
+  Future<void> registerUser() async {
+    String name = nameController.text.trim();
+    String phone = phoneController.text.trim();
+    String pin = pinController.text.trim();
+
+    if (name.isEmpty || phone.isEmpty || pin.isEmpty) {
+      showMessage("All fields are required");
+      return;
+    }
+
+    if (phone.length != 10) {
+      showMessage("Enter valid 10-digit mobile number");
+      return;
+    }
+
+    if (pin.length != 4) {
+      showMessage("PIN must be 4 digits");
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    try {
+      await ApiService.registerUser(
+        name: name,
+        phone: phone,
+        pin: pin,
+        role: defaultRole, // Automatically assigned
+        assignedAreaId: "AREA01",
+      );
+
+      if (!mounted) return;
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const HomeDashboard(),
+        ),
+            (route) => false,
+      );
+    } catch (e) {
+      print("Registration error: $e");
+      showMessage(e.toString());
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
+  }
+
+  void showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     String t(String key) => AppTranslations.t(context, key);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6F8),
-
       body: SingleChildScrollView(
         child: Column(
           children: [
-            /// 🔵 HEADER SECTION (Same as Login)
+            /// 🔵 HEADER SECTION
             Container(
               width: double.infinity,
               padding: const EdgeInsets.only(
@@ -44,15 +111,12 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
               child: Column(
                 children: [
-                  /// 🌐 Language Button (Scrollable + Works)
                   Align(
                     alignment: Alignment.topRight,
                     child: const LanguageSwitcherBtn(),
                   ),
-
                   const SizedBox(height: 20),
 
-                  /// 👩‍👦 Illustration
                   Container(
                     height: 140,
                     width: 140,
@@ -78,8 +142,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   const SizedBox(height: 25),
 
-                  /// 🏷 Title
-                  /// 🏷 Title (Same as Login)
                   Text(
                     t('title'),
                     style: GoogleFonts.notoSans(
@@ -92,7 +154,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   const SizedBox(height: 8),
 
-                  /// ✏ Tagline
                   Text(
                     t('tagline'),
                     textAlign: TextAlign.center,
@@ -114,6 +175,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   /// 👤 Name Field
                   TextField(
+                    controller: nameController,
                     decoration: InputDecoration(
                       labelText: t('full_name'),
                       prefixIcon: const Icon(
@@ -127,6 +189,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   /// 📱 Mobile Field
                   TextField(
+                    controller: phoneController,
                     keyboardType: TextInputType.phone,
                     decoration: InputDecoration(
                       labelText: t('mobile_label'),
@@ -141,6 +204,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   /// 🔐 Create PIN
                   TextField(
+                    controller: pinController,
                     obscureText: true,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
@@ -155,31 +219,21 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(height: 30),
 
                   /// 🔵 Register Button
-                  ElevatedButton(
-                    onPressed: () async {
-                      try {
-                        final result = await ApiService.registerUser(
-                          name: nameController.text,
-                          phone: phoneController.text,
-                          pin: pinController.text,
-                          role: "FIELD_WORKER",
-                          assignedAreaId: "AREA01",
-                        );
-
-                        print(result);
-
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const HomeDashboard(),
-                          ),
-                          (route) => false,
-                        );
-                      } catch (e) {
-                        print("Registration error: $e");
-                      }
-                    },
-                    child: Text(t("register_btn")),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : registerUser,
+                      child: isLoading
+                          ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                          : Text(t("register_btn")),
+                    ),
                   ),
 
                   const SizedBox(height: 20),
@@ -191,7 +245,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     },
                     child: Text(
                       t("login_redirect"),
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: kPrimaryBlue,
                         fontWeight: FontWeight.w600,
                       ),

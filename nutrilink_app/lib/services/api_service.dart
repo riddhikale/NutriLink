@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String baseUrl = "http://192.168.1.5:8080/api";
+  static const baseUrl = "http://10.0.2.2:8080";
   static Future<Map<String, dynamic>> registerUser({
     required String name,
     required String phone,
@@ -11,7 +11,7 @@ class ApiService {
     required String assignedAreaId,
   }) async {
     final response = await http.post(
-      Uri.parse("$baseUrl/auth/register"),
+      Uri.parse("$baseUrl/api/auth/register"),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({
         "name": name,
