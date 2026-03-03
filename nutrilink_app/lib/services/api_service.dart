@@ -24,4 +24,25 @@ class ApiService {
 
     return jsonDecode(response.body);
   }
+
+  static Future<Map<String, dynamic>> loginUser({
+  required String phone,
+  required String pin,
+}) async {
+
+  final response = await http.post(
+    Uri.parse("$baseUrl/api/auth/login-test"),
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: jsonEncode({
+      "phone": phone,
+      "pin": pin,
+    }),
+  );
+
+  print("Response body:");
+  print(response.body);
+  return jsonDecode(response.body);
+}
 }

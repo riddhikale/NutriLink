@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'main.dart';
 import 'home_dashboard.dart';
 import 'register_page.dart';
+import 'services/api_service.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({super.key});
@@ -12,6 +13,8 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final TextEditingController phoneController = TextEditingController();
+final TextEditingController pinController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -114,6 +117,7 @@ class _LoginPageState extends State<LoginPage> {
 
                   /// 📱 Mobile Field
                   TextField(
+                    controller: phoneController,
                     keyboardType: TextInputType.phone,
                     decoration: InputDecoration(
                       labelText: t('mobile_label'),
@@ -128,6 +132,7 @@ class _LoginPageState extends State<LoginPage> {
 
                   /// 🔐 PIN Field
                   TextField(
+                    controller: pinController,
                     obscureText: true,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
@@ -143,14 +148,32 @@ class _LoginPageState extends State<LoginPage> {
 
                   /// 🔵 Login Button
                   ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                          const HomeDashboard(),
-                        ),
+                    onPressed: () async {
+                      final result = await ApiService.loginUser(
+                        phone: phoneController.text,
+                        pin: pinController.text,
                       );
+
+                      print(result);
+
+                      if (result["success"] == true) {
+
+                        String token = result["token"];
+
+                        // You can store token later
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const HomeDashboard(),
+                          ),
+                        );
+
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(result["message"] ?? "Login failed")),
+                        );
+                      }
                     },
                     child: Text(t('login_btn')),
                   ),
