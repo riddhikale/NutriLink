@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'main.dart';
+import 'child_screening_page.dart';
+import 'pregnant_screening_page.dart';
 
 class HomeDashboard extends StatefulWidget {
   const HomeDashboard({super.key});
@@ -10,7 +12,7 @@ class HomeDashboard extends StatefulWidget {
 
 class _HomeDashboardState extends State<HomeDashboard> {
   int _selectedIndex = 0;
-  bool _isFabOpen = false; // ✅ Added back
+  bool _isFabOpen = false;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +27,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
         elevation: 0,
         title: Text(
           t('title'),
-          style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+          style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
         ),
         actions: const [
           Padding(
@@ -37,37 +39,11 @@ class _HomeDashboardState extends State<HomeDashboard> {
 
       body: pages[_selectedIndex],
 
-      // ✅ Restored Expandable FAB
-      floatingActionButton: Stack(
-        alignment: Alignment.bottomCenter,
-        clipBehavior: Clip.none,
-        children: [
-          if (_isFabOpen)
-            Positioned(
-              bottom: 80,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _fabOption(icon: Icons.child_care, label: "Child Screening"),
-                  const SizedBox(height: 12),
-                  _fabOption(
-                    icon: Icons.pregnant_woman,
-                    label: "Pregnant Women",
-                  ),
-                ],
-              ),
-            ),
-
-          FloatingActionButton(
-            backgroundColor: const Color(0xFF2F6EDB),
-            onPressed: () {
-              setState(() {
-                _isFabOpen = !_isFabOpen;
-              });
-            },
-            child: Icon(_isFabOpen ? Icons.close : Icons.add),
-          ),
-        ],
+      // 🔹 Mic button instead of +
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFF2F6EDB),
+        onPressed: () {},
+        child: const Icon(Icons.mic),
       ),
 
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -177,7 +153,13 @@ class _HomeDashboardState extends State<HomeDashboard> {
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const AddScreeningPage()),
+                      );
+                    },
                     child: const Text("Add New"),
                   ),
                 ),
@@ -261,7 +243,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.red.shade100,
                   borderRadius: BorderRadius.circular(12),
@@ -283,29 +266,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
     );
   }
 
-  Widget _fabOption({required IconData icon, required String label}) {
-    return Material(
-      elevation: 6,
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: Colors.blue),
-            const SizedBox(width: 12),
-            Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
-          ],
-        ),
-      ),
-    );
-  }
-
   // ================= PROFILE =================
+
   Widget _buildProfile() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -330,10 +292,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
                   children: [
                     Text(
                       "Vedant Chaudhari",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style:
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 4),
                     Text(
@@ -348,11 +308,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
           const SizedBox(height: 24),
           _profileButton(Icons.settings, "Settings", const SettingsPage()),
           const SizedBox(height: 16),
-          _profileButton(
-            Icons.history,
-            "Work History",
-            const WorkHistoryPage(),
-          ),
+          _profileButton(Icons.history, "Work History", const WorkHistoryPage()),
           const SizedBox(height: 32),
           ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
@@ -386,7 +342,87 @@ class _HomeDashboardState extends State<HomeDashboard> {
       ),
     );
   }
-} // ================= SETTINGS PAGE =================
+}
+
+// ================= ADD SCREENING PAGE =================
+
+class AddScreeningPage extends StatelessWidget {
+  const AddScreeningPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Add Screening")),
+      backgroundColor: const Color(0xFFF2F4F7),
+
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
+
+            _optionCard(
+              context,
+              icon: Icons.child_care,
+              title: "Child Screening",
+              page: const ChildScreeningPage(),
+            ),
+
+            const SizedBox(height: 20),
+
+            _optionCard(
+              context,
+              icon: Icons.pregnant_woman,
+              title: "Pregnant Women Screening",
+              page: const PregnantScreeningPage(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _optionCard(
+      BuildContext context, {
+        required IconData icon,
+        required String title,
+        required Widget page,
+      }) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+      },
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
+
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 26,
+              backgroundColor: Colors.blue.shade100,
+              child: Icon(icon, color: Colors.blue),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                title,
+                style:
+                const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios, size: 18),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ================= SETTINGS PAGE =================
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -411,7 +447,9 @@ class SettingsPage extends StatelessWidget {
       ),
     );
   }
-} // ================= WORK HISTORY =================
+}
+
+// ================= WORK HISTORY =================
 
 class WorkHistoryPage extends StatelessWidget {
   const WorkHistoryPage({super.key});
