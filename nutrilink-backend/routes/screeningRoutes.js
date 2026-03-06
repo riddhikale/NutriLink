@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
 
-const { syncScreening } = require("../controllers/screeningController");
+const { childScreening, pregWomenScreening } = require("../controllers/screeningController");
 
-router.post("/sync-screening", syncScreening);
+router.post("/screening/child", childScreening);
+router.post("/screening/pregWomen", pregWomenScreening);
 
 module.exports = router
