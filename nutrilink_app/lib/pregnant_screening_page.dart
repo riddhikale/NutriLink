@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'services/api_service.dart';
 
 class PregnantScreeningPage extends StatefulWidget {
   const PregnantScreeningPage({super.key});
@@ -232,14 +233,38 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                         ),
                       ),
 
-                      onPressed: () {
-
+                      onPressed: () async {
                         if (_formKey.currentState!.validate()) {
 
+                          final result = await ApiService.submitPregnantScreening(
+
+                            beneficiaryId: nameController.text,
+
+                            name: nameController.text,
+                            husbandName: husbandController.text,
+                            age: int.parse(ageController.text),
+
+                            trimester: trimester ?? "1st Trimester",
+
+                            weight: double.parse(weightController.text),
+                            hemoglobin: double.parse(hbController.text),
+
+                            systolicBP: int.parse(systolicController.text),
+                            diastolicBP: int.parse(diastolicController.text),
+
+                            dizziness: dizziness == "Yes",
+                            fatigue: fatigue == "Yes",
+                            swelling: swelling == "Yes",
+                            lowAppetite: lowAppetite == "Yes",
+                            pastAnemia: pastAnemia == "Yes",
+
+                            notes: notesController.text,
+                          );
+
+                          print(result);
+
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Screening Data Submitted"),
-                            ),
+                            const SnackBar(content: Text("Screening Data Submitted")),
                           );
 
                         }

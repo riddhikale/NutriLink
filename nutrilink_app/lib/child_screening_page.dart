@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'services/api_service.dart';
 
 class ChildScreeningPage extends StatefulWidget {
   const ChildScreeningPage({super.key});
@@ -199,19 +200,38 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      onPressed: () {
+                     onPressed: () async {
 
-                        if (_formKey.currentState!.validate()) {
+                      if (_formKey.currentState!.validate()) {
 
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Screening Data Submitted"),
-                            ),
-                          );
+                        final result = await ApiService.submitChildScreening(
 
-                        }
+                          beneficiaryId: nameController.text,
 
-                      },
+                          name: nameController.text,
+                          ageMonths: int.parse(ageController.text),
+                          gender: gender ?? "Male",
+                          parentName: parentController.text,
+
+                          weight: double.parse(weightController.text),
+                          height: double.parse(heightController.text),
+                          muac: double.parse(muacController.text),
+
+                          weakness: weakness == "Yes",
+                          lowAppetite: lowAppetite == "Yes",
+                          frequentIllness: frequentIllness == "Yes",
+                          diarrhea: diarrhea == "Yes",
+
+                          notes: notesController.text,
+                        );
+
+                        print(result);
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Screening Data Submitted")),
+                        );
+                      }
+                    },
                       child: const Text(
                         "Submit Screening",
                         style: TextStyle(fontSize: 16),

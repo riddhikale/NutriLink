@@ -14,7 +14,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController phoneController = TextEditingController();
-final TextEditingController pinController = TextEditingController();
+  final TextEditingController pinController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
