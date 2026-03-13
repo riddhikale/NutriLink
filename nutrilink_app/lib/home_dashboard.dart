@@ -1,7 +1,12 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'main.dart';
 import 'child_screening_page.dart';
 import 'pregnant_screening_page.dart';
+import 'dart:convert';
+import 'package:record/record.dart';
+import 'package:path_provider/path_provider.dart';
+import 'services/voice_service.dart';
 
 class HomeDashboard extends StatefulWidget {
   const HomeDashboard({super.key});
@@ -13,11 +18,13 @@ class HomeDashboard extends StatefulWidget {
 class _HomeDashboardState extends State<HomeDashboard> {
   int _selectedIndex = 0;
   bool _isFabOpen = false;
+  final AudioRecorder _recorder = AudioRecorder();
 
   @override
   Widget build(BuildContext context) {
     String t(String key) => AppTranslations.t(context, key);
     final pages = [_buildDashboard(), _buildProfile()];
+
 
     return Scaffold(
       backgroundColor: const Color(0xFFF2F4F7),
@@ -42,7 +49,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
       // 🔹 Mic button instead of +
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF2F6EDB),
-        onPressed: () {},
+        onPressed: startVoiceCommand,
         child: const Icon(Icons.mic),
       ),
 
@@ -341,6 +348,77 @@ class _HomeDashboardState extends State<HomeDashboard> {
         },
       ),
     );
+  }
+  Future<void> startVoiceCommand() async {
+    try {
+      if (await _recorder.hasPermission()) {
+
+        final dir = await getTemporaryDirectory();
+        final path = '${dir.path}/voice_command.wav';
+
+        await _recorder.start(
+          const RecordConfig(),
+          path: path,
+        );
+
+        print("Recording started");
+
+        await Future.delayed(const Duration(seconds: 5));
+
+        final recordedPath = await _recorder.stop();
+
+        print("Recording stopped");
+
+        if (recordedPath != null) {
+          processVoiceCommand(File(recordedPath));
+        }
+      }
+    } catch (e) {
+      print("Recording error: $e");
+    }
+  }
+  Future<void> processVoiceCommand(File audioFile) async {
+
+    try {
+
+      var result = await VoiceService.sendAudio(audioFile);
+
+      print(result);
+
+      String intent = result["intent"];
+
+      handleIntent(intent);
+
+    } catch (e) {
+
+      print("Voice error: $e");
+
+    }
+
+  }
+  void handleIntent(String intent) {
+
+    switch(intent) {
+
+      case "add_beneficiary":
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const AddScreeningPage()),
+        );
+        break;
+
+      case "view_followups":
+        print("Open followups page");
+        break;
+
+      case "generate_meal_plan":
+        print("Open meal plan page");
+        break;
+
+      default:
+        print("Unknown command");
+    }
+
   }
 }
 
