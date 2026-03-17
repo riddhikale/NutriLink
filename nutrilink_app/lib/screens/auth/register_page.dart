@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'main.dart';
-import 'home_dashboard.dart';
-import 'services/api_service.dart';
+import '../../main.dart';
+import '../home/home_dashboard.dart';
+import '../../services/api_service.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});

@@ -1,34 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'services/api_service.dart';
+import '../../../services/api_service.dart';
 
-class PregnantScreeningPage extends StatefulWidget {
-  const PregnantScreeningPage({super.key});
+class ChildScreeningPage extends StatefulWidget {
+  const ChildScreeningPage({super.key});
 
   @override
-  State<PregnantScreeningPage> createState() => _PregnantScreeningPageState();
+  State<ChildScreeningPage> createState() => _ChildScreeningPageState();
 }
 
-class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
+class _ChildScreeningPageState extends State<ChildScreeningPage> {
 
   final _formKey = GlobalKey<FormState>();
 
   final nameController = TextEditingController();
-  final husbandController = TextEditingController();
   final ageController = TextEditingController();
+  final parentController = TextEditingController();
   final weightController = TextEditingController();
-  final hbController = TextEditingController();
-  final systolicController = TextEditingController();
-  final diastolicController = TextEditingController();
+  final heightController = TextEditingController();
+  final muacController = TextEditingController();
   final notesController = TextEditingController();
 
-  String? trimester;
-
-  String dizziness = "No";
-  String fatigue = "No";
-  String swelling = "No";
+  String? gender;
+  String weakness = "No";
   String lowAppetite = "No";
-  String pastAnemia = "No";
+  String frequentIllness = "No";
+  String diarrhea = "No";
 
   InputDecoration fieldDecoration(String label) {
     return InputDecoration(
@@ -54,11 +51,10 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
 
       appBar: AppBar(
-        title: const Text("Pregnant Women Screening"),
+        title: const Text("Child Screening"),
         backgroundColor: const Color(0xFF4CAF50),
       ),
 
@@ -66,24 +62,20 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
 
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-
         child: Card(
           elevation: 5,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
-
           child: Padding(
             padding: const EdgeInsets.all(16),
-
             child: Form(
               key: _formKey,
-
               child: Column(
                 children: [
 
                   Text(
-                    "Pregnancy Screening Form",
+                    "Child Screening Form",
                     style: GoogleFonts.poppins(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -94,15 +86,8 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
 
                   TextFormField(
                     controller: nameController,
-                    decoration: fieldDecoration("Name"),
-                    validator: (v) => v!.isEmpty ? "Enter name" : null,
-                  ),
-
-                  const SizedBox(height: 15),
-
-                  TextFormField(
-                    controller: husbandController,
-                    decoration: fieldDecoration("Husband/Father Name"),
+                    decoration: fieldDecoration("Child Name"),
+                    validator: (v) => v!.isEmpty ? "Enter child name" : null,
                   ),
 
                   const SizedBox(height: 15),
@@ -110,15 +95,15 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                   TextFormField(
                     controller: ageController,
                     keyboardType: TextInputType.number,
-                    decoration: fieldDecoration("Age"),
+                    decoration: fieldDecoration("Age (months)"),
                   ),
 
                   const SizedBox(height: 15),
 
                   DropdownButtonFormField<String>(
-                    value: trimester,
-                    decoration: fieldDecoration("Trimester"),
-                    items: ["1st Trimester", "2nd Trimester", "3rd Trimester"]
+                    value: gender,
+                    decoration: fieldDecoration("Gender"),
+                    items: ["Male", "Female"]
                         .map((e) => DropdownMenuItem(
                       value: e,
                       child: Text(e),
@@ -126,9 +111,16 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                         .toList(),
                     onChanged: (val) {
                       setState(() {
-                        trimester = val;
+                        gender = val;
                       });
                     },
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  TextFormField(
+                    controller: parentController,
+                    decoration: fieldDecoration("Mother/Father Name"),
                   ),
 
                   const SizedBox(height: 15),
@@ -142,25 +134,17 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                   const SizedBox(height: 15),
 
                   TextFormField(
-                    controller: hbController,
+                    controller: heightController,
                     keyboardType: TextInputType.number,
-                    decoration: fieldDecoration("Haemoglobin (g/dL)"),
+                    decoration: fieldDecoration("Height (cm)"),
                   ),
 
                   const SizedBox(height: 15),
 
                   TextFormField(
-                    controller: systolicController,
+                    controller: muacController,
                     keyboardType: TextInputType.number,
-                    decoration: fieldDecoration("Systolic BP"),
-                  ),
-
-                  const SizedBox(height: 15),
-
-                  TextFormField(
-                    controller: diastolicController,
-                    keyboardType: TextInputType.number,
-                    decoration: fieldDecoration("Diastolic BP"),
+                    decoration: fieldDecoration("MUAC (cm)"),
                   ),
 
                   const SizedBox(height: 20),
@@ -179,37 +163,22 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                   const SizedBox(height: 15),
 
                   yesNoDropdown(
-                      "Dizziness",
-                      dizziness,
-                          (val) => setState(() => dizziness = val!)),
+                      "Weakness", weakness, (val) => setState(() => weakness = val!)),
 
                   const SizedBox(height: 12),
 
-                  yesNoDropdown(
-                      "Fatigue",
-                      fatigue,
-                          (val) => setState(() => fatigue = val!)),
-
-                  const SizedBox(height: 12),
-
-                  yesNoDropdown(
-                      "Swelling",
-                      swelling,
-                          (val) => setState(() => swelling = val!)),
-
-                  const SizedBox(height: 12),
-
-                  yesNoDropdown(
-                      "Low Appetite",
-                      lowAppetite,
+                  yesNoDropdown("Low Appetite", lowAppetite,
                           (val) => setState(() => lowAppetite = val!)),
 
                   const SizedBox(height: 12),
 
+                  yesNoDropdown("Frequent Illness", frequentIllness,
+                          (val) => setState(() => frequentIllness = val!)),
+
+                  const SizedBox(height: 12),
+
                   yesNoDropdown(
-                      "Past Anemia",
-                      pastAnemia,
-                          (val) => setState(() => pastAnemia = val!)),
+                      "Diarrhea", diarrhea, (val) => setState(() => diarrhea = val!)),
 
                   const SizedBox(height: 20),
 
@@ -224,7 +193,6 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                   SizedBox(
                     width: double.infinity,
                     height: 50,
-
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF4CAF50),
@@ -232,31 +200,27 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-
                       onPressed: () async {
+
                         if (_formKey.currentState!.validate()) {
 
-                          final result = await ApiService.submitPregnantScreening(
+                          final result = await ApiService.submitChildScreening(
 
                             beneficiaryId: nameController.text,
 
                             name: nameController.text,
-                            husbandName: husbandController.text,
-                            age: int.parse(ageController.text),
-
-                            trimester: trimester ?? "1st Trimester",
+                            ageMonths: int.parse(ageController.text),
+                            gender: gender ?? "Male",
+                            parentName: parentController.text,
 
                             weight: double.parse(weightController.text),
-                            hemoglobin: double.parse(hbController.text),
+                            height: double.parse(heightController.text),
+                            muac: double.parse(muacController.text),
 
-                            systolicBP: int.parse(systolicController.text),
-                            diastolicBP: int.parse(diastolicController.text),
-
-                            dizziness: dizziness == "Yes",
-                            fatigue: fatigue == "Yes",
-                            swelling: swelling == "Yes",
+                            weakness: weakness == "Yes",
                             lowAppetite: lowAppetite == "Yes",
-                            pastAnemia: pastAnemia == "Yes",
+                            frequentIllness: frequentIllness == "Yes",
+                            diarrhea: diarrhea == "Yes",
 
                             notes: notesController.text,
                           );
@@ -266,11 +230,8 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text("Screening Data Submitted")),
                           );
-
                         }
-
                       },
-
                       child: const Text(
                         "Submit Screening",
                         style: TextStyle(fontSize: 16),

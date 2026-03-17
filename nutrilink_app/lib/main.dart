@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'login_page.dart';
+import 'screens/auth/login_page.dart';
 
 // --- CONSTANTS ---
 const Color kPrimaryBlue = Color(0xFF1976D2);
