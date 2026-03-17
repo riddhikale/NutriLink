@@ -49,10 +49,12 @@ class _HomeDashboardState extends State<HomeDashboard> {
       // 🔹 Mic button instead of +
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF2F6EDB),
-        onPressed: startVoiceCommand,
+        onPressed: () {
+          print("Mic button pressed");
+          startVoiceCommand();
+        },
         child: const Icon(Icons.mic),
       ),
-
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
       bottomNavigationBar: BottomAppBar(
@@ -398,29 +400,37 @@ class _HomeDashboardState extends State<HomeDashboard> {
   }
   void handleIntent(String intent) {
 
-    switch(intent) {
+    // -------- Voice Intent Routing --------
 
-      case "add_beneficiary":
+    final Map<String, Widget Function()> intentRoutes = {
+      "add_beneficiary": () => const AddScreeningPage(),
+      "add_screening": () => const ChildScreeningPage(),
+      "view_followups": () => const WorkHistoryPage(),
+      "navigation_home": () => const HomeDashboard(),
+    };
+
+// -------- Handle Intent --------
+
+    void handleIntent(String intent) {
+
+      print("Intent received: $intent");
+
+      if (intentRoutes.containsKey(intent)) {
+
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const AddScreeningPage()),
+          MaterialPageRoute(
+            builder: (_) => intentRoutes[intent]!(),
+          ),
         );
-        break;
 
-      case "view_followups":
-        print("Open followups page");
-        break;
+      } else {
 
-      case "generate_meal_plan":
-        print("Open meal plan page");
-        break;
+        print("Unknown command: $intent");
 
-      default:
-        print("Unknown command");
+      }
+
     }
-
-  }
-}
 
 // ================= ADD SCREENING PAGE =================
 
