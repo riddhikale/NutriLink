@@ -4,7 +4,6 @@
 
 import FlutterMacOS
 import Foundation
-
 import path_provider_foundation
 import record_macos
 import speech_to_text
