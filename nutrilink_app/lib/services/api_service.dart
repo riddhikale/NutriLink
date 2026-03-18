@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const baseUrl = "http://192.168.2.103:8080";
+  static const baseUrl = "http://10.0.2.2:8080";
   static Future<Map<String, dynamic>> registerUser({
     required String name,
     required String phone,
@@ -126,5 +126,26 @@ static Future<Map<String, dynamic>> submitPregnantScreening({
   );
 
   return jsonDecode(response.body);
+}
+
+static Future<List<dynamic>> getFollowups() async {
+  final response = await http.get(
+    Uri.parse("$baseUrl/api/followups/due"),
+    headers: {"Content-Type": "application/json"},
+  );
+
+  return jsonDecode(response.body);
+}
+
+static Future completeFollowup(String id, String beneficiaryId) async {
+  final response = await http.patch(
+    Uri.parse("$baseUrl/api/followup/complete/$id"),
+    headers: {"Content-Type": "application/json"},
+    body: jsonEncode({
+      "beneficiaryId": beneficiaryId
+    }),
+  );
+
+  print(response.body);
 }
 }

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../screening/add_screening_page.dart';
+import '../../services/api_service.dart' ;
 
-class DashboardView extends StatelessWidget {
+class DashboardView extends StatefulWidget {
   final VoidCallback? onAddPressed;
 
   const DashboardView({
@@ -10,31 +11,72 @@ class DashboardView extends StatelessWidget {
   });
 
   @override
+  State<DashboardView> createState() => _DashboardViewState();
+}
+class _DashboardViewState extends State<DashboardView> {
+
+  List followups = []; 
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    loadFollowups();
+  }
+
+  void loadFollowups() async {
+    try {
+      final data = await ApiService.getFollowups();
+
+      setState(() {
+        followups = data;
+        isLoading = false;
+      });
+
+    } catch (e) {
+      print("Error fetching followups: $e");
+      setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> completeFollowup(String id, String beneficiaryId) async {
+    await ApiService.completeFollowup(id, beneficiaryId);
+    loadFollowups();
+  }
+
+  @override
   Widget build(BuildContext context) {
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
+
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 🔹 Quick Add Screening
+
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: const Color(0xFFEDEDED),
               borderRadius: BorderRadius.circular(16),
             ),
+
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+
                 const Text(
                   "Quick Add Screening",
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
+
                 const SizedBox(height: 6),
+
                 const Text(
                   "No hot followed",
                   style: TextStyle(color: Colors.grey),
                 ),
+
                 const SizedBox(height: 14),
                 SizedBox(
                   width: double.infinity,
@@ -46,6 +88,7 @@ class DashboardView extends StatelessWidget {
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
+
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -54,6 +97,7 @@ class DashboardView extends StatelessWidget {
                         ),
                       );
                     },
+
                     child: const Text("Add New"),
                   ),
                 ),
@@ -63,7 +107,6 @@ class DashboardView extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          // 🔹 Dashboard Summary
           const Text(
             "Dashboard Summary",
             style: TextStyle(fontWeight: FontWeight.bold),
@@ -85,17 +128,29 @@ class DashboardView extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          // 🔹 Follow-ups
-          const Text(
-            "Upcoming Follow-ups",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
+          isLoading
+              ? const Center(child: CircularProgressIndicator())
 
-          const SizedBox(height: 12),
+              : followups.isEmpty
+                  ? const Text("No followups")
 
-          _followUpCard("ABCD"),
-          const SizedBox(height: 12),
-          _followUpCard("XYZ"),
+                  : Column(
+                      children: followups.map((f) {
+
+                        return Column(
+                          children: [
+                            _followUpCard(
+                              f["beneficiaryId"],
+                              f["followUpDate"],
+                              f["status"],
+                              f["id"],
+                            ),
+                            const SizedBox(height: 12),
+                          ],
+                        );
+
+                      }).toList(),
+          )
         ],
       ),
     );
@@ -126,40 +181,60 @@ class DashboardView extends StatelessWidget {
     );
   }
 
-  Widget _followUpCard(String name) {
+
+
+  Widget _followUpCard(String beneficiaryId, String date, String status, String followupId ) {
+
     return Container(
       padding: const EdgeInsets.all(14),
+
       decoration: BoxDecoration(
         color: const Color(0xFFEDEDED),
         borderRadius: BorderRadius.circular(14),
       ),
+
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(name,
-              style: const TextStyle(fontWeight: FontWeight.w600)),
+
+          Text(
+              "ID: $beneficiaryId",
+              style: const TextStyle(fontWeight: FontWeight.w600)
+              ),
+
           const SizedBox(height: 6),
+
           Row(
             children: [
+
               Container(
                 padding:
-                const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.red.shade100,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Text(
-                  "Medium Risk",
-                  style: TextStyle(color: Colors.red, fontSize: 12),
+                child: Text(
+                  status,
+                  style: const TextStyle(fontSize: 12),
                 ),
               ),
+
               const SizedBox(width: 8),
-              const Text(
-                "Nov 15, 2023",
+              Text(
+                date,
                 style: TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ],
           ),
+
+          const SizedBox(height: 10),
+
+          ElevatedButton(
+            onPressed: () => 
+                  completeFollowup(followupId, beneficiaryId),
+                  child: const Text("Mark Done"),
+          )
         ],
       ),
     );
