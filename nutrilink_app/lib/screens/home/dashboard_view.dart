@@ -25,11 +25,15 @@ class _DashboardViewState extends State<DashboardView> {
     try {
       final data = await ApiService.getFollowups();
 
-      // ✅ SORT HERE
-      data.sort((a, b) =>
-          DateTime.parse(a["followUpDate"])
-              .compareTo(DateTime.parse(b["followUpDate"]))
-      );
+      data.sort((a, b) {
+        try {
+          final dateA = DateTime.parse(a["followUpDate"].toString());
+          final dateB = DateTime.parse(b["followUpDate"].toString());
+          return dateA.compareTo(dateB);
+        } catch (e) {
+          return 0;
+        }
+      });
 
       setState(() {
         followups = data;
@@ -44,8 +48,6 @@ class _DashboardViewState extends State<DashboardView> {
 
   Future<void> completeFollowup(String id) async {
     await ApiService.completeFollowup(id);
-  Future<void> completeFollowup(String id, String beneficiaryId) async {
-    await ApiService.completeFollowup(id, beneficiaryId);
     loadFollowups();
   }
 
@@ -140,23 +142,7 @@ class _DashboardViewState extends State<DashboardView> {
               ? const Text("No followups")
               : Column(
                   children: [
-                    ...followups.take(4).map((f) {
-                      return Column(
-                        children: [
-                          _followUpCard(
-                            f["beneficiaryId"],
-                            f["followUpDate"],
-                            f["status"],
-                            f["id"],
-                          ),
-                          const SizedBox(height: 12),
-                        ],
-                      );
-                    }).toList(),
-
-                    if (followups.length > 4) ...[
-                      const SizedBox(height: 10),
-
+                      ...displayedFollowups.map((f) {
                         return Column(
                           children: [
                             _followUpCard(
@@ -168,26 +154,26 @@ class _DashboardViewState extends State<DashboardView> {
                             const SizedBox(height: 12),
                           ],
                         );
-
                       }).toList(),
-          )
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    const FollowupPage(), // create this page
-                              ),
-                            );
-                          },
-                          child: const Text("View All Followups"),
+
+                      if (followups.length > 4) ...[
+                        const SizedBox(height: 10),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const FollowupPage(),
+                                ),
+                              );
+                            },
+                            child: const Text("View All Followups"),
+                          ),
                         ),
-                      ),
+                      ],
                     ],
-                  ],
                 ),
         ],
       ),
@@ -261,11 +247,7 @@ class _DashboardViewState extends State<DashboardView> {
           const SizedBox(height: 10),
 
           ElevatedButton(
-            onPressed: () => 
-                  completeFollowup(followupId),
-                  child: const Text("Mark Done"),
-          )
-            onPressed: () => completeFollowup(followupId, beneficiaryId),
+            onPressed: () => completeFollowup(followupId),
             child: const Text("Mark Done"),
           ),
         ],
