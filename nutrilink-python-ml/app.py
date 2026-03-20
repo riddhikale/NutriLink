@@ -1,12 +1,10 @@
-from unittest import result
-
 from intent_detection import detect_intent
 from fastapi import FastAPI, UploadFile, File
 import whisper
 import shutil
 import os
 
-# add ffmpeg to PATH
+# ffmpeg path
 os.environ["PATH"] += os.pathsep + r"D:\ffmeg-ML\ffmpeg-8.0.1-essentials_build\bin"
 
 app = FastAPI()
@@ -23,9 +21,13 @@ async def transcribe_audio(file: UploadFile = File(...)):
 
     result = model.transcribe(temp_audio)
 
-    transcription = result["text"]
+    transcription = result["text"].strip()
+
+    print("🎤 Transcription:", transcription)
 
     intent = detect_intent(transcription)
+
+    print("🧠 Intent:", intent)
 
     os.remove(temp_audio)
 
