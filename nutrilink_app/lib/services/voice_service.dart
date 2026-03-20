@@ -8,7 +8,7 @@ class VoiceService {
 
     var request = http.MultipartRequest(
       'POST',
-      Uri.parse('http://172.18.0.89:8080/api/voice'),
+      Uri.parse('http://192.168.137.1:8080/api/voice'),
     );
 
     request.files.add(

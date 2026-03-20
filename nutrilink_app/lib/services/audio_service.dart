@@ -5,16 +5,33 @@ class AudioService {
   final AudioRecorder _recorder = AudioRecorder();
 
   Future<String?> recordAudio() async {
-    if (await _recorder.hasPermission()) {
-      final dir = await getTemporaryDirectory();
-      final path = '${dir.path}/voice.wav';
+    try {
+      if (await _recorder.hasPermission()) {
 
-      await _recorder.start(const RecordConfig(), path: path);
+        final dir = await getTemporaryDirectory();
+        final path = '${dir.path}/voice.wav';
 
-      await Future.delayed(const Duration(seconds: 5));
+        await _recorder.start(
+          const RecordConfig(
+            encoder: AudioEncoder.wav, // ✅ Important for Whisper
+          ),
+          path: path,
+        );
 
-      return await _recorder.stop();
+        print("Recording started...");
+
+        await Future.delayed(const Duration(seconds: 5));
+
+        final recordedPath = await _recorder.stop();
+
+        print("Recording saved at: $recordedPath");
+
+        return recordedPath;
+      }
+    } catch (e) {
+      print("Recording error: $e");
     }
+
     return null;
   }
 }
