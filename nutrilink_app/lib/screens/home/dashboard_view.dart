@@ -39,8 +39,8 @@ class _DashboardViewState extends State<DashboardView> {
     }
   }
 
-  Future<void> completeFollowup(String id, String beneficiaryId) async {
-    await ApiService.completeFollowup(id, beneficiaryId);
+  Future<void> completeFollowup(String id) async {
+    await ApiService.completeFollowup(id);
     loadFollowups();
   }
 
@@ -95,7 +95,9 @@ class _DashboardViewState extends State<DashboardView> {
                         MaterialPageRoute(
                           builder: (_) => const AddScreeningPage(),
                         ),
-                      );
+                      ).then((_) {
+                        loadFollowups();
+                      });
                     },
 
                     child: const Text("Add New"),
@@ -140,10 +142,10 @@ class _DashboardViewState extends State<DashboardView> {
                         return Column(
                           children: [
                             _followUpCard(
-                              f["beneficiaryId"],
-                              f["followUpDate"],
-                              f["status"],
-                              f["id"],
+                              f["beneficiaryId"]?.toString() ?? "N/A",
+                              f["followUpDate"]?.toString() ?? "No Date",
+                              f["status"]?.toString() ?? "unknown",
+                              f["id"]?.toString() ?? "",
                             ),
                             const SizedBox(height: 12),
                           ],
@@ -232,7 +234,7 @@ class _DashboardViewState extends State<DashboardView> {
 
           ElevatedButton(
             onPressed: () => 
-                  completeFollowup(followupId, beneficiaryId),
+                  completeFollowup(followupId),
                   child: const Text("Mark Done"),
           )
         ],

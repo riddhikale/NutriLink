@@ -137,13 +137,10 @@ static Future<List<dynamic>> getFollowups() async {
   return jsonDecode(response.body);
 }
 
-static Future completeFollowup(String id, String beneficiaryId) async {
+static Future completeFollowup(String id) async {
   final response = await http.patch(
     Uri.parse("$baseUrl/api/followup/complete/$id"),
     headers: {"Content-Type": "application/json"},
-    body: jsonEncode({
-      "beneficiaryId": beneficiaryId
-    }),
   );
 
   print(response.body);

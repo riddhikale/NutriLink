@@ -1,4 +1,5 @@
 const {db} = require("../config/firebaseConfig");
+const {calculateChildRisk, calculateWomenRisk} = require("../utils/riskCalculator");
 
 async function childScreening(req, res){
   try{
@@ -25,6 +26,17 @@ async function childScreening(req, res){
       createdAt: new Date()
     });
 
+    const result = calculateChildRisk({
+      ageMonths,
+      weight,
+      height,
+      muac,
+      weakness,
+      lowAppetite,
+      frequentIllness,
+      diarrhea
+    });
+
     const screeningData = {
       beneficiaryId, 
       name, 
@@ -39,6 +51,8 @@ async function childScreening(req, res){
       frequentIllness, 
       diarrhea, 
       notes: notes || "", 
+      riskScore: result.score,
+      riskLevel: result.level,
       createdAt: new Date()
     };
 
@@ -47,14 +61,54 @@ async function childScreening(req, res){
     .doc(beneficiaryId)
     .collection("screenings")
     .add(screeningData);
+
+    let followupType = "normal";
+    let followupDate = new Date();
+
+    if (result.level === "high") {
+      followupType = "urgent";
+    } else if (result.level === "medium") {
+      followupType = "soon";
+    } else {
+      followupType = "routine";
+    }
+
+    if (result.level === "high") {
+      followupDate.setDate(followupDate.getDate() + 1); // next day
+    } else if (result.level === "medium") {
+      followupDate.setDate(followupDate.getDate() + 3);
+    } else {
+      followupDate.setDate(followupDate.getDate() + 7);
+    }
+
+    await db.collection("followups")
+    .add({
+      beneficiaryId,
+      screeningId: screeningRef.id,
+      type: followupType,
+      riskLevel: result.level,
+      followupDate,
+      status: "pending",
+      createdAt: new Date()
+    });
+
+    if (result.level === "high") {
+      await db.collection("alerts")
+      .add({
+        beneficiaryId,
+        screeningId: screeningRef.id,
+        message: "High risk detected",
+        status: "pending",
+        createdAt: new Date()
+      });
+    }
     
     res.status(200).json({
       success: true,
       message: "Screening saved successfully!",
       screeningId : screeningRef.id
     });
-
-  } catch(error){
+  }catch(error){
     console.error(error);
     res.status(500).json({
       success: false,
@@ -90,18 +144,93 @@ async function pregWomenScreening(req,res){
       createdAt: new Date()
     });
 
+    const result = calculateWomenRisk({
+      age,
+      weight,
+      hemoglobin,
+      systolicBP,
+      diastolicBP,
+      dizziness,
+      fatigue,
+      swelling,
+      lowAppetite,
+      pastAnemia
+    });
+
+
     const screeningData = {
       type: "pregnantWomen",
-      beneficiaryId, name, husbandName, age, trimester,weight,hemoglobin,systolicBP,diastolicBP, dizziness,fatigue,swelling,lowAppetite,pastAnemia,notes: notes || "", createdAt: new Date()
+      beneficiaryId, 
+      name, 
+      husbandName, 
+      age, 
+      trimester,
+      weight,
+      hemoglobin,
+      systolicBP,
+      diastolicBP,
+      dizziness,
+      fatigue,
+      swelling,
+      lowAppetite,
+      pastAnemia,
+      notes: notes || "", 
+      riskScore: result.score,
+      riskLevel: result.level,
+      createdAt: new Date()
     }
 
-    const screeningRef = await db.collection("beneficiaries").doc(beneficiaryId).collection("screenings").add(screeningData);
+    const screeningRef = await db
+    .collection("beneficiaries")
+    .doc(beneficiaryId)
+    .collection("screenings")
+    .add(screeningData);
+
+    let followupType = "normal";
+    let followupDate = new Date();
+
+    if (result.level === "high") {
+      followupType = "urgent";
+    } else if (result.level === "medium") {
+      followupType = "soon";
+    } else {
+      followupType = "routine";
+    }
+
+    if (result.level === "high") {
+      followupDate.setDate(followupDate.getDate() + 1); // next day
+    } else if (result.level === "medium") {
+      followupDate.setDate(followupDate.getDate() + 3);
+    } else {
+      followupDate.setDate(followupDate.getDate() + 7);
+    }
+
+    await db.collection("followups").add({
+      beneficiaryId,
+      screeningId: screeningRef.id,
+      type: followupType,
+      riskLevel: result.level,
+      followUpDate,
+      status: "pending",
+      createdAt: new Date()
+    });
+
+    if (result.level === "high") {
+      await db.collection("alerts").add({
+        beneficiaryId,
+        screeningId: screeningRef.id,
+        message: "High risk detected",
+        status: "pending",
+        createdAt: new Date()
+      });
+    }
 
     res.status(200).json({
       success: true,
       message: "Saved Successfully",
       screeningId: screeningRef.id
     })
+
   } catch(error){
     console.error(error);
 

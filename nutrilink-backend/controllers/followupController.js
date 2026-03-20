@@ -3,15 +3,21 @@ const { db } = require("../config/firebaseConfig");
 async function createFollowUp(req,res){
 
   try{
-
-    const { beneficiaryId, screeningId, type, followUpDate, workerId } = req.body;
+    const { beneficiaryId, 
+      screeningId, 
+      type, 
+      followUpDate, 
+      workerId,
+      riskLevel
+    } = req.body;
 
     const followupData = {
       beneficiaryId,
       screeningId,
       type,
       followUpDate,
-      workerId,
+      workerId: workerId || null,
+      riskLevel: riskLevel || null,
       status: "pending",
       createdAt: new Date(),
       completedAt: null
@@ -19,8 +25,6 @@ async function createFollowUp(req,res){
 
 
     const docRef = await db
-      .collection("beneficiaries")
-      .doc(beneficiaryId)
       .collection("followups")
       .add(followupData);
 
@@ -32,14 +36,11 @@ async function createFollowUp(req,res){
 
   }
   catch(error){
-
     console.error(error);
-
     res.status(500).json({
       success:false,
       message:"Followup creation failed"
     });
-
   }
 
 }
@@ -47,38 +48,20 @@ async function createFollowUp(req,res){
 async function getDueFollowups(req,res){
 
   try{
+    const snapshot = await db
+    .collection("followups")
+    .where("status", "==", "pending")
+    .get();
 
-    const beneficiariesSnapshot = await db.collection("beneficiaries").get();
-
-    const followups = [];
-
-    for(const beneficiaryDoc of beneficiariesSnapshot.docs){
-
-      const followupSnapshot = await db
-        .collection("beneficiaries")
-        .doc(beneficiaryDoc.id)
-        .collection("followups")
-        .where("status","==","pending")
-        .get();
-
-      followupSnapshot.forEach(doc => {
-
-        followups.push({
-          id: doc.id,
-          ...doc.data()
-        });
-
-      });
-
-    }
+    const followups = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
 
     res.json(followups);
-
   }
   catch(error){
-
     console.error(error);
-
     res.status(500).json({
       message:"Failed to fetch followups"
     });
@@ -92,11 +75,8 @@ async function completeFollowup(req,res){
   try{
 
     const followupId = req.params.id;
-    const { beneficiaryId } = req.body;
 
     await db
-      .collection("beneficiaries")
-      .doc(beneficiaryId)
       .collection("followups")
       .doc(followupId)
       .update({
@@ -111,15 +91,11 @@ async function completeFollowup(req,res){
 
   }
   catch(error){
-
     console.error(error);
-
     res.status(500).json({
       message:"Followup update failed"
     });
-
   }
-
 }
 
 module.exports = {
