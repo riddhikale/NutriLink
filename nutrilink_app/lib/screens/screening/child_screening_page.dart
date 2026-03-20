@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../services/api_service.dart';
+import 'risk_result_page.dart';
 
 class ChildScreeningPage extends StatefulWidget {
   const ChildScreeningPage({super.key});
@@ -190,56 +191,54 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
 
                   const SizedBox(height: 25),
 
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4CAF50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      onPressed: () async {
-
-                        if (_formKey.currentState!.validate()) {
-
-                          final result = await ApiService.submitChildScreening(
-
-                            beneficiaryId: nameController.text,
-
-                            name: nameController.text,
-                            ageMonths: int.parse(ageController.text),
-                            gender: gender ?? "Male",
-                            parentName: parentController.text,
-
-                            weight: double.parse(weightController.text),
-                            height: double.parse(heightController.text),
-                            muac: double.parse(muacController.text),
-
-                            weakness: weakness == "Yes",
-                            lowAppetite: lowAppetite == "Yes",
-                            frequentIllness: frequentIllness == "Yes",
-                            diarrhea: diarrhea == "Yes",
-
-                            notes: notesController.text,
-                          );
-
-                          print(result);
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Screening Data Submitted")),
-                          );
-                        }
-                      },
-                      child: const Text(
-                        "Submit Screening",
-                        style: TextStyle(fontSize: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4CAF50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                  ),
 
-                ],
+                    onPressed: () async {
+                      if (_formKey.currentState!.validate()) {
+
+                        final result = await ApiService.submitChildScreening(
+                          beneficiaryId: nameController.text,
+                          name: nameController.text,
+                          ageMonths: int.tryParse(ageController.text) ?? 0,
+                          gender: gender ?? "Male",
+                          parentName: parentController.text,
+                          weight: double.tryParse(weightController.text) ?? 0,
+                          height: double.tryParse(heightController.text) ?? 0,
+                          muac: double.tryParse(muacController.text) ?? 0,
+                          weakness: weakness == "Yes",
+                          lowAppetite: lowAppetite == "Yes",
+                          frequentIllness: frequentIllness == "Yes",
+                          diarrhea: diarrhea == "Yes",
+                          notes: notesController.text,
+                        );
+
+                        String risk = "Moderate";
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => RiskResultPage(risk: risk),
+                          ),
+                        );
+                      }
+                    }, // ✅ IMPORTANT COMMA HERE
+
+                    child: const Text(
+                      "Submit Screening",
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ),
+              ],
               ),
             ),
           ),
