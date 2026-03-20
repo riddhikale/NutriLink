@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
 import '../screening/add_screening_page.dart';
-import '../../services/api_service.dart' ;
+import '../../services/api_service.dart';
 
 class DashboardView extends StatefulWidget {
   final VoidCallback? onAddPressed;
 
-  const DashboardView({
-    super.key,
-    this.onAddPressed,
-  });
+  const DashboardView({super.key, this.onAddPressed});
 
   @override
   State<DashboardView> createState() => _DashboardViewState();
 }
-class _DashboardViewState extends State<DashboardView> {
 
-  List followups = []; 
+class _DashboardViewState extends State<DashboardView> {
+  List followups = [];
   bool isLoading = true;
 
   @override
@@ -28,6 +25,12 @@ class _DashboardViewState extends State<DashboardView> {
     try {
       final data = await ApiService.getFollowups();
 
+      // ✅ SORT HERE
+      data.sort((a, b) =>
+          DateTime.parse(a["followUpDate"])
+              .compareTo(DateTime.parse(b["followUpDate"]))
+      );
+
       setState(() {
         followups = data;
         isLoading = false;
@@ -38,7 +41,6 @@ class _DashboardViewState extends State<DashboardView> {
       setState(() => isLoading = false);
     }
   }
-
   Future<void> completeFollowup(String id, String beneficiaryId) async {
     await ApiService.completeFollowup(id, beneficiaryId);
     loadFollowups();
@@ -46,6 +48,7 @@ class _DashboardViewState extends State<DashboardView> {
 
   @override
   Widget build(BuildContext context) {
+    final displayedFollowups = followups.take(4).toList();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -53,7 +56,6 @@ class _DashboardViewState extends State<DashboardView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -64,7 +66,6 @@ class _DashboardViewState extends State<DashboardView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 const Text(
                   "Quick Add Screening",
                   style: TextStyle(fontWeight: FontWeight.bold),
@@ -130,31 +131,50 @@ class _DashboardViewState extends State<DashboardView> {
 
           isLoading
               ? const Center(child: CircularProgressIndicator())
-
               : followups.isEmpty
-                  ? const Text("No followups")
+              ? const Text("No followups")
+              : Column(
+                  children: [
+                    ...followups.take(4).map((f) {
+                      return Column(
+                        children: [
+                          _followUpCard(
+                            f["beneficiaryId"],
+                            f["followUpDate"],
+                            f["status"],
+                            f["id"],
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                      );
+                    }).toList(),
 
-                  : Column(
-                      children: followups.map((f) {
+                    if (followups.length > 4) ...[
+                      const SizedBox(height: 10),
 
-                        return Column(
-                          children: [
-                            _followUpCard(
-                              f["beneficiaryId"],
-                              f["followUpDate"],
-                              f["status"],
-                              f["id"],
-                            ),
-                            const SizedBox(height: 12),
-                          ],
-                        );
-
-                      }).toList(),
-          )
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    const FollowupPage(), // create this page
+                              ),
+                            );
+                          },
+                          child: const Text("View All Followups"),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
         ],
       ),
     );
   }
+
 
   Widget _summaryCard(IconData icon, String title, String value) {
     return Container(
@@ -168,23 +188,23 @@ class _DashboardViewState extends State<DashboardView> {
         children: [
           Icon(icon, color: Colors.blue),
           const SizedBox(height: 8),
-          Text(title,
-              style: const TextStyle(fontSize: 12, color: Colors.grey)),
+          Text(title, style: const TextStyle(fontSize: 12, color: Colors.grey)),
           const SizedBox(height: 6),
           Text(
             value,
-            style: const TextStyle(
-                fontSize: 18, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ],
       ),
     );
   }
 
-
-
-  Widget _followUpCard(String beneficiaryId, String date, String status, String followupId ) {
-
+  Widget _followUpCard(
+    String beneficiaryId,
+    String date,
+    String status,
+    String followupId,
+  ) {
     return Container(
       padding: const EdgeInsets.all(14),
 
@@ -196,46 +216,50 @@ class _DashboardViewState extends State<DashboardView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           Text(
-              "ID: $beneficiaryId",
-              style: const TextStyle(fontWeight: FontWeight.w600)
-              ),
+            "ID: $beneficiaryId",
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
 
           const SizedBox(height: 6),
 
           Row(
             children: [
-
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.red.shade100,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(
-                  status,
-                  style: const TextStyle(fontSize: 12),
-                ),
+                child: Text(status, style: const TextStyle(fontSize: 12)),
               ),
 
               const SizedBox(width: 8),
-              Text(
-                date,
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
+              Text(date, style: TextStyle(fontSize: 12, color: Colors.grey)),
             ],
           ),
 
           const SizedBox(height: 10),
 
           ElevatedButton(
-            onPressed: () => 
-                  completeFollowup(followupId, beneficiaryId),
-                  child: const Text("Mark Done"),
-          )
+            onPressed: () => completeFollowup(followupId, beneficiaryId),
+            child: const Text("Mark Done"),
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class FollowupPage extends StatelessWidget {
+  const FollowupPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("All Followups")),
+      body: const Center(
+        child: Text("Show all followups here"),
       ),
     );
   }
