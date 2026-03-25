@@ -221,7 +221,22 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
                           notes: notesController.text,
                         );
 
-                        String risk = "Moderate";
+                        final result2 = await ApiService.submitChildScreening(
+                          beneficiaryId: nameController.text,
+                          name: nameController.text,
+                          ageMonths: int.tryParse(ageController.text) ?? 0,
+                          gender: gender ?? "Male",
+                          parentName: parentController.text,
+                          weight: double.tryParse(weightController.text) ?? 0,
+                          height: double.tryParse(heightController.text) ?? 0,
+                          muac: double.tryParse(muacController.text) ?? 0,
+                          weakness: weakness == "Yes",
+                          lowAppetite: lowAppetite == "Yes",
+                          frequentIllness: frequentIllness == "Yes",
+                          diarrhea: diarrhea == "Yes",
+                          notes: notesController.text,
+                        );
+                        String risk = (result2['level'] ?? "low").toString(); // ✅ from backend
 
                         Navigator.push(
                           context,

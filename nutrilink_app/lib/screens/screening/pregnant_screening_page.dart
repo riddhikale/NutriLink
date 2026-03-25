@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../services/api_service.dart';
+import 'risk_result_page.dart';
 
 class PregnantScreeningPage extends StatefulWidget {
   const PregnantScreeningPage({super.key});
@@ -224,7 +225,6 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                   SizedBox(
                     width: double.infinity,
                     height: 50,
-
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF4CAF50),
@@ -261,15 +261,34 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                             notes: notesController.text,
                           );
 
-                          print(result);
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Screening Data Submitted")),
+                          final result2 = await ApiService.submitPregnantScreening(
+                            beneficiaryId: nameController.text,
+                            name: nameController.text,
+                            husbandName: husbandController.text,
+                            age: int.tryParse(ageController.text) ?? 0,
+                            trimester: trimester ?? "1st Trimester",
+                            weight: double.tryParse(weightController.text) ?? 0,
+                            hemoglobin: double.tryParse(hbController.text) ?? 0,
+                            systolicBP: int.tryParse(systolicController.text) ?? 0,
+                            diastolicBP: int.tryParse(diastolicController.text) ?? 0,
+                            dizziness: dizziness == "Yes",
+                            fatigue: fatigue == "Yes",
+                            swelling: swelling == "Yes",
+                            lowAppetite: lowAppetite == "Yes",
+                            pastAnemia: pastAnemia == "Yes",
+                            notes: notesController.text,
                           );
 
-                        }
+                          String risk = (result2['level'] ?? "low").toString(); // ✅ correct
 
-                      },
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => RiskResultPage(risk: risk),
+                            ),
+                          );
+                        }
+                      }, // ✅ IMPORTANT COMMA HERE
 
                       child: const Text(
                         "Submit Screening",

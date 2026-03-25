@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const baseUrl = "http://192.168.137.1:8080";
+  static const baseUrl = "http://192.168.0.222\:8080";
   static Future<Map<String, dynamic>> registerUser({
     required String name,
     required String phone,
@@ -82,7 +82,11 @@ static Future<Map<String, dynamic>> submitChildScreening({
     }),
   );
 
-  return jsonDecode(response.body);
+  if (response.statusCode == 200) {
+    return jsonDecode(response.body);
+  } else {
+    throw Exception("Failed to calculate risk");
+  }
 }
 
 static Future<Map<String, dynamic>> submitPregnantScreening({
