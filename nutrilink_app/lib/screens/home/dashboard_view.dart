@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../screening/add_screening_page.dart';
 import '../../services/api_service.dart';
+import 'followup_page.dart';
 
 class DashboardView extends StatefulWidget {
   final VoidCallback? onAddPressed;
@@ -251,20 +252,6 @@ class _DashboardViewState extends State<DashboardView> {
             child: const Text("Mark Done"),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class FollowupPage extends StatelessWidget {
-  const FollowupPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("All Followups")),
-      body: const Center(
-        child: Text("Show all followups here"),
       ),
     );
   }
