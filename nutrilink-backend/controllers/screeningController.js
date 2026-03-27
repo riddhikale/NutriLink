@@ -14,6 +14,7 @@ async function childScreening(req, res){
       lowAppetite,
       frequentIllness,
       diarrhea,
+      address,
       notes
     } = req.body
 
@@ -22,6 +23,7 @@ async function childScreening(req, res){
 
     await beneficiaryRef.set({
       name,
+      address,
       type: "child",
       createdAt: new Date()
     });
@@ -51,8 +53,8 @@ async function childScreening(req, res){
       frequentIllness, 
       diarrhea, 
       notes: notes || "", 
-      riskScore: result.score,
       riskLevel: result.level,
+      address,
       createdAt: new Date()
     };
 
@@ -74,7 +76,7 @@ async function childScreening(req, res){
     }
 
     if (result.level === "high") {
-      followupDate.setDate(followupDate.getDate() + 1); // next day
+      followupDate.setDate(followupDate.getDate() + 1)
     } else if (result.level === "medium") {
       followupDate.setDate(followupDate.getDate() + 3);
     } else {
@@ -107,7 +109,6 @@ async function childScreening(req, res){
       success: true,
       message: "Screening saved successfully!",
       screeningId: screeningRef.id,
-      score: result.score,
       level: result.level
     });
   }catch(error){
@@ -135,6 +136,7 @@ async function pregWomenScreening(req,res){
       swelling, 
       lowAppetite, 
       pastAnemia,
+      address,
       notes
     } = req.body;
 
@@ -143,6 +145,7 @@ async function pregWomenScreening(req,res){
 
     await beneficiaryRef.set({
       name,
+      address,
       type: "pregnant",
       createdAt: new Date()
     });
@@ -177,8 +180,8 @@ async function pregWomenScreening(req,res){
       swelling,
       lowAppetite,
       pastAnemia,
+      address,
       notes: notes || "", 
-      riskScore: result.score,
       riskLevel: result.level,
       createdAt: new Date()
     }
@@ -232,7 +235,6 @@ async function pregWomenScreening(req,res){
       success: true,
       message: "Saved Successfully",
       screeningId: screeningRef.id,
-      score: result.score,
       level: result.level
     })
 

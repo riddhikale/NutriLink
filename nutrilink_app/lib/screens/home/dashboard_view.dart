@@ -147,7 +147,7 @@ class _DashboardViewState extends State<DashboardView> {
                         return Column(
                           children: [
                             _followUpCard(
-                              f["beneficiaryId"]?.toString() ?? "N/A",
+                              f["name"]?.toString() ?? "UNKNOWN",
                               f["followUpDate"]?.toString() ?? "No Date",
                               f["riskLevel"]?.toString() ?? "No Risk",
                               f["id"]?.toString() ?? "",
@@ -228,7 +228,7 @@ class _DashboardViewState extends State<DashboardView> {
 
                 /// ID
                 Text(
-                  "ID: $beneficiaryId",
+                  "Name: $beneficiaryId",
                   style: const TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 15,

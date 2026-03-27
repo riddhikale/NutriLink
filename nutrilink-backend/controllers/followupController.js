@@ -45,29 +45,63 @@ async function createFollowUp(req,res){
 
 }
 
-async function getDueFollowups(req,res){
+// async function getDueFollowups(req,res){
 
-  try{
+//   try{
+//     const snapshot = await db
+//     .collection("followups")
+//     .where("status", "==", "pending")
+//     .get();
+
+//     const followups = snapshot.docs.map(doc => ({
+//       id: doc.id,
+//       ...doc.data()
+//     }));
+
+//     res.json(followups);
+//   }
+//   catch(error){
+//     console.error(error);
+//     res.status(500).json({
+//       message:"Failed to fetch followups"
+//     });
+
+//   }
+
+// }
+async function getDueFollowups(req, res) {
+  try {
     const snapshot = await db
-    .collection("followups")
-    .where("status", "==", "pending")
-    .get();
+      .collection("followups")
+      .where("status", "==", "pending")
+      .get();
 
-    const followups = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    const followups = [];
+
+    for (const doc of snapshot.docs) {
+      const data = doc.data();
+
+      const beneficiaryDoc = await db
+        .collection("beneficiaries")
+        .doc(data.beneficiaryId)
+        .get();
+
+      const beneficiaryData = beneficiaryDoc.data();
+
+      followups.push({
+        id: doc.id,
+        name: beneficiaryData?.name || "Unknown",
+        ...data
+      });
+    }
 
     res.json(followups);
-  }
-  catch(error){
+  } catch (error) {
     console.error(error);
     res.status(500).json({
-      message:"Failed to fetch followups"
+      message: "Failed to fetch followups"
     });
-
   }
-
 }
 
 async function completeFollowup(req,res){
