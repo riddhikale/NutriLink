@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../../services/audio_service.dart';
 import '../../../services/voice_service.dart';
+import '../../../services/tts_service.dart';
 
 import '../screening/add_screening_page.dart';
 import '../screening/child_screening_page.dart';
@@ -23,27 +24,36 @@ class HomeDashboard extends StatefulWidget {
 class _HomeDashboardState extends State<HomeDashboard> {
   int _selectedIndex = 0;
   final AudioService _audioService = AudioService();
+  final TTSService _tts = TTSService();
 
   // ================= 🎯 INTENT HANDLER ================= //
 
   void handleIntent(String intent) {
     print("🧠 Detected Intent: $intent");
+    final Map<String, String> intentSpeech = {
+      "add_child_screening": "Opening child screening",
+      "add_pregnant_screening": "Opening pregnant women screening",
+      "add_beneficiary": "Opening beneficiary registration",
+      "add_screening": "Opening screening page",
+      "navigation_settings": "Opening settings",
+      "navigation_work_history": "Opening work history",
+      "navigation_home": "Opening home",
+      "navigation_profile": "Opening profile",
+    };
 
     final Map<String, Widget Function()> intentRoutes = {
-
-      // 🔥 SPECIFIC FIRST
       "add_child_screening": () => const ChildScreeningPage(),
       "add_pregnant_screening": () => const PregnantScreeningPage(),
-
-      // GENERAL
       "add_beneficiary": () => const AddScreeningPage(),
       "add_screening": () => const AddScreeningPage(),
-
-      // NAVIGATION PAGES
       "navigation_settings": () => const SettingsPage(),
       "navigation_work_history": () => const WorkHistoryPage(),
     };
-
+    // Speak response
+    if (intentSpeech.containsKey(intent)) {
+      _tts.speak(intentSpeech[intent]!);
+    }
+    // Navigate
     if (intentRoutes.containsKey(intent)) {
       Navigator.push(
         context,
@@ -52,7 +62,6 @@ class _HomeDashboardState extends State<HomeDashboard> {
         ),
       );
     }
-    // 🔥 Bottom navigation switching
     else if (intent == "navigation_home") {
       setState(() => _selectedIndex = 0);
     }
@@ -60,24 +69,25 @@ class _HomeDashboardState extends State<HomeDashboard> {
       setState(() => _selectedIndex = 1);
     }
     else {
-      print("❌ Unknown command");
+      _tts.speak("Sorry, I did not understand the command");
     }
   }
 
-  // ================= 🎤 MIC HANDLER ================= //
-
   Future<void> handleMic() async {
     final path = await _audioService.recordAudio();
-
     if (path != null) {
       try {
         var result = await VoiceService.sendAudio(File(path));
-
         print("📡 Backend Response: $result");
-
-        handleIntent(result["intent"]);
+        if (result.containsKey("intent")) {
+          handleIntent(result["intent"]);
+        } else {
+          print("❌ Backend returned error");
+          _tts.speak("Sorry, voice processing failed");
+        }
       } catch (e) {
         print("❌ Voice error: $e");
+        _tts.speak("Something went wrong");
       }
     }
   }
@@ -112,6 +122,15 @@ class _HomeDashboardState extends State<HomeDashboard> {
         onPressed: handleMic,
         child: const Icon(Icons.mic),
       ),
+
+      //TTS TESTING
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {
+      //     _tts.speak("Hello, NutriLink voice assistant is working");
+      //   },
+      //   child: const Icon(Icons.mic),
+      // ),
+
 
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 

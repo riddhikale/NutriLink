@@ -106,7 +106,9 @@ async function childScreening(req, res){
     res.status(200).json({
       success: true,
       message: "Screening saved successfully!",
-      screeningId : screeningRef.id
+      screeningId: screeningRef.id,
+      score: result.score,
+      level: result.level
     });
   }catch(error){
     console.error(error);
@@ -116,6 +118,7 @@ async function childScreening(req, res){
     })
   }
 };
+
 
 async function pregWomenScreening(req,res){
   try{
@@ -210,7 +213,7 @@ async function pregWomenScreening(req,res){
       screeningId: screeningRef.id,
       type: followupType,
       riskLevel: result.level,
-      followUpDate,
+      followupDate,
       status: "pending",
       createdAt: new Date()
     });
@@ -228,7 +231,9 @@ async function pregWomenScreening(req,res){
     res.status(200).json({
       success: true,
       message: "Saved Successfully",
-      screeningId: screeningRef.id
+      screeningId: screeningRef.id,
+      score: result.score,
+      level: result.level
     })
 
   } catch(error){

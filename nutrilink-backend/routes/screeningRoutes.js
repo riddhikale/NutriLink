@@ -6,4 +6,4 @@ const { childScreening, pregWomenScreening } = require("../controllers/screening
 router.post("/screening/child", childScreening);
 router.post("/screening/pregWomen", pregWomenScreening);
 
-module.exports = router
+module.exports = router;
