@@ -102,7 +102,7 @@ class ProfileView extends StatelessWidget {
                   ),
                 ),
                 child: const Text(
-                  'Flutter Developer',
+                  'NGO Worker',
                   style: TextStyle(
                     color: Color(0xFFE94560),
                     fontSize: 13,
@@ -123,7 +123,6 @@ class ProfileView extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Row(
         children: [
-          _buildStatCard('12', 'Projects', Icons.folder_outlined),
           const SizedBox(width: 12),
           _buildStatCard('4', 'Years Exp', Icons.workspace_premium_outlined),
           const SizedBox(width: 12),

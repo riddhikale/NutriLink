@@ -149,7 +149,7 @@ class _DashboardViewState extends State<DashboardView> {
                             _followUpCard(
                               f["beneficiaryId"]?.toString() ?? "N/A",
                               f["followUpDate"]?.toString() ?? "No Date",
-                              f["status"]?.toString() ?? "unknown",
+                              f["riskLevel"]?.toString() ?? "No Risk",
                               f["id"]?.toString() ?? "",
                             ),
                             const SizedBox(height: 12),
@@ -205,51 +205,89 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
-  Widget _followUpCard(
-    String beneficiaryId,
-    String date,
-    String status,
-    String followupId,
-  ) {
+  Widget _followUpCard(String beneficiaryId,
+      String date,
+      String status,
+      String followupId,) {
     return Container(
       padding: const EdgeInsets.all(14),
-
       decoration: BoxDecoration(
         color: const Color(0xFFEDEDED),
         borderRadius: BorderRadius.circular(14),
       ),
 
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(
-            "ID: $beneficiaryId",
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
 
-          const SizedBox(height: 6),
+          /// LEFT SIDE (ALL TEXT STACKED)
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
 
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.red.shade100,
-                  borderRadius: BorderRadius.circular(12),
+                /// ID
+                Text(
+                  "ID: $beneficiaryId",
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
                 ),
-                child: Text(status, style: const TextStyle(fontSize: 12)),
-              ),
 
-              const SizedBox(width: 8),
-              Text(date, style: TextStyle(fontSize: 12, color: Colors.grey)),
-            ],
+                const SizedBox(height: 6),
+
+                /// STATUS + DATE (UNDER ID)
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: status == "pending"
+                            ? Colors.orange.shade100
+                            : Colors.green.shade100,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        status,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: status == "pending"
+                              ? Colors.orange.shade800
+                              : Colors.green.shade800,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(width: 8),
+
+                    Text(
+                      date,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
 
-          const SizedBox(height: 10),
-
-          ElevatedButton(
+          /// RIGHT SIDE (BUTTON ONLY)
+          TextButton(
             onPressed: () => completeFollowup(followupId),
-            child: const Text("Mark Done"),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 10, vertical: 6),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: const Text(
+              "Done",
+              style: TextStyle(fontSize: 12),
+            ),
           ),
         ],
       ),
