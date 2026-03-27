@@ -67,7 +67,7 @@ class _FollowupPageState extends State<FollowupPage> {
               _followUpCard(
                 f["beneficiaryId"]?.toString() ?? "N/A",
                 f["followUpDate"]?.toString() ?? "No Date",
-                f["status"]?.toString() ?? "unknown",
+                f["riskLevel"]?.toString() ?? "No Risk",
                 f["id"]?.toString() ?? "",
               ),
               const SizedBox(height: 12),
