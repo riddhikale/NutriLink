@@ -83,17 +83,17 @@ async function childScreening(req, res){
       followupDate.setDate(followupDate.getDate() + 7);
     }
 
-    await db.collection("followups")
-    .add({
-      beneficiaryId,
-      screeningId: screeningRef.id,
-      type: followupType,
-      riskLevel: result.level,
-      followupDate,
-      status: "pending",
-      createdAt: new Date()
+    await db.collection("followups").add({
+    beneficiaryId,
+    screeningId,
+    name,        // ✅ add this
+    address,     // ✅ add this
+    type: followupType,
+    riskLevel: result.level,
+    followupDate,
+    status: "pending",
+    createdAt: new Date()
     });
-
     if (result.level === "high") {
       await db.collection("alerts")
       .add({
@@ -213,7 +213,9 @@ async function pregWomenScreening(req,res){
 
     await db.collection("followups").add({
       beneficiaryId,
-      screeningId: screeningRef.id,
+      screeningId,
+      name,
+      address,
       type: followupType,
       riskLevel: result.level,
       followupDate,

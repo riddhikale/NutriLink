@@ -3,6 +3,30 @@ import '../screening/add_screening_page.dart';
 import '../../services/api_service.dart';
 import 'followup_page.dart';
 
+String formatDate(dynamic value) {
+  if (value == null) return "No Date";
+
+  try {
+    if (value is Map && value.containsKey('_seconds')) {
+      final seconds = value['_seconds'];
+      final date =
+      DateTime.fromMillisecondsSinceEpoch(seconds * 1000);
+
+      return "${date.day}/${date.month}/${date.year}";
+    }
+
+    if (value is String) {
+      final date = DateTime.tryParse(value);
+      if (date != null) {
+        return "${date.day}/${date.month}/${date.year}";
+      }
+    }
+
+    return "Invalid Date";
+  } catch (e) {
+    return "Invalid Date";
+  }
+}
 class DashboardView extends StatefulWidget {
   final VoidCallback? onAddPressed;
 
@@ -28,14 +52,14 @@ class _DashboardViewState extends State<DashboardView> {
 
       data.sort((a, b) {
         try {
-          final dateA = DateTime.parse(a["followUpDate"].toString());
-          final dateB = DateTime.parse(b["followUpDate"].toString());
-          return dateA.compareTo(dateB);
+          final secondsA = a["followUpDate"]?["_seconds"] ?? 0;
+          final secondsB = b["followUpDate"]?["_seconds"] ?? 0;
+
+          return secondsA.compareTo(secondsB); // 🔥 earliest first
         } catch (e) {
           return 0;
         }
       });
-
       setState(() {
         followups = data;
         isLoading = false;
@@ -147,8 +171,8 @@ class _DashboardViewState extends State<DashboardView> {
                         return Column(
                           children: [
                             _followUpCard(
-                              f["name"]?.toString() ?? "UNKNOWN",
-                              f["followUpDate"]?.toString() ?? "No Date",
+                              f["beneficiaryId"]?.toString() ?? "N/A",
+                              formatDate(f["followupDate"]),
                               f["riskLevel"]?.toString() ?? "No Risk",
                               f["id"]?.toString() ?? "",
                             ),
@@ -228,7 +252,7 @@ class _DashboardViewState extends State<DashboardView> {
 
                 /// ID
                 Text(
-                  "Name: $beneficiaryId",
+                  "ID: $beneficiaryId",
                   style: const TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 15,
@@ -244,7 +268,9 @@ class _DashboardViewState extends State<DashboardView> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: status == "pending"
+                        color: status == "high"
+                            ? Colors.red.shade100
+                            : status == "medium"
                             ? Colors.orange.shade100
                             : Colors.green.shade100,
                         borderRadius: BorderRadius.circular(10),
@@ -262,11 +288,14 @@ class _DashboardViewState extends State<DashboardView> {
 
                     const SizedBox(width: 8),
 
-                    Text(
-                      date,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey,
+                    Expanded(
+                      child: Text(
+                        date,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey,
+                        ),
                       ),
                     ),
                   ],

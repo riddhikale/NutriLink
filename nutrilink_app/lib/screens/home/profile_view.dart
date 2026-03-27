@@ -13,6 +13,7 @@ class ProfileView extends StatelessWidget {
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Avatar
               CircleAvatar(
@@ -40,9 +41,20 @@ class ProfileView extends StatelessWidget {
               ),
               const SizedBox(height: 4),
 
+              // Phone number  ← NEW
+              const Text(
+                '+91 98765 43210',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF4A90C4),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 4),
+
               // Role
               const Text(
-                'Flutter Developer',
+                'NGO Worker',
                 style: TextStyle(
                   fontSize: 14,
                   color: Color(0xFF6A9FC0),
@@ -51,19 +63,27 @@ class ProfileView extends StatelessWidget {
               ),
               const SizedBox(height: 36),
 
-              // Menu items
-              _buildMenuItem(
-                context,
-                icon: Icons.work_outline_rounded,
-                title: 'Work History',
-                page: const WorkHistoryPage(),
-              ),
-              const SizedBox(height: 12),
-              _buildMenuItem(
-                context,
-                icon: Icons.settings_outlined,
-                title: 'Settings',
-                page: const SettingsPage(),
+              // Menu items — stretched to full width
+              SizedBox(
+                width: double.infinity,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildMenuItem(
+                      context,
+                      icon: Icons.work_outline_rounded,
+                      title: 'Work History',
+                      page: const WorkHistoryPage(),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildMenuItem(
+                      context,
+                      icon: Icons.settings_outlined,
+                      title: 'Settings',
+                      page: const SettingsPage(),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
