@@ -27,6 +27,7 @@ String formatDate(dynamic value) {
     return "Invalid Date";
   }
 }
+
 class DashboardView extends StatefulWidget {
   final VoidCallback? onAddPressed;
 
@@ -55,7 +56,7 @@ class _DashboardViewState extends State<DashboardView> {
           final secondsA = a["followUpDate"]?["_seconds"] ?? 0;
           final secondsB = b["followUpDate"]?["_seconds"] ?? 0;
 
-          return secondsA.compareTo(secondsB); // 🔥 earliest first
+          return secondsA.compareTo(secondsB);
         } catch (e) {
           return 0;
         }
@@ -166,40 +167,62 @@ class _DashboardViewState extends State<DashboardView> {
               : followups.isEmpty
               ? const Text("No followups")
               : Column(
-                  children: [
-                      ...displayedFollowups.map((f) {
-                        return Column(
-                          children: [
-                            _followUpCard(
-                              f["beneficiaryId"]?.toString() ?? "N/A",
-                              formatDate(f["followupDate"]),
-                              f["riskLevel"]?.toString() ?? "No Risk",
-                              f["id"]?.toString() ?? "",
-                            ),
-                            const SizedBox(height: 12),
-                          ],
-                        );
-                      }).toList(),
+            children: [
+              ...displayedFollowups.map((f) {
+                final String name = f["name"]?.toString() ??
+                    f["beneficiaryId"]?.toString() ?? "N/A";
+                final String date =
+                formatDate(f["followupDate"] ?? f["followUpDate"]);
+                final String risk =
+                    f["riskLevel"]?.toString() ?? "low";
+                final String id = f["id"]?.toString() ?? "";
 
-                      if (followups.length > 4) ...[
-                        const SizedBox(height: 10),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const FollowupPage(),
-                                ),
-                              );
+                return Column(
+                  children: [
+                    FollowUpCard(
+                      name: name,
+                      date: date,
+                      risk: risk,
+                      followupId: id,
+                      data: f,
+                      onComplete: () => completeFollowup(id),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => FollowupDetailPage(
+                            data: f,
+                            onComplete: () async {
+                              await completeFollowup(id);
+                              if (context.mounted) Navigator.pop(context);
                             },
-                            child: const Text("View All Followups"),
                           ),
                         ),
-                      ],
-                    ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                );
+              }).toList(),
+
+              if (followups.length > 4) ...[
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const FollowupPage(),
+                        ),
+                      );
+                    },
+                    child: const Text("View All Followups"),
+                  ),
                 ),
+              ],
+            ],
+          ),
         ],
       ),
     );
@@ -223,100 +246,6 @@ class _DashboardViewState extends State<DashboardView> {
           Text(
             value,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _followUpCard(String beneficiaryId,
-      String date,
-      String status,
-      String followupId,) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEDEDED),
-        borderRadius: BorderRadius.circular(14),
-      ),
-
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-
-          /// LEFT SIDE (ALL TEXT STACKED)
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-
-                /// ID
-                Text(
-                  "ID: $beneficiaryId",
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                  ),
-                ),
-
-                const SizedBox(height: 6),
-
-                /// STATUS + DATE (UNDER ID)
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: status == "high"
-                            ? Colors.red.shade100
-                            : status == "medium"
-                            ? Colors.orange.shade100
-                            : Colors.green.shade100,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        status,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: status == "pending"
-                              ? Colors.orange.shade800
-                              : Colors.green.shade800,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(width: 8),
-
-                    Expanded(
-                      child: Text(
-                        date,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          /// RIGHT SIDE (BUTTON ONLY)
-          TextButton(
-            onPressed: () => completeFollowup(followupId),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 10, vertical: 6),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-            child: const Text(
-              "Done",
-              style: TextStyle(fontSize: 12),
-            ),
           ),
         ],
       ),

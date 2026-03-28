@@ -112,7 +112,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
       backgroundColor: const Color(0xFFF2F4F7),
 
       appBar: AppBar(
-        title: const Text("Dashboard"),
+        title: const Text("NutriLink"),
       ),
 
       body: pages[_selectedIndex],
