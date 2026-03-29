@@ -1,79 +1,54 @@
 const { db } = require("../config/firebaseConfig");
 
-async function createFollowUp(req,res){
-
-  try{
-    const { beneficiaryId, 
-      screeningId, 
-      type, 
-      followUpDate, 
-      workerId,
-      riskLevel
+async function createFollowUp(req, res) {
+  try {
+    const {
+      beneficiaryId,
+      screeningId,
+      type,
+      followUpDate,
+      riskLevel,
     } = req.body;
+
+    // ── Use logged-in user's phone as workerId ──────────────
+    const workerId = req.user.phone;
 
     const followupData = {
       beneficiaryId,
       screeningId,
       type,
       followUpDate,
-      workerId: workerId || null,
+      workerId,                    // always taken from token, not req.body
       riskLevel: riskLevel || null,
       status: "pending",
       createdAt: new Date(),
-      completedAt: null
+      completedAt: null,
     };
 
-
-    const docRef = await db
-      .collection("followups")
-      .add(followupData);
-
+    const docRef = await db.collection("followups").add(followupData);
 
     res.json({
-      success:true,
-      followupId: docRef.id
+      success: true,
+      followupId: docRef.id,
     });
-
-  }
-  catch(error){
+  } catch (error) {
     console.error(error);
     res.status(500).json({
-      success:false,
-      message:"Followup creation failed"
+      success: false,
+      message: "Followup creation failed",
     });
   }
-
 }
 
-// async function getDueFollowups(req,res){
-
-//   try{
-//     const snapshot = await db
-//     .collection("followups")
-//     .where("status", "==", "pending")
-//     .get();
-
-//     const followups = snapshot.docs.map(doc => ({
-//       id: doc.id,
-//       ...doc.data()
-//     }));
-
-//     res.json(followups);
-//   }
-//   catch(error){
-//     console.error(error);
-//     res.status(500).json({
-//       message:"Failed to fetch followups"
-//     });
-
-//   }
-
-// }
 async function getDueFollowups(req, res) {
   try {
+    // ── Only fetch followups belonging to this worker ───────
+    const workerId = req.user.phone;
+
     const snapshot = await db
       .collection("followups")
       .where("status", "==", "pending")
+      .where("workerId", "==", workerId)
       .get();
 
     const followups = [];
@@ -91,49 +66,38 @@ async function getDueFollowups(req, res) {
       followups.push({
         id: doc.id,
         name: beneficiaryData?.name || "Unknown",
-        ...data
+        ...data,
       });
     }
 
     res.json(followups);
   } catch (error) {
     console.error(error);
-    res.status(500).json({
-      message: "Failed to fetch followups"
-    });
+    res.status(500).json({ message: "Failed to fetch followups" });
   }
 }
 
-async function completeFollowup(req,res){
-
-  try{
-
+async function completeFollowup(req, res) {
+  try {
     const followupId = req.params.id;
 
-    await db
-      .collection("followups")
-      .doc(followupId)
-      .update({
-        status:"completed",
-        completedAt:new Date()
-      });
+    await db.collection("followups").doc(followupId).update({
+      status: "completed",
+      completedAt: new Date(),
+    });
 
     res.json({
-      success:true,
-      message:"Followup completed"
+      success: true,
+      message: "Followup completed",
     });
-
-  }
-  catch(error){
+  } catch (error) {
     console.error(error);
-    res.status(500).json({
-      message:"Followup update failed"
-    });
+    res.status(500).json({ message: "Followup update failed" });
   }
 }
 
 module.exports = {
   createFollowUp,
   getDueFollowups,
-  completeFollowup
+  completeFollowup,
 };

@@ -4,11 +4,13 @@ const router = express.Router();
 const {
   createFollowUp,
   getDueFollowups,
-  completeFollowup
+  completeFollowup,
 } = require("../controllers/followupController");
 
-router.post("/followup", createFollowUp);
-router.get("/followups/due", getDueFollowups);
-router.patch("/followup/complete/:id", completeFollowup);
+const { authMiddleware } = require("../middlewares/authMiddleware");
+
+router.post("/followup", authMiddleware, createFollowUp);
+router.get("/followups/due", authMiddleware, getDueFollowups);
+router.patch("/followup/complete/:id", authMiddleware, completeFollowup);
 
 module.exports = router;

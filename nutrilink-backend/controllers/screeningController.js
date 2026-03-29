@@ -1,9 +1,10 @@
-const {db} = require("../config/firebaseConfig");
-const {calculateChildRisk, calculateWomenRisk} = require("../utils/riskCalculator");
+const { db } = require("../config/firebaseConfig");
+const { calculateChildRisk, calculateWomenRisk } = require("../utils/riskCalculator");
 
-async function childScreening(req, res){
-  try{
-    const {name,
+async function childScreening(req, res) {
+  try {
+    const {
+      name,
       ageMonths,
       gender,
       parentName,
@@ -15,17 +16,20 @@ async function childScreening(req, res){
       frequentIllness,
       diarrhea,
       address,
-      notes
-    } = req.body
+      notes,
+    } = req.body;
+
+    // ── Get workerId from token (set by authMiddleware) ─────
+    const workerId = req.user?.phone || null;
 
     const beneficiaryRef = db.collection("beneficiaries").doc();
     const beneficiaryId = beneficiaryRef.id;
 
     await beneficiaryRef.set({
       name,
-      address,
+      address: address || "",   // ← fix: fallback to "" if not sent
       type: "child",
-      createdAt: new Date()
+      createdAt: new Date(),
     });
 
     const result = calculateChildRisk({
@@ -36,118 +40,116 @@ async function childScreening(req, res){
       weakness,
       lowAppetite,
       frequentIllness,
-      diarrhea
+      diarrhea,
     });
 
     const screeningData = {
-      beneficiaryId, 
-      name, 
-      ageMonths, 
-      gender, 
-      parentName, 
-      weight, 
-      height, 
-      muac, 
-      weakness, 
-      lowAppetite, 
-      frequentIllness, 
-      diarrhea, 
-      notes: notes || "", 
+      beneficiaryId,
+      name,
+      ageMonths,
+      gender,
+      parentName,
+      weight,
+      height,
+      muac,
+      weakness,
+      lowAppetite,
+      frequentIllness,
+      diarrhea,
+      notes: notes || "",
       riskLevel: result.level,
-      address,
-      createdAt: new Date()
+      address: address || "",   // ← fix: fallback to ""
+      createdAt: new Date(),
     };
 
     const screeningRef = await db
-    .collection("beneficiaries")
-    .doc(beneficiaryId)
-    .collection("screenings")
-    .add(screeningData);
+      .collection("beneficiaries")
+      .doc(beneficiaryId)
+      .collection("screenings")
+      .add(screeningData);
 
-    let followupType = "normal";
+    let followupType = "routine";
     let followupDate = new Date();
 
     if (result.level === "high") {
       followupType = "urgent";
+      followupDate.setDate(followupDate.getDate() + 1);
     } else if (result.level === "medium") {
       followupType = "soon";
-    } else {
-      followupType = "routine";
-    }
-
-    if (result.level === "high") {
-      followupDate.setDate(followupDate.getDate() + 1)
-    } else if (result.level === "medium") {
       followupDate.setDate(followupDate.getDate() + 3);
     } else {
       followupDate.setDate(followupDate.getDate() + 7);
     }
 
     await db.collection("followups").add({
-    beneficiaryId,
-    screeningId,
-    name,        // ✅ add this
-    address,     // ✅ add this
-    type: followupType,
-    riskLevel: result.level,
-    followupDate,
-    status: "pending",
-    createdAt: new Date()
+      beneficiaryId,
+      screeningId: screeningRef.id,   // ← fix: was undefined before
+      workerId,                        // ← fix: attach worker so filtering works
+      name,
+      address: address || "",
+      type: followupType,
+      riskLevel: result.level,
+      followupDate,
+      status: "pending",
+      createdAt: new Date(),
     });
+
     if (result.level === "high") {
-      await db.collection("alerts")
-      .add({
+      await db.collection("alerts").add({
         beneficiaryId,
         screeningId: screeningRef.id,
         message: "High risk detected",
         status: "pending",
-        createdAt: new Date()
+        createdAt: new Date(),
       });
     }
-    
+
     res.status(200).json({
       success: true,
       message: "Screening saved successfully!",
       screeningId: screeningRef.id,
-      level: result.level
+      level: result.level,
     });
-  }catch(error){
+  } catch (error) {
     console.error(error);
     res.status(500).json({
       success: false,
-      message: "Screening failed!"
-    })
+      message: "Screening failed!",
+    });
   }
-};
+}
 
-
-async function pregWomenScreening(req,res){
-  try{
-    const {name, 
-      husbandName, 
-      age, 
-      trimester, 
-      weight, 
-      hemoglobin, 
-      systolicBP, 
-      diastolicBP, 
-      dizziness, 
-      fatigue, 
-      swelling, 
-      lowAppetite, 
+async function pregWomenScreening(req, res) {
+  try {
+    const {
+      name,
+      husbandName,
+      age,
+      trimester,
+      weight,
+      hemoglobin,
+      systolicBP,
+      diastolicBP,
+      dizziness,
+      fatigue,
+      swelling,
+      lowAppetite,
       pastAnemia,
       address,
-      notes
+      notes,
     } = req.body;
+
+    // ── Get workerId from token (set by authMiddleware) ─────
+    const workerId = req.user?.phone || null;
 
     const beneficiaryRef = db.collection("beneficiaries").doc();
     const beneficiaryId = beneficiaryRef.id;
 
     await beneficiaryRef.set({
       name,
-      address,
+      address: address || "",   // ← fix: fallback to ""
       type: "pregnant",
-      createdAt: new Date()
+      createdAt: new Date(),
     });
 
     const result = calculateWomenRisk({
@@ -160,16 +162,15 @@ async function pregWomenScreening(req,res){
       fatigue,
       swelling,
       lowAppetite,
-      pastAnemia
+      pastAnemia,
     });
-
 
     const screeningData = {
       type: "pregnantWomen",
-      beneficiaryId, 
-      name, 
-      husbandName, 
-      age, 
+      beneficiaryId,
+      name,
+      husbandName,
+      age,
       trimester,
       weight,
       hemoglobin,
@@ -180,32 +181,26 @@ async function pregWomenScreening(req,res){
       swelling,
       lowAppetite,
       pastAnemia,
-      address,
-      notes: notes || "", 
+      address: address || "",   // ← fix: fallback to ""
+      notes: notes || "",
       riskLevel: result.level,
-      createdAt: new Date()
-    }
+      createdAt: new Date(),
+    };
 
     const screeningRef = await db
-    .collection("beneficiaries")
-    .doc(beneficiaryId)
-    .collection("screenings")
-    .add(screeningData);
+      .collection("beneficiaries")
+      .doc(beneficiaryId)
+      .collection("screenings")
+      .add(screeningData);
 
-    let followupType = "normal";
+    let followupType = "routine";
     let followupDate = new Date();
 
     if (result.level === "high") {
       followupType = "urgent";
+      followupDate.setDate(followupDate.getDate() + 1);
     } else if (result.level === "medium") {
       followupType = "soon";
-    } else {
-      followupType = "routine";
-    }
-
-    if (result.level === "high") {
-      followupDate.setDate(followupDate.getDate() + 1); // next day
-    } else if (result.level === "medium") {
       followupDate.setDate(followupDate.getDate() + 3);
     } else {
       followupDate.setDate(followupDate.getDate() + 7);
@@ -213,14 +208,15 @@ async function pregWomenScreening(req,res){
 
     await db.collection("followups").add({
       beneficiaryId,
-      screeningId,
+      screeningId: screeningRef.id,   // ← fix: was undefined before
+      workerId,                        // ← fix: attach worker so filtering works
       name,
-      address,
+      address: address || "",
       type: followupType,
       riskLevel: result.level,
       followupDate,
       status: "pending",
-      createdAt: new Date()
+      createdAt: new Date(),
     });
 
     if (result.level === "high") {
@@ -229,7 +225,7 @@ async function pregWomenScreening(req,res){
         screeningId: screeningRef.id,
         message: "High risk detected",
         status: "pending",
-        createdAt: new Date()
+        createdAt: new Date(),
       });
     }
 
@@ -237,17 +233,15 @@ async function pregWomenScreening(req,res){
       success: true,
       message: "Saved Successfully",
       screeningId: screeningRef.id,
-      level: result.level
-    })
-
-  } catch(error){
+      level: result.level,
+    });
+  } catch (error) {
     console.error(error);
-
     res.status(500).json({
-      success: false, 
-      message: "Screening failed!"
-    })
+      success: false,
+      message: "Screening failed!",
+    });
   }
 }
 
-module.exports = { childScreening, pregWomenScreening }
+module.exports = { childScreening, pregWomenScreening };

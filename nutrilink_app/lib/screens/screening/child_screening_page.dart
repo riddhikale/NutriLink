@@ -478,38 +478,51 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
                         ),
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
-                            final result2 =
-                            await ApiService.submitChildScreening(
-                              beneficiaryId: nameController.text,
-                              name: nameController.text,
-                              ageMonths:
-                              int.tryParse(ageController.text) ?? 0,
-                              gender: gender ?? "Male",
-                              parentName: parentController.text,
-                              weight:
-                              double.tryParse(weightController.text) ?? 0,
-                              height:
-                              double.tryParse(heightController.text) ?? 0,
-                              muac: double.tryParse(muacController.text) ?? 0,
-                              weakness: weakness == "Yes",
-                              lowAppetite: lowAppetite == "Yes",
-                              frequentIllness: frequentIllness == "Yes",
-                              diarrhea: diarrhea == "Yes",
-                              notes: notesController.text,
-                            );
+                            try {
+                              final result2 = await ApiService.submitChildScreening(
+                                name: nameController.text,
+                                ageMonths: int.tryParse(ageController.text) ?? 0,
+                                gender: gender ?? "Male",
+                                parentName: parentController.text,
+                                weight: double.tryParse(weightController.text) ?? 0,
+                                height: double.tryParse(heightController.text) ?? 0,
+                                muac: double.tryParse(muacController.text) ?? 0,
+                                address: addressController.text,
+                                weakness: weakness == "Yes",
+                                lowAppetite: lowAppetite == "Yes",
+                                frequentIllness: frequentIllness == "Yes",
+                                diarrhea: diarrhea == "Yes",
+                                notes: notesController.text,
+                              );
 
-                            String risk =
-                            (result2['level'] ?? "low").toString();
+                              print("API RESULT: $result2"); // ← check console for exact keys
 
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => RiskResultPage(risk: risk),
-                              ),
-                            );
+                              // Try common key names your backend might use
+                              String risk = (result2['level']
+                                  ?? result2['riskLevel']
+                                  ?? result2['risk']
+                                  ?? "low").toString();
+
+                              if (!context.mounted) return;
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => RiskResultPage(risk: risk),
+                                ),
+                              );
+                            } catch (e) {
+                              print("ERROR: $e"); // ← see what's going wrong
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text("Submission failed: $e"),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
                           }
-                        },
-                        child: Row(
+                        },                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const Icon(Icons.check_circle_outline_rounded,

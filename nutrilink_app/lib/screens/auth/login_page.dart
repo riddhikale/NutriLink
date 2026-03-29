@@ -153,6 +153,7 @@ class _LoginPageState extends State<LoginPage> {
                         phone: phoneController.text,
                         pin: pinController.text,
                       );
+                      ApiService.authToken = result["token"];
 
                       print(result);
 

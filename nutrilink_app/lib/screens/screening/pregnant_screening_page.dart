@@ -483,13 +483,13 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                           if (_formKey.currentState!.validate()) {
                             final result =
                             await ApiService.submitPregnantScreening(
-                              beneficiaryId: nameController.text,
                               name: nameController.text,
                               husbandName: husbandController.text,
                               age: int.tryParse(ageController.text) ?? 0,
                               trimester: trimester ?? "1st Trimester",
                               weight:
                               double.tryParse(weightController.text) ?? 0,
+                              address: addressController.text,
                               hemoglobin:
                               double.tryParse(hbController.text) ?? 0,
                               systolicBP:
