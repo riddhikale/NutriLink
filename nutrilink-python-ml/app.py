@@ -1,4 +1,6 @@
 from intent_detection import detect_intent
+from language_detection import detect_language
+
 from fastapi import FastAPI, UploadFile, File
 import whisper
 import shutil
@@ -10,6 +12,7 @@ os.environ["PATH"] += os.pathsep + r"D:\ffmeg-ML\ffmpeg-8.0.1-essentials_build\b
 app = FastAPI()
 
 model = whisper.load_model("base")
+
 
 @app.post("/transcribe")
 async def transcribe_audio(file: UploadFile = File(...)):
@@ -30,15 +33,16 @@ async def transcribe_audio(file: UploadFile = File(...)):
     # transcription text
     transcription = result["text"].strip()
 
-    # detected language from whisper
-    language = result["language"]
-
     print("Transcription:", transcription)
-    print("Language:", language)
 
+    # detect intent
     intent = detect_intent(transcription)
 
+    # detect language 
+    language = detect_language(transcription)
+
     print("Intent:", intent)
+    print("Language:", language)
 
     os.remove(temp_audio)
 
