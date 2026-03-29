@@ -481,41 +481,51 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                         ),
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
-                            final result =
-                            await ApiService.submitPregnantScreening(
-                              name: nameController.text,
-                              husbandName: husbandController.text,
-                              age: int.tryParse(ageController.text) ?? 0,
-                              trimester: trimester ?? "1st Trimester",
-                              weight:
-                              double.tryParse(weightController.text) ?? 0,
-                              address: addressController.text,
-                              hemoglobin:
-                              double.tryParse(hbController.text) ?? 0,
-                              systolicBP:
-                              int.tryParse(systolicController.text) ?? 0,
-                              diastolicBP:
-                              int.tryParse(diastolicController.text) ?? 0,
-                              dizziness: dizziness == "Yes",
-                              fatigue: fatigue == "Yes",
-                              swelling: swelling == "Yes",
-                              lowAppetite: lowAppetite == "Yes",
-                              pastAnemia: pastAnemia == "Yes",
-                              notes: notesController.text,
-                            );
+                            try {
+                              await ApiService.submitPregnantScreening(
+                                name: nameController.text,
+                                husbandName: husbandController.text,
+                                age: int.tryParse(ageController.text) ?? 0,
+                                trimester: trimester ?? "1st Trimester",
+                                weight: double.tryParse(weightController.text) ?? 0,
+                                address: addressController.text,
+                                hemoglobin: double.tryParse(hbController.text) ?? 0,
+                                systolicBP: int.tryParse(systolicController.text) ?? 0,
+                                diastolicBP: int.tryParse(diastolicController.text) ?? 0,
+                                dizziness: dizziness == "Yes",
+                                fatigue: fatigue == "Yes",
+                                swelling: swelling == "Yes",
+                                lowAppetite: lowAppetite == "Yes",
+                                pastAnemia: pastAnemia == "Yes",
+                                notes: notesController.text,
+                              );
 
-                            String risk =
-                            (result['level'] ?? "low").toString();
+                              if (!context.mounted) return;
 
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => RiskResultPage(risk: risk),
-                              ),
-                            );
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => RiskResultPage(
+                                    womenData: {
+                                      'hemoglobin':  double.tryParse(hbController.text) ?? 0,
+                                      'systolicBP':  double.tryParse(systolicController.text) ?? 0,
+                                      'diastolicBP': double.tryParse(diastolicController.text) ?? 0,
+                                      'weight':      double.tryParse(weightController.text) ?? 0,
+                                    },
+                                  ),
+                                ),
+                              );
+                            } catch (e) {
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text("Submission failed: $e"),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
                           }
-                        },
-                        child: Row(
+                        },                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const Icon(Icons.check_circle_outline_rounded,
