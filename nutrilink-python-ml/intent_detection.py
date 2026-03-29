@@ -1,13 +1,57 @@
 from sentence_transformers import SentenceTransformer, util
 
 # Load multilingual model
-model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
+model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
+
+
+# ================= TEXT NORMALIZATION ================= #
+
+def normalize_text(text):
+
+    text = text.lower()
+
+    replacements = {
+
+        # Marathi romanization fixes
+        "mulache": "mul",
+        "mulachi": "mul",
+        "mulacha": "mul",
+        "bala": "bal",
+        "bal": "child",
+        "mul": "child",
+
+        # Hindi romanization
+        "bachcha": "child",
+        "baccha": "child",
+        "bachche": "child",
+
+        # Marathi STT variations
+        "navin": "new",
+        "noond": "register",
+        "noondah": "register",
+        "nond": "register",
+
+        # Screening variants
+        "screening kara": "screening",
+        "screening karah": "screening",
+        "screen kara": "screening",
+
+        # Pregnant variants
+        "garbhavati": "pregnant",
+        "garbhava": "pregnant",
+        "garbohoti": "pregnant"
+    }
+
+    for k, v in replacements.items():
+        text = text.replace(k, v)
+
+    return text
+
 
 # ================= INTENTS ================= #
 
 intents = {
 
-    # 🔥 SPECIFIC (HIGH PRIORITY FIRST)
     "add_child_screening": [
         "child screening",
         "add child",
@@ -28,7 +72,6 @@ intents = {
         "गर्भवती महिलांचे स्क्रीनिंग करा"
     ],
 
-    # 🔥 GENERAL (LOWER PRIORITY)
     "add_beneficiary": [
         "create beneficiary",
         "add beneficiary",
@@ -77,56 +120,44 @@ intents = {
     "navigation_home": [
         "open home",
         "go to home",
-        "होम पेज खोलो",
-        "होम पेज उघडा"
-    ],
-
-    "navigation_followups": [
-        "open followups",
-        "go to followups",
-        "followups page",
-        "followups पेज खोलो",
-        "followups पेज उघडा"
+        "home screen",
+        "होम उघडा"
     ],
 
     "navigation_profile": [
         "open profile",
         "go to profile",
-        "profile page",
-        "प्रोफाइल खोलो",
+        "profile screen",
         "प्रोफाइल उघडा"
     ],
 
     "navigation_settings": [
         "open settings",
         "go to settings",
-        "settings page",
-        "सेटिंग्स खोलो",
-        "सेटिंग्स उघडा"
+        "settings screen",
+        "सेटिंग उघडा"
     ],
 
     "navigation_work_history": [
         "open work history",
         "show work history",
-        "work history page",
-        "वर्क हिस्ट्री दिखाओ",
+        "history screen",
         "वर्क हिस्ट्री दाखवा"
     ],
 }
+
 
 # ================= KEYWORD RULES ================= #
 
 keyword_rules = {
 
-    # 🔥 SPECIFIC FIRST (IMPORTANT)
-    "add_child_screening": ["child", "बच्चा", "बाळ"],
+    "add_child_screening": ["child", "mul", "bal", "बच्चा", "बाळ"],
 
     "add_pregnant_screening": ["pregnant", "गर्भवती"],
 
-    # GENERAL
     "add_beneficiary": ["beneficiary", "लाभार्थी"],
 
-    "add_screening": ["screening", "स्क्रीनिंग"],
+    "add_screening": ["screening", "screen", "स्क्रीनिंग"],
 
     "view_followups": ["followup", "followups"],
 
@@ -140,35 +171,49 @@ keyword_rules = {
 
     "navigation_settings": ["settings", "सेटिंग"],
 
-    "navigation_work_history": ["history", "हिस्ट्री"],
+    "navigation_work_history": ["history", "हिस्ट्री"]
 }
+
 
 # ================= EMBEDDINGS ================= #
 
 intent_embeddings = {}
+
 for intent, phrases in intents.items():
-    intent_embeddings[intent] = model.encode(phrases)
+    intent_embeddings[intent] = model.encode(
+        phrases,
+        convert_to_tensor=True
+    )
 
 
 # ================= DETECTION FUNCTION ================= #
 
 def detect_intent(text):
 
-    text = text.lower()
+    text = normalize_text(text)
 
-    # ✅ STEP 1: KEYWORD MATCH (FAST)
-    for intent, keywords in keyword_rules.items():
-        for word in keywords:
-            if word in text:
-                return intent
+    # -------- PRIORITY RULES -------- #
 
-    # ✅ STEP 2: ML MATCH (SMART FALLBACK)
-    text_embedding = model.encode(text)
+    if any(word in text for word in keyword_rules["add_child_screening"]):
+        if "screen" in text or "screening" in text:
+            return "add_child_screening"
+
+    if any(word in text for word in keyword_rules["add_pregnant_screening"]):
+        return "add_pregnant_screening"
+
+
+    # -------- SEMANTIC MATCH -------- #
+
+    text_embedding = model.encode(
+        text,
+        convert_to_tensor=True
+    )
 
     best_intent = "unknown"
     best_score = 0
 
     for intent, embeddings in intent_embeddings.items():
+
         similarity = util.cos_sim(text_embedding, embeddings)
         score = similarity.max().item()
 
@@ -176,7 +221,16 @@ def detect_intent(text):
             best_score = score
             best_intent = intent
 
-    if best_score < 0.35:
-        return "unknown"
 
-    return best_intent
+    if best_score >= 0.45:
+        return best_intent
+
+
+    # -------- KEYWORD FALLBACK -------- #
+
+    for intent, keywords in keyword_rules.items():
+        for word in keywords:
+            if word in text:
+                return intent
+
+    return "unknown"

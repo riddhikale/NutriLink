@@ -13,7 +13,9 @@ class AudioService {
 
         await _recorder.start(
           const RecordConfig(
-            encoder: AudioEncoder.wav, // ✅ Important for Whisper
+            encoder: AudioEncoder.wav,
+            sampleRate: 16000,
+            bitRate: 128000,
           ),
           path: path,
         );
@@ -23,6 +25,12 @@ class AudioService {
         await Future.delayed(const Duration(seconds: 5));
 
         final recordedPath = await _recorder.stop();
+
+
+
+
+
+
 
         print("Recording saved at: $recordedPath");
 

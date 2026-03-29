@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+
 import '../../../services/audio_service.dart';
 import '../../../services/voice_service.dart';
 import '../../../services/tts_service.dart';
@@ -23,22 +24,64 @@ class HomeDashboard extends StatefulWidget {
 
 class _HomeDashboardState extends State<HomeDashboard> {
   int _selectedIndex = 0;
+
   final AudioService _audioService = AudioService();
   final TTSService _tts = TTSService();
 
-  // ================= 🎯 INTENT HANDLER ================= //
+  // ================= INTENT HANDLER ================= //
 
-  void handleIntent(String intent) {
-    print("🧠 Detected Intent: $intent");
-    final Map<String, String> intentSpeech = {
-      "add_child_screening": "Opening child screening",
-      "add_pregnant_screening": "Opening pregnant women screening",
-      "add_beneficiary": "Opening beneficiary registration",
-      "add_screening": "Opening screening page",
-      "navigation_settings": "Opening settings",
-      "navigation_work_history": "Opening work history",
-      "navigation_home": "Opening home",
-      "navigation_profile": "Opening profile",
+  void handleIntent(String intent, String language) {
+    print("Intent: $intent | Language: $language");
+
+    // Multilingual responses
+    final Map<String, Map<String, String>> intentSpeech = {
+      "add_child_screening": {
+        "en": "Opening child screening",
+        "hi": "बच्चे की स्क्रीनिंग खोल रहा हूँ",
+        "mr": "बाल स्क्रीनिंग उघडत आहे"
+      },
+
+      "add_pregnant_screening": {
+        "en": "Opening pregnant women screening",
+        "hi": "गर्भवती महिला स्क्रीनिंग खोल रहा हूँ",
+        "mr": "गर्भवती महिला स्क्रीनिंग उघडत आहे"
+      },
+
+      "add_beneficiary": {
+        "en": "Opening beneficiary registration",
+        "hi": "लाभार्थी पंजीकरण खोल रहा हूँ",
+        "mr": "लाभार्थी नोंदणी उघडत आहे"
+      },
+
+      "add_screening": {
+        "en": "Opening screening page",
+        "hi": "स्क्रीनिंग पेज खोल रहा हूँ",
+        "mr": "स्क्रीनिंग पेज उघडत आहे"
+      },
+
+      "navigation_settings": {
+        "en": "Opening settings",
+        "hi": "सेटिंग्स खोल रहा हूँ",
+        "mr": "सेटिंग्स उघडत आहे"
+      },
+
+      "navigation_work_history": {
+        "en": "Opening work history",
+        "hi": "वर्क हिस्ट्री खोल रहा हूँ",
+        "mr": "वर्क हिस्ट्री उघडत आहे"
+      },
+
+      "navigation_home": {
+        "en": "Opening home",
+        "hi": "होम पेज खोल रहा हूँ",
+        "mr": "होम पेज उघडत आहे"
+      },
+
+      "navigation_profile": {
+        "en": "Opening profile",
+        "hi": "प्रोफाइल खोल रहा हूँ",
+        "mr": "प्रोफाइल उघडत आहे"
+      },
     };
 
     final Map<String, Widget Function()> intentRoutes = {
@@ -49,11 +92,16 @@ class _HomeDashboardState extends State<HomeDashboard> {
       "navigation_settings": () => const SettingsPage(),
       "navigation_work_history": () => const WorkHistoryPage(),
     };
-    // Speak response
+
+    // Speak response in correct language
     if (intentSpeech.containsKey(intent)) {
-      _tts.speak(intentSpeech[intent]!);
+      String response =
+          intentSpeech[intent]![language] ?? intentSpeech[intent]!["en"]!;
+
+      _tts.speak(response, language);
     }
-    // Navigate
+
+    // Navigation
     if (intentRoutes.containsKey(intent)) {
       Navigator.push(
         context,
@@ -61,33 +109,38 @@ class _HomeDashboardState extends State<HomeDashboard> {
           builder: (_) => intentRoutes[intent]!(),
         ),
       );
-    }
-    else if (intent == "navigation_home") {
+    } else if (intent == "navigation_home") {
       setState(() => _selectedIndex = 0);
-    }
-    else if (intent == "navigation_profile") {
+    } else if (intent == "navigation_profile") {
       setState(() => _selectedIndex = 1);
-    }
-    else {
-      _tts.speak("Sorry, I did not understand the command");
+    } else {
+      _tts.speak("Sorry I did not understand", language);
     }
   }
 
+  // ================= MIC HANDLER ================= //
+
   Future<void> handleMic() async {
     final path = await _audioService.recordAudio();
+
     if (path != null) {
       try {
         var result = await VoiceService.sendAudio(File(path));
+
         print("📡 Backend Response: $result");
+
         if (result.containsKey("intent")) {
-          handleIntent(result["intent"]);
+          handleIntent(
+            result["intent"].toString(),
+            result["language"]?.toString() ?? "en",
+          );
         } else {
           print("❌ Backend returned error");
-          _tts.speak("Sorry, voice processing failed");
+          _tts.speak("Voice processing failed", "en");
         }
       } catch (e) {
         print("❌ Voice error: $e");
-        _tts.speak("Something went wrong");
+        _tts.speak("Something went wrong", "en");
       }
     }
   }
@@ -122,15 +175,6 @@ class _HomeDashboardState extends State<HomeDashboard> {
         onPressed: handleMic,
         child: const Icon(Icons.mic),
       ),
-
-      //TTS TESTING
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: () {
-      //     _tts.speak("Hello, NutriLink voice assistant is working");
-      //   },
-      //   child: const Icon(Icons.mic),
-      // ),
-
 
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
