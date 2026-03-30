@@ -38,13 +38,8 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
   InputDecoration fieldDecoration(String label, {IconData? icon}) {
     return InputDecoration(
       labelText: label,
-      labelStyle: GoogleFonts.nunito(
-        color: textMuted,
-        fontSize: 14,
-      ),
-      prefixIcon: icon != null
-          ? Icon(icon, color: lightGreen, size: 20)
-          : null,
+      labelStyle: GoogleFonts.nunito(color: textMuted, fontSize: 14),
+      prefixIcon: icon != null ? Icon(icon, color: lightGreen, size: 20) : null,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Color(0xFFCFE0CF), width: 1.5),
@@ -68,17 +63,17 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
   }
 
   Widget yesNoDropdown(
-      String title, String value, Function(String?) onChanged,
-      {IconData? icon}) {
+    String title,
+    String value,
+    Function(String?) onChanged, {
+    IconData? icon,
+  }) {
     return DropdownButtonFormField<String>(
       value: value,
       decoration: fieldDecoration(title, icon: icon),
       dropdownColor: Colors.white,
       icon: const Icon(Icons.keyboard_arrow_down_rounded, color: lightGreen),
-      style: GoogleFonts.nunito(
-        color: textDark,
-        fontSize: 15,
-      ),
+      style: GoogleFonts.nunito(color: textDark, fontSize: 15),
       items: ["Yes", "No"].map((e) {
         return DropdownMenuItem(
           value: e,
@@ -126,10 +121,9 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
             child: Container(
               height: 1,
               decoration: const BoxDecoration(
-                gradient: LinearGradient(colors: [
-                  Color(0xFFA5D6A7),
-                  Colors.transparent,
-                ]),
+                gradient: LinearGradient(
+                  colors: [Color(0xFFA5D6A7), Colors.transparent],
+                ),
               ),
             ),
           ),
@@ -238,8 +232,11 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
               ),
             ),
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white, size: 20),
+              icon: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
               onPressed: () => Navigator.of(context).pop(),
             ),
           ),
@@ -254,14 +251,22 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
                   children: [
                     // ── Basic Info ──────────────────────────────────────
                     _formCard([
-                      _sectionHeader("Basic Information", Icons.person_outline_rounded),
+                      _sectionHeader(
+                        "Basic Information",
+                        Icons.person_outline_rounded,
+                      ),
                       TextFormField(
                         controller: nameController,
-                        style: GoogleFonts.nunito(fontSize: 15, color: textDark),
-                        decoration: fieldDecoration("Child Name",
-                            icon: Icons.child_care_rounded),
+                        style: GoogleFonts.nunito(
+                          fontSize: 15,
+                          color: textDark,
+                        ),
+                        decoration: fieldDecoration(
+                          "Child Name",
+                          icon: Icons.child_care_rounded,
+                        ),
                         validator: (v) =>
-                        v!.isEmpty ? "Please enter child name" : null,
+                            v!.isEmpty ? "Please enter child name" : null,
                       ),
                       const SizedBox(height: 14),
                       Row(
@@ -270,30 +275,42 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
                             child: TextFormField(
                               controller: ageController,
                               keyboardType: TextInputType.number,
-                              style:
-                              GoogleFonts.nunito(fontSize: 15, color: textDark),
-                              decoration: fieldDecoration("Age (months)",
-                                  icon: Icons.cake_outlined),
+                              style: GoogleFonts.nunito(
+                                fontSize: 15,
+                                color: textDark,
+                              ),
+                              decoration: fieldDecoration(
+                                "Age (months)",
+                                icon: Icons.cake_outlined,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: DropdownButtonFormField<String>(
                               value: gender,
-                              decoration: fieldDecoration("Gender",
-                                  icon: Icons.wc_rounded),
+                              decoration: fieldDecoration(
+                                "Gender",
+                                icon: Icons.wc_rounded,
+                              ),
                               dropdownColor: Colors.white,
                               icon: const Icon(
-                                  Icons.keyboard_arrow_down_rounded,
-                                  color: lightGreen),
+                                Icons.keyboard_arrow_down_rounded,
+                                color: lightGreen,
+                              ),
                               style: GoogleFonts.nunito(
-                                  color: textDark, fontSize: 15),
+                                color: textDark,
+                                fontSize: 15,
+                              ),
                               items: ["Male", "Female"]
-                                  .map((e) => DropdownMenuItem(
-                                  value: e, child: Text(e)))
+                                  .map(
+                                    (e) => DropdownMenuItem(
+                                      value: e,
+                                      child: Text(e),
+                                    ),
+                                  )
                                   .toList(),
-                              onChanged: (val) =>
-                                  setState(() => gender = val),
+                              onChanged: (val) => setState(() => gender = val),
                             ),
                           ),
                         ],
@@ -301,9 +318,14 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
                       const SizedBox(height: 14),
                       TextFormField(
                         controller: parentController,
-                        style: GoogleFonts.nunito(fontSize: 15, color: textDark),
-                        decoration: fieldDecoration("Mother / Father Name",
-                            icon: Icons.people_outline_rounded),
+                        style: GoogleFonts.nunito(
+                          fontSize: 15,
+                          color: textDark,
+                        ),
+                        decoration: fieldDecoration(
+                          "Mother / Father Name",
+                          icon: Icons.people_outline_rounded,
+                        ),
                       ),
                     ]),
 
@@ -313,46 +335,64 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
                       TextFormField(
                         controller: addressController,
                         maxLines: 3,
-                        style: GoogleFonts.nunito(fontSize: 15, color: textDark),
+                        style: GoogleFonts.nunito(
+                          fontSize: 15,
+                          color: textDark,
+                        ),
                         decoration: InputDecoration(
                           labelText: "Full Address",
                           alignLabelWithHint: true,
-                          labelStyle:
-                          GoogleFonts.nunito(color: textMuted, fontSize: 14),
+                          labelStyle: GoogleFonts.nunito(
+                            color: textMuted,
+                            fontSize: 14,
+                          ),
                           prefixIcon: const Padding(
                             padding: EdgeInsets.only(bottom: 44),
-                            child: Icon(Icons.home_outlined,
-                                color: lightGreen, size: 20),
+                            child: Icon(
+                              Icons.home_outlined,
+                              color: lightGreen,
+                              size: 20,
+                            ),
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                                color: Color(0xFFCFE0CF), width: 1.5),
+                              color: Color(0xFFCFE0CF),
+                              width: 1.5,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                                color: Color(0xFFCFE0CF), width: 1.5),
+                              color: Color(0xFFCFE0CF),
+                              width: 1.5,
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide:
-                            const BorderSide(color: lightGreen, width: 2),
+                            borderSide: const BorderSide(
+                              color: lightGreen,
+                              width: 2,
+                            ),
                           ),
                           filled: true,
                           fillColor: Colors.white,
                           contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 14),
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                         ),
                         validator: (v) =>
-                        v!.isEmpty ? "Please enter address" : null,
+                            v!.isEmpty ? "Please enter address" : null,
                       ),
                     ]),
 
                     // ── Measurements ────────────────────────────────────
                     _formCard([
                       _sectionHeader(
-                          "Measurements", Icons.monitor_weight_outlined),
+                        "Measurements",
+                        Icons.monitor_weight_outlined,
+                      ),
                       Row(
                         children: [
                           Expanded(
@@ -360,9 +400,13 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
                               controller: weightController,
                               keyboardType: TextInputType.number,
                               style: GoogleFonts.nunito(
-                                  fontSize: 15, color: textDark),
-                              decoration: fieldDecoration("Weight (kg)",
-                                  icon: Icons.fitness_center_rounded),
+                                fontSize: 15,
+                                color: textDark,
+                              ),
+                              decoration: fieldDecoration(
+                                "Weight (kg)",
+                                icon: Icons.fitness_center_rounded,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -371,9 +415,13 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
                               controller: heightController,
                               keyboardType: TextInputType.number,
                               style: GoogleFonts.nunito(
-                                  fontSize: 15, color: textDark),
-                              decoration: fieldDecoration("Height (cm)",
-                                  icon: Icons.height_rounded),
+                                fontSize: 15,
+                                color: textDark,
+                              ),
+                              decoration: fieldDecoration(
+                                "Height (cm)",
+                                icon: Icons.height_rounded,
+                              ),
                             ),
                           ),
                         ],
@@ -382,42 +430,48 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
                       TextFormField(
                         controller: muacController,
                         keyboardType: TextInputType.number,
-                        style:
-                        GoogleFonts.nunito(fontSize: 15, color: textDark),
-                        decoration: fieldDecoration("MUAC (cm)",
-                            icon: Icons.straighten_rounded),
+                        style: GoogleFonts.nunito(
+                          fontSize: 15,
+                          color: textDark,
+                        ),
+                        decoration: fieldDecoration(
+                          "MUAC (cm)",
+                          icon: Icons.straighten_rounded,
+                        ),
                       ),
                     ]),
 
                     // ── Symptoms ────────────────────────────────────────
                     _formCard([
                       _sectionHeader(
-                          "Symptoms", Icons.medical_services_outlined),
+                        "Symptoms",
+                        Icons.medical_services_outlined,
+                      ),
                       yesNoDropdown(
                         "Weakness",
                         weakness,
-                            (val) => setState(() => weakness = val!),
+                        (val) => setState(() => weakness = val!),
                         icon: Icons.battery_alert_outlined,
                       ),
                       const SizedBox(height: 12),
                       yesNoDropdown(
                         "Low Appetite",
                         lowAppetite,
-                            (val) => setState(() => lowAppetite = val!),
+                        (val) => setState(() => lowAppetite = val!),
                         icon: Icons.no_food_outlined,
                       ),
                       const SizedBox(height: 12),
                       yesNoDropdown(
                         "Frequent Illness",
                         frequentIllness,
-                            (val) => setState(() => frequentIllness = val!),
+                        (val) => setState(() => frequentIllness = val!),
                         icon: Icons.sick_outlined,
                       ),
                       const SizedBox(height: 12),
                       yesNoDropdown(
                         "Diarrhea",
                         diarrhea,
-                            (val) => setState(() => diarrhea = val!),
+                        (val) => setState(() => diarrhea = val!),
                         icon: Icons.water_drop_outlined,
                       ),
                     ]),
@@ -428,35 +482,49 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
                       TextFormField(
                         controller: notesController,
                         maxLines: 4,
-                        style:
-                        GoogleFonts.nunito(fontSize: 15, color: textDark),
+                        style: GoogleFonts.nunito(
+                          fontSize: 15,
+                          color: textDark,
+                        ),
                         decoration: InputDecoration(
                           labelText: "Notes (optional)",
                           alignLabelWithHint: true,
                           hintText: "Any additional observations...",
                           hintStyle: GoogleFonts.nunito(
-                              color: textMuted.withOpacity(0.6), fontSize: 13),
-                          labelStyle:
-                          GoogleFonts.nunito(color: textMuted, fontSize: 14),
+                            color: textMuted.withOpacity(0.6),
+                            fontSize: 13,
+                          ),
+                          labelStyle: GoogleFonts.nunito(
+                            color: textMuted,
+                            fontSize: 14,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                                color: Color(0xFFCFE0CF), width: 1.5),
+                              color: Color(0xFFCFE0CF),
+                              width: 1.5,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                                color: Color(0xFFCFE0CF), width: 1.5),
+                              color: Color(0xFFCFE0CF),
+                              width: 1.5,
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide:
-                            const BorderSide(color: lightGreen, width: 2),
+                            borderSide: const BorderSide(
+                              color: lightGreen,
+                              width: 2,
+                            ),
                           ),
                           filled: true,
                           fillColor: Colors.white,
                           contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 14),
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                         ),
                       ),
                     ]),
@@ -479,7 +547,7 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
                             try {
-                              final result2 = await ApiService.submitChildScreening(
+                              await ApiService.submitChildScreening(
                                 name: nameController.text,
                                 ageMonths: int.tryParse(ageController.text) ?? 0,
                                 gender: gender ?? "Male",
@@ -495,24 +563,22 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
                                 notes: notesController.text,
                               );
 
-                              print("API RESULT: $result2"); // ← check console for exact keys
-
-                              // Try common key names your backend might use
-                              String risk = (result2['level']
-                                  ?? result2['riskLevel']
-                                  ?? result2['risk']
-                                  ?? "low").toString();
-
                               if (!context.mounted) return;
 
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => RiskResultPage(risk: risk),
+                                  builder: (_) => RiskResultPage(
+                                    childData: {
+                                      'ageMonths': double.tryParse(ageController.text) ?? 0,
+                                      'muac':      double.tryParse(muacController.text) ?? 0,
+                                      'weight':    double.tryParse(weightController.text) ?? 0,
+                                      'height':    double.tryParse(heightController.text) ?? 0,
+                                    },
+                                  ),
                                 ),
                               );
                             } catch (e) {
-                              print("ERROR: $e"); // ← see what's going wrong
                               if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
@@ -525,8 +591,10 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
                         },                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.check_circle_outline_rounded,
-                                size: 20),
+                            const Icon(
+                              Icons.check_circle_outline_rounded,
+                              size: 20,
+                            ),
                             const SizedBox(width: 10),
                             Text(
                               "Submit Screening",
