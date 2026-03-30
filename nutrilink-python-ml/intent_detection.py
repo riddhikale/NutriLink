@@ -1,6 +1,6 @@
 from sentence_transformers import SentenceTransformer, util
+import re
 
-# Load multilingual model
 model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
 
 
@@ -8,42 +8,86 @@ model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
 
 def normalize_text(text):
 
-    text = text.lower()
+    text = text.lower().strip()
+    # Remove extra spaces (fixes "स्क्रीनिंकरा" type issues after transcription)
+    text = re.sub(r'\s+', ' ', text)
 
     replacements = {
 
-        # Marathi romanization fixes
-        "mulache": "mul",
-        "mulachi": "mul",
-        "mulacha": "mul",
-        "bala": "bal",
-        "bal": "child",
-        "mul": "child",
+        # ---- Whisper garbled Devanagari → English (from your logs) ----
+        "रजिस्टर": "register",
+        "रजीस्टर": "register",
+        "निव": "new",
+        "निएव": "new",
+        "चाल": "child",
+        "चालिल्द": "child",
+        "चाएलद": "child",
+        "फो लोबस": "followups",
+        "फोलोबस": "followups",
+        "फॉलोअप्स": "followups",
+        "सेट्टिंग": "settings",
+        "सेटिंग": "settings",
+        "स्खोलो": "open",
+        "खोलो": "open",
+        "होम": "home",
+        "प्रोफाइल": "profile",
+        "हिस्ट्री": "history",
+        "स्क्रीनिंकरा": "screening",
+        "स्क्रीनिं": "screening",
+        "स्क्रीनिंग": "screening",
+        "गर्बवती": "pregnant",
+        "गर्भवती": "pregnant",
+        "गर्भ्वती": "pregnant",
+        "महीराज्क्": "woman",
+        "महिला": "woman",
+        "मुलाचे": "child",
+        "मुलाची": "child",
+        "नवीन": "new",
+        "बाळ": "child",
+        "लाभार्थी": "beneficiary",
+        "आहार": "meal",
+        "योजना": "plan",
+        "जोखमीची": "high risk",
+        "जोखिम": "high risk",
+        "दाखवा": "show",
+        "दिखाओ": "show",
+        "उघडा": "open",
+        "करा": "",
+        "जोड़ो": "add",
+        "जोडा": "add",
 
-        # Hindi romanization
+        # ---- Marathi romanization ----
+        "mulache": "child",
+        "mulachi": "child",
+        "mulacha": "child",
+        "bal": "child",
+        "bala": "child",
+        "mul": "child",
+        "navin": "new",
+        "nond": "register",
+        "noond": "register",
+        "noondah": "register",
+        "screen kara": "screening",
+        "screening kara": "screening",
+        "screening karah": "screening",
+        "garbhavati": "pregnant",
+        "garbhava": "pregnant",
+        "garbohoti": "pregnant",
+        "ughada": "open",
+        "dakhva": "show",
+        "dakhawa": "show",
+
+        # ---- Hindi romanization ----
         "bachcha": "child",
         "baccha": "child",
         "bachche": "child",
-
-        # Marathi STT variations
-        "navin": "new",
-        "noond": "register",
-        "noondah": "register",
-        "nond": "register",
-
-        # Screening variants
-        "screening kara": "screening",
-        "screening karah": "screening",
-        "screen kara": "screening",
-
-        # Pregnant variants
-        "garbhavati": "pregnant",
-        "garbhava": "pregnant",
-        "garbohoti": "pregnant"
     }
 
     for k, v in replacements.items():
         text = text.replace(k, v)
+
+    # Clean up any double spaces left after replacements
+    text = re.sub(r'\s+', ' ').strip() if '  ' in text else text.strip()
 
     return text
 
@@ -57,6 +101,7 @@ intents = {
         "add child",
         "register child",
         "new child",
+        "register new child",
         "बच्चा जोड़ो",
         "मुलाचे स्क्रीनिंग करा",
         "नवीन बाळ नोंदवा"
@@ -96,6 +141,7 @@ intents = {
         "check followups",
         "view followups",
         "today followups",
+        "followups show",
         "followups दिखाओ",
         "followups दाखवा"
     ],
@@ -105,14 +151,16 @@ intents = {
         "create diet plan",
         "nutrition plan",
         "diet plan",
+        "meal plan",
         "डाइट प्लान बनाओ",
         "आहार योजना तयार करा"
     ],
 
     "view_high_risk": [
         "show high risk children",
-        "risk cases",
+        "high risk cases",
         "high risk children",
+        "risk children",
         "जोखिम वाले बच्चे दिखाओ",
         "जोखमीची मुले दाखवा"
     ],
@@ -121,6 +169,7 @@ intents = {
         "open home",
         "go to home",
         "home screen",
+        "home open",
         "होम उघडा"
     ],
 
@@ -128,6 +177,7 @@ intents = {
         "open profile",
         "go to profile",
         "profile screen",
+        "profile open",
         "प्रोफाइल उघडा"
     ],
 
@@ -135,12 +185,14 @@ intents = {
         "open settings",
         "go to settings",
         "settings screen",
+        "settings open",
         "सेटिंग उघडा"
     ],
 
     "navigation_work_history": [
         "open work history",
         "show work history",
+        "work history",
         "history screen",
         "वर्क हिस्ट्री दाखवा"
     ],
@@ -149,30 +201,20 @@ intents = {
 
 # ================= KEYWORD RULES ================= #
 
-keyword_rules = {
-
-    "add_child_screening": ["child", "mul", "bal", "बच्चा", "बाळ"],
-
-    "add_pregnant_screening": ["pregnant", "गर्भवती"],
-
-    "add_beneficiary": ["beneficiary", "लाभार्थी"],
-
-    "add_screening": ["screening", "screen", "स्क्रीनिंग"],
-
-    "view_followups": ["followup", "followups"],
-
-    "generate_meal_plan": ["meal", "diet", "nutrition", "आहार", "डाइट"],
-
-    "view_high_risk": ["risk", "जोखिम", "जोखमी"],
-
-    "navigation_home": ["home", "होम"],
-
-    "navigation_profile": ["profile", "प्रोफाइल"],
-
-    "navigation_settings": ["settings", "सेटिंग"],
-
-    "navigation_work_history": ["history", "हिस्ट्री"]
-}
+# Priority order matters — more specific first
+keyword_rules = [
+    ("add_child_screening",     ["child"]),
+    ("add_pregnant_screening",  ["pregnant"]),
+    ("add_beneficiary",         ["beneficiary"]),
+    ("view_followups",          ["followup"]),
+    ("generate_meal_plan",      ["meal", "diet", "nutrition"]),
+    ("view_high_risk",          ["risk"]),
+    ("navigation_home",         ["home"]),
+    ("navigation_profile",      ["profile"]),
+    ("navigation_settings",     ["settings", "setting"]),
+    ("navigation_work_history", ["history"]),
+    ("add_screening",           ["screening"]),   # screening last — it's generic
+]
 
 
 # ================= EMBEDDINGS ================= #
@@ -186,34 +228,45 @@ for intent, phrases in intents.items():
     )
 
 
-# ================= DETECTION FUNCTION ================= #
+# ================= DETECT INTENT ================= #
 
 def detect_intent(text):
 
-    text = normalize_text(text)
+    normalized = normalize_text(text)
+    print(f"Normalized text: '{normalized}'")
 
-    # -------- PRIORITY RULES -------- #
+    # PRIORITY RULES — keyword combos first
+    if "child" in normalized and ("screening" in normalized or "register" in normalized or "new" in normalized):
+        return "add_child_screening"
 
-    if any(word in text for word in keyword_rules["add_child_screening"]):
-        if "screen" in text or "screening" in text:
-            return "add_child_screening"
-
-    if any(word in text for word in keyword_rules["add_pregnant_screening"]):
+    if "pregnant" in normalized:
         return "add_pregnant_screening"
 
+    if "beneficiary" in normalized:
+        return "add_beneficiary"
 
-    # -------- SEMANTIC MATCH -------- #
+    if "followup" in normalized or "follow up" in normalized:
+        return "view_followups"
 
-    text_embedding = model.encode(
-        text,
-        convert_to_tensor=True
-    )
+    if "settings" in normalized or "setting" in normalized:
+        return "navigation_settings"
+
+    if "history" in normalized:
+        return "navigation_work_history"
+
+    if "home" in normalized:
+        return "navigation_home"
+
+    if "profile" in normalized:
+        return "navigation_profile"
+
+    # SEMANTIC MATCH
+    text_embedding = model.encode(normalized, convert_to_tensor=True)
 
     best_intent = "unknown"
     best_score = 0
 
     for intent, embeddings in intent_embeddings.items():
-
         similarity = util.cos_sim(text_embedding, embeddings)
         score = similarity.max().item()
 
@@ -221,16 +274,15 @@ def detect_intent(text):
             best_score = score
             best_intent = intent
 
+    print(f"Best semantic match: {best_intent} (score: {best_score:.2f})")
 
-    if best_score >= 0.45:
+    if best_score >= 0.55:   # slightly lower threshold since text is normalized
         return best_intent
 
-
-    # -------- KEYWORD FALLBACK -------- #
-
-    for intent, keywords in keyword_rules.items():
+    # KEYWORD FALLBACK
+    for intent, keywords in keyword_rules:
         for word in keywords:
-            if word in text:
+            if word in normalized:
                 return intent
 
     return "unknown"
