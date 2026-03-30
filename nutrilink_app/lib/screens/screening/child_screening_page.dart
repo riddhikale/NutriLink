@@ -547,7 +547,7 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
                             try {
-                              await ApiService.submitChildScreening(
+                              final result = await ApiService.submitChildScreening(
                                 name: nameController.text,
                                 ageMonths: int.tryParse(ageController.text) ?? 0,
                                 gender: gender ?? "Male",
@@ -570,10 +570,16 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
                                 MaterialPageRoute(
                                   builder: (_) => RiskResultPage(
                                     childData: {
-                                      'ageMonths': double.tryParse(ageController.text) ?? 0,
-                                      'muac':      double.tryParse(muacController.text) ?? 0,
-                                      'weight':    double.tryParse(weightController.text) ?? 0,
-                                      'height':    double.tryParse(heightController.text) ?? 0,
+                                      'ageMonths':       double.tryParse(ageController.text) ?? 0,
+                                      'muac':            double.tryParse(muacController.text) ?? 0,
+                                      'weight':          double.tryParse(weightController.text) ?? 0,
+                                      'height':          double.tryParse(heightController.text) ?? 0,
+                                      'weakness':        weakness == "Yes",
+                                      'lowAppetite':     lowAppetite == "Yes",
+                                      'frequentIllness': frequentIllness == "Yes",
+                                      'diarrhea':        diarrhea == "Yes",
+                                      'mealPlan':        result['mealPlan'],
+                                      'nutritionNeed':   result['nutritionNeed'],
                                     },
                                   ),
                                 ),
@@ -588,7 +594,8 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
                               );
                             }
                           }
-                        },                        child: Row(
+                        },
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const Icon(

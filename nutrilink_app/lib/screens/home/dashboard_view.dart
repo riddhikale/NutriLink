@@ -5,23 +5,16 @@ import 'followup_page.dart';
 
 String formatDate(dynamic value) {
   if (value == null) return "No Date";
-
   try {
     if (value is Map && value.containsKey('_seconds')) {
-      final seconds = value['_seconds'];
-      final date =
-      DateTime.fromMillisecondsSinceEpoch(seconds * 1000);
-
+      final date = DateTime.fromMillisecondsSinceEpoch(
+          value['_seconds'] * 1000);
       return "${date.day}/${date.month}/${date.year}";
     }
-
     if (value is String) {
       final date = DateTime.tryParse(value);
-      if (date != null) {
-        return "${date.day}/${date.month}/${date.year}";
-      }
+      if (date != null) return "${date.day}/${date.month}/${date.year}";
     }
-
     return "Invalid Date";
   } catch (e) {
     return "Invalid Date";
@@ -30,7 +23,6 @@ String formatDate(dynamic value) {
 
 class DashboardView extends StatefulWidget {
   final VoidCallback? onAddPressed;
-
   const DashboardView({super.key, this.onAddPressed});
 
   @override
@@ -41,6 +33,9 @@ class _DashboardViewState extends State<DashboardView> {
   List followups = [];
   bool isLoading = true;
 
+  int screenedToday = 0;
+  int highRiskCases = 0;
+
   @override
   void initState() {
     super.initState();
@@ -50,13 +45,11 @@ class _DashboardViewState extends State<DashboardView> {
   void loadFollowups() async {
     try {
       final data = await ApiService.getFollowups();
-
       data.sort((a, b) {
         try {
-          final secondsA = a["followUpDate"]?["_seconds"] ?? 0;
-          final secondsB = b["followUpDate"]?["_seconds"] ?? 0;
-
-          return secondsA.compareTo(secondsB);
+          final sA = (a["followUpDate"] ?? a["followupDate"])?["_seconds"] ?? 0;
+          final sB = (b["followUpDate"] ?? b["followupDate"])?["_seconds"] ?? 0;
+          return sA.compareTo(sB);
         } catch (e) {
           return 0;
         }
@@ -65,11 +58,45 @@ class _DashboardViewState extends State<DashboardView> {
         followups = data;
         isLoading = false;
       });
-
+      loadSummaryStats(); // called AFTER setState, so followups is populated
     } catch (e) {
       print("Error fetching followups: $e");
       setState(() => isLoading = false);
     }
+  }
+
+  void loadSummaryStats() {
+    final today = DateTime.now();
+    final currentPhone = ApiService.currentUserPhone;
+
+    final myFollowups = followups.where((f) {
+      return f["workerId"]?.toString() == currentPhone;
+    }).toList();
+
+    final todayCount = myFollowups.where((f) {
+      final raw = f["createdAt"];
+      DateTime? date;
+
+      if (raw is Map && raw.containsKey('_seconds')) {
+        date = DateTime.fromMillisecondsSinceEpoch(raw['_seconds'] * 1000);
+      } else if (raw is String) {
+        date = DateTime.tryParse(raw);
+      }
+
+      if (date == null) return false;
+      return date.year == today.year &&
+          date.month == today.month &&
+          date.day == today.day;
+    }).length;
+
+    final highRiskCount = myFollowups.where((f) {
+      return f["riskLevel"]?.toString().toLowerCase() == "high";
+    }).length;
+
+    setState(() {
+      screenedToday = todayCount;
+      highRiskCases = highRiskCount;
+    });
   }
 
   Future<void> completeFollowup(String id) async {
@@ -83,7 +110,6 @@ class _DashboardViewState extends State<DashboardView> {
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
-
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -93,22 +119,14 @@ class _DashboardViewState extends State<DashboardView> {
               color: const Color(0xFFEDEDED),
               borderRadius: BorderRadius.circular(16),
             ),
-
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "Quick Add Screening",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-
+                const Text("Quick Add Screening",
+                    style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 6),
-
-                const Text(
-                  "No hot followed",
-                  style: TextStyle(color: Colors.grey),
-                ),
-
+                const Text("No hot followed",
+                    style: TextStyle(color: Colors.grey)),
                 const SizedBox(height: 14),
                 SizedBox(
                   width: double.infinity,
@@ -116,22 +134,18 @@ class _DashboardViewState extends State<DashboardView> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2F6EDB),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
+                          borderRadius: BorderRadius.circular(30)),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
-
                     onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const AddScreeningPage(),
-                        ),
+                            builder: (_) => const AddScreeningPage()),
                       ).then((_) {
-                        loadFollowups();
+                        loadFollowups(); // this already calls loadSummaryStats() internally
                       });
                     },
-
                     child: const Text("Add New"),
                   ),
                 ),
@@ -140,22 +154,26 @@ class _DashboardViewState extends State<DashboardView> {
           ),
 
           const SizedBox(height: 24),
-
-          const Text(
-            "Dashboard Summary",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-
+          const Text("Dashboard Summary",
+              style: TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
 
           Row(
             children: [
               Expanded(
-                child: _summaryCard(Icons.check_box, "Screened Today", "2"),
+                child: _summaryCard(
+                  Icons.check_box,
+                  "Screened Today",
+                  screenedToday.toString(),
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _summaryCard(Icons.warning, "High Risk Cases", "0"),
+                child: _summaryCard(
+                  Icons.warning,
+                  "High Risk Cases",
+                  highRiskCases.toString(),
+                ),
               ),
             ],
           ),
@@ -171,8 +189,7 @@ class _DashboardViewState extends State<DashboardView> {
               ...displayedFollowups.map((f) {
                 final String name = f["name"]?.toString() ??
                     f["beneficiaryId"]?.toString() ?? "N/A";
-                final String date =
-                formatDate(f["followupDate"] ?? f["followUpDate"]);
+                final String date = formatDate(f["followUpDate"] ?? f["followupDate"]);
                 final String risk =
                     f["riskLevel"]?.toString() ?? "low";
                 final String id = f["id"]?.toString() ?? "";
@@ -193,7 +210,8 @@ class _DashboardViewState extends State<DashboardView> {
                             data: f,
                             onComplete: () async {
                               await completeFollowup(id);
-                              if (context.mounted) Navigator.pop(context);
+                              if (context.mounted)
+                                Navigator.pop(context);
                             },
                           ),
                         ),
@@ -203,20 +221,16 @@ class _DashboardViewState extends State<DashboardView> {
                   ],
                 );
               }).toList(),
-
               if (followups.length > 4) ...[
                 const SizedBox(height: 10),
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const FollowupPage(),
-                        ),
-                      );
-                    },
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const FollowupPage()),
+                    ),
                     child: const Text("View All Followups"),
                   ),
                 ),
@@ -227,7 +241,6 @@ class _DashboardViewState extends State<DashboardView> {
       ),
     );
   }
-
 
   Widget _summaryCard(IconData icon, String title, String value) {
     return Container(
@@ -241,12 +254,12 @@ class _DashboardViewState extends State<DashboardView> {
         children: [
           Icon(icon, color: Colors.blue),
           const SizedBox(height: 8),
-          Text(title, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+          Text(title,
+              style: const TextStyle(fontSize: 12, color: Colors.grey)),
           const SizedBox(height: 6),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
+          Text(value,
+              style: const TextStyle(
+                  fontSize: 18, fontWeight: FontWeight.bold)),
         ],
       ),
     );

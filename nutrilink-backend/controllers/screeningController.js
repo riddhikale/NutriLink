@@ -26,12 +26,10 @@ async function childScreening(req, res) {
     const beneficiaryId = `${safeName}_${Date.now()}`;
 
     const beneficiaryRef = db.collection("beneficiaries").doc(beneficiaryId);
-    // const beneficiaryRef = db.collection("beneficiaries").doc();
-    // const beneficiaryId = beneficiaryRef.id;
 
     await beneficiaryRef.set({
       name,
-      address: address || "",   // ← fix: fallback to "" if not sent
+      address: address || "",
       type: "child",
       createdAt: new Date(),
     });
@@ -59,8 +57,9 @@ async function childScreening(req, res) {
       .doc(nutritionNeed)
       .get();
 
-    // const mealPlan = mealDoc.data();
-    const mealPlan = mealDoc.exists ? mealDoc.data() : (await db.collection("meal_plans").doc("balanced").get()).data();
+    const mealPlan = mealDoc.exists
+      ? mealDoc.data()
+      : (await db.collection("meal_plans").doc("balanced").get()).data();
 
     const screeningData = {
       beneficiaryId,
@@ -79,7 +78,7 @@ async function childScreening(req, res) {
       riskLevel: result.level,
       nutritionNeed,
       mealPlan,
-      address: address || "", 
+      address: address || "",
       createdAt: new Date(),
     };
 
@@ -90,28 +89,28 @@ async function childScreening(req, res) {
       .add(screeningData);
 
     let followupType = "routine";
-    let followupDate = new Date();
+    let followUpDate = new Date(); // ✅ consistent name
 
     if (result.level === "high") {
       followupType = "urgent";
-      followupDate.setDate(followupDate.getDate() + 1);
+      followUpDate.setDate(followUpDate.getDate() + 1); // ✅ fixed
     } else if (result.level === "medium") {
       followupType = "soon";
-      followupDate.setDate(followupDate.getDate() + 3);
+      followUpDate.setDate(followUpDate.getDate() + 3); // ✅ fixed
     } else {
-      followupDate.setDate(followupDate.getDate() + 7);
+      followUpDate.setDate(followUpDate.getDate() + 7); // ✅ fixed
     }
 
     await db.collection("followups").add({
       beneficiaryId,
-      screeningId: screeningRef.id,   // ← fix: was undefined before
-      workerId,                        // ← fix: attach worker so filtering works
+      screeningId: screeningRef.id,
+      workerId,
       name,
       address: address || "",
       type: followupType,
       beneficiaryType: "child",
       riskLevel: result.level,
-      followupDate,
+      followUpDate, // ✅ consistent name
       status: "pending",
       createdAt: new Date(),
     });
@@ -169,14 +168,10 @@ async function pregWomenScreening(req, res) {
     const beneficiaryId = `${safeName}_${Date.now()}`;
 
     const beneficiaryRef = db.collection("beneficiaries").doc(beneficiaryId);
-    // const beneficiaryId = beneficiaryRef.id;
-
-    // const beneficiaryRef = db.collection("beneficiaries").doc();
-    
 
     await beneficiaryRef.set({
       name,
-      address: address || "",   // ← fix: fallback to ""
+      address: address || "",
       type: "pregnant",
       createdAt: new Date(),
     });
@@ -205,9 +200,9 @@ async function pregWomenScreening(req, res) {
       .doc(nutritionNeed)
       .get();
 
-    // const mealPlan = mealDoc.data();
-      const mealPlan = mealDoc.exists ? mealDoc.data() : (await db.collection("meal_plans").doc("balanced").get()).data();
-
+    const mealPlan = mealDoc.exists
+      ? mealDoc.data()
+      : (await db.collection("meal_plans").doc("balanced").get()).data();
 
     const screeningData = {
       type: "pregnantWomen",
@@ -240,29 +235,29 @@ async function pregWomenScreening(req, res) {
       .add(screeningData);
 
     let followupType = "routine";
-    let followupDate = new Date();
+    let followUpDate = new Date(); // ✅ consistent name
 
     if (result.level === "high") {
       followupType = "urgent";
-      followupDate.setDate(followupDate.getDate() + 1);
+      followUpDate.setDate(followUpDate.getDate() + 1); // ✅ fixed
     } else if (result.level === "medium") {
       followupType = "soon";
-      followupDate.setDate(followupDate.getDate() + 3);
+      followUpDate.setDate(followUpDate.getDate() + 3); // ✅ fixed
     } else {
-      followupDate.setDate(followupDate.getDate() + 7);
+      followUpDate.setDate(followUpDate.getDate() + 7); // ✅ fixed
     }
 
     await db.collection("followups").add({
       beneficiaryId,
-      screeningId: screeningRef.id,  
-      workerId,                      
+      screeningId: screeningRef.id,
+      workerId,
       name,
       address: address || "",
       type: followupType,
       beneficiaryType: "pregnant",
       riskLevel: result.level,
       nutritionNeed,
-      followupDate,
+      followUpDate, // ✅ consistent name
       status: "pending",
       createdAt: new Date(),
     });

@@ -482,7 +482,7 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
                             try {
-                              await ApiService.submitPregnantScreening(
+                              final result = await ApiService.submitPregnantScreening(
                                 name: nameController.text,
                                 husbandName: husbandController.text,
                                 age: int.tryParse(ageController.text) ?? 0,
@@ -507,10 +507,17 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                                 MaterialPageRoute(
                                   builder: (_) => RiskResultPage(
                                     womenData: {
-                                      'hemoglobin':  double.tryParse(hbController.text) ?? 0,
-                                      'systolicBP':  double.tryParse(systolicController.text) ?? 0,
-                                      'diastolicBP': double.tryParse(diastolicController.text) ?? 0,
-                                      'weight':      double.tryParse(weightController.text) ?? 0,
+                                      'hemoglobin':    double.tryParse(hbController.text) ?? 0,
+                                      'systolicBP':    double.tryParse(systolicController.text) ?? 0,
+                                      'diastolicBP':   double.tryParse(diastolicController.text) ?? 0,
+                                      'weight':        double.tryParse(weightController.text) ?? 0,
+                                      'dizziness':     dizziness == "Yes",
+                                      'fatigue':       fatigue == "Yes",
+                                      'swelling':      swelling == "Yes",
+                                      'lowAppetite':   lowAppetite == "Yes",
+                                      'pastAnemia':    pastAnemia == "Yes",
+                                      'mealPlan':      result['mealPlan'],
+                                      'nutritionNeed': result['nutritionNeed'],
                                     },
                                   ),
                                 ),
@@ -525,7 +532,8 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                               );
                             }
                           }
-                        },                        child: Row(
+                        },
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const Icon(Icons.check_circle_outline_rounded,

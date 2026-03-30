@@ -90,8 +90,8 @@ class _FollowupPageState extends State<FollowupPage> {
     try {
       final data = await ApiService.getFollowups();
       data.sort((a, b) {
-        final sA = a["followUpDate"]?["_seconds"] ?? 0;
-        final sB = b["followUpDate"]?["_seconds"] ?? 0;
+        final sA = (a["followUpDate"] ?? a["followupDate"])?["_seconds"] ?? 0;
+        final sB = (b["followUpDate"] ?? b["followupDate"])?["_seconds"] ?? 0;
         return sA.compareTo(sB);
       });
       setState(() {
@@ -202,8 +202,7 @@ class _FollowupPageState extends State<FollowupPage> {
                     final f = followups[index];
                     final String name = f["name"]?.toString() ??
                         f["beneficiaryId"]?.toString() ?? "N/A";
-                    final String date =
-                    formatDate(f["followupDate"] ?? f["followUpDate"]);
+                    final String date = formatDate(f["followUpDate"] ?? f["followupDate"]);
                     final String risk =
                         f["riskLevel"]?.toString() ?? "low";
                     final String id = f["id"]?.toString() ?? "";
@@ -629,8 +628,7 @@ class FollowupDetailPage extends StatelessWidget {
     final String name =
         data["name"]?.toString() ?? data["beneficiaryId"]?.toString() ?? "N/A";
     final String risk = data["riskLevel"]?.toString() ?? "low";
-    final String date =
-    formatDate(data["followupDate"] ?? data["followUpDate"]);
+    final String date = formatDate(data["followUpDate"] ?? data["followupDate"]);
     final String address = data["address"]?.toString() ?? "—";
 
     return Scaffold(
