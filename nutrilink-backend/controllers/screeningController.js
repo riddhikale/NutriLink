@@ -1,5 +1,6 @@
 const { db } = require("../config/firebaseConfig");
 const { calculateChildRisk, calculateWomenRisk } = require("../utils/riskCalculator");
+const { getChildNutrition, getWomenNutrition } = require("../utils/nutritionCalculator");
 
 async function childScreening(req, res) {
   try {
@@ -19,11 +20,14 @@ async function childScreening(req, res) {
       notes,
     } = req.body;
 
-    // ── Get workerId from token (set by authMiddleware) ─────
     const workerId = req.user?.phone || null;
 
-    const beneficiaryRef = db.collection("beneficiaries").doc();
-    const beneficiaryId = beneficiaryRef.id;
+    const safeName = name.trim().toLowerCase().replace(/\s+/g, "_");
+    const beneficiaryId = `${safeName}_${Date.now()}`;
+
+    const beneficiaryRef = db.collection("beneficiaries").doc(beneficiaryId);
+    // const beneficiaryRef = db.collection("beneficiaries").doc();
+    // const beneficiaryId = beneficiaryRef.id;
 
     await beneficiaryRef.set({
       name,
@@ -43,6 +47,21 @@ async function childScreening(req, res) {
       diarrhea,
     });
 
+    const nutritionNeed = getChildNutrition({
+      muac,
+      weakness,
+      frequentIllness,
+      lowAppetite
+    });
+
+    const mealDoc = await db
+      .collection("meal_plans")
+      .doc(nutritionNeed)
+      .get();
+
+    // const mealPlan = mealDoc.data();
+    const mealPlan = mealDoc.exists ? mealDoc.data() : (await db.collection("meal_plans").doc("balanced").get()).data();
+
     const screeningData = {
       beneficiaryId,
       name,
@@ -58,7 +77,9 @@ async function childScreening(req, res) {
       diarrhea,
       notes: notes || "",
       riskLevel: result.level,
-      address: address || "",   // ← fix: fallback to ""
+      nutritionNeed,
+      mealPlan,
+      address: address || "", 
       createdAt: new Date(),
     };
 
@@ -88,6 +109,7 @@ async function childScreening(req, res) {
       name,
       address: address || "",
       type: followupType,
+      beneficiaryType: "child",
       riskLevel: result.level,
       followupDate,
       status: "pending",
@@ -109,6 +131,8 @@ async function childScreening(req, res) {
       message: "Screening saved successfully!",
       screeningId: screeningRef.id,
       level: result.level,
+      nutritionNeed,
+      mealPlan
     });
   } catch (error) {
     console.error(error);
@@ -139,11 +163,16 @@ async function pregWomenScreening(req, res) {
       notes,
     } = req.body;
 
-    // ── Get workerId from token (set by authMiddleware) ─────
     const workerId = req.user?.phone || null;
 
-    const beneficiaryRef = db.collection("beneficiaries").doc();
-    const beneficiaryId = beneficiaryRef.id;
+    const safeName = name.trim().toLowerCase().replace(/\s+/g, "_");
+    const beneficiaryId = `${safeName}_${Date.now()}`;
+
+    const beneficiaryRef = db.collection("beneficiaries").doc(beneficiaryId);
+    // const beneficiaryId = beneficiaryRef.id;
+
+    // const beneficiaryRef = db.collection("beneficiaries").doc();
+    
 
     await beneficiaryRef.set({
       name,
@@ -165,6 +194,21 @@ async function pregWomenScreening(req, res) {
       pastAnemia,
     });
 
+    const nutritionNeed = getWomenNutrition({
+      hemoglobin,
+      fatigue,
+      swelling
+    });
+
+    const mealDoc = await db
+      .collection("meal_plans")
+      .doc(nutritionNeed)
+      .get();
+
+    // const mealPlan = mealDoc.data();
+      const mealPlan = mealDoc.exists ? mealDoc.data() : (await db.collection("meal_plans").doc("balanced").get()).data();
+
+
     const screeningData = {
       type: "pregnantWomen",
       beneficiaryId,
@@ -181,7 +225,9 @@ async function pregWomenScreening(req, res) {
       swelling,
       lowAppetite,
       pastAnemia,
-      address: address || "",   // ← fix: fallback to ""
+      nutritionNeed,
+      mealPlan,
+      address: address || "",
       notes: notes || "",
       riskLevel: result.level,
       createdAt: new Date(),
@@ -208,12 +254,14 @@ async function pregWomenScreening(req, res) {
 
     await db.collection("followups").add({
       beneficiaryId,
-      screeningId: screeningRef.id,   // ← fix: was undefined before
-      workerId,                        // ← fix: attach worker so filtering works
+      screeningId: screeningRef.id,  
+      workerId,                      
       name,
       address: address || "",
       type: followupType,
+      beneficiaryType: "pregnant",
       riskLevel: result.level,
+      nutritionNeed,
       followupDate,
       status: "pending",
       createdAt: new Date(),
@@ -234,6 +282,8 @@ async function pregWomenScreening(req, res) {
       message: "Saved Successfully",
       screeningId: screeningRef.id,
       level: result.level,
+      nutritionNeed,
+      mealPlan
     });
   } catch (error) {
     console.error(error);
