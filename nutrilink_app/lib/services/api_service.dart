@@ -72,7 +72,8 @@ class ApiService {
     required bool lowAppetite,
     required bool frequentIllness,
     required bool diarrhea,
-    required String address,   // ← added
+    required String address,
+    required String wardNo,   // ← NEW
     required String notes,
   }) async {
     final response = await http.post(
@@ -90,16 +91,17 @@ class ApiService {
         "lowAppetite": lowAppetite,
         "frequentIllness": frequentIllness,
         "diarrhea": diarrhea,
-        "address": address,    // ← added
+        "address": address,
+        "wardNo": wardNo,     // ← NEW
         "notes": notes,
       }),
     );
-    print("=== SCREENING DEBUG ===");
+
+    print("=== CHILD SCREENING DEBUG ===");
     print("STATUS: ${response.statusCode}");
     print("BODY: ${response.body}");
     print("HEADERS SENT: $_headers");
-    print("======================");
-
+    print("=============================");
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
@@ -122,7 +124,8 @@ class ApiService {
     required bool swelling,
     required bool lowAppetite,
     required bool pastAnemia,
-    required String address,   // ← added
+    required String address,
+    required String wardNo,   // ← NEW
     required String notes,
   }) async {
     final response = await http.post(
@@ -142,12 +145,23 @@ class ApiService {
         "swelling": swelling,
         "lowAppetite": lowAppetite,
         "pastAnemia": pastAnemia,
-        "address": address,    // ← added
+        "address": address,
+        "wardNo": wardNo,     // ← NEW
         "notes": notes,
       }),
     );
 
-    return jsonDecode(response.body);
+    print("=== PREGNANT SCREENING DEBUG ===");
+    print("STATUS: ${response.statusCode}");
+    print("BODY: ${response.body}");
+    print("HEADERS SENT: $_headers");
+    print("================================");
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception("Failed to submit screening");
+    }
   }
 
   static Future<List<dynamic>> getFollowups() async {
@@ -167,11 +181,10 @@ class ApiService {
   }
 
   static Future<List<dynamic>> getAlerts() async {
-  final response = await http.get(
-    Uri.parse("$baseUrl/api/alerts/pending"),
-    headers: {"Content-Type": "application/json"},
-  );
-
-  return jsonDecode(response.body);
-}
+    final response = await http.get(
+      Uri.parse("$baseUrl/api/alerts/pending"),
+      headers: {"Content-Type": "application/json"},
+    );
+    return jsonDecode(response.body);
+  }
 }
