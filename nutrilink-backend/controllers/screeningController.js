@@ -17,6 +17,7 @@ async function childScreening(req, res) {
       frequentIllness,
       diarrhea,
       address,
+      wardNo,   // ← NEW
       notes,
     } = req.body;
 
@@ -30,6 +31,7 @@ async function childScreening(req, res) {
     await beneficiaryRef.set({
       name,
       address: address || "",
+      wardNo: wardNo || "",   // ← NEW
       type: "child",
       createdAt: new Date(),
     });
@@ -49,7 +51,7 @@ async function childScreening(req, res) {
       muac,
       weakness,
       frequentIllness,
-      lowAppetite
+      lowAppetite,
     });
 
     const mealDoc = await db
@@ -79,6 +81,7 @@ async function childScreening(req, res) {
       nutritionNeed,
       mealPlan,
       address: address || "",
+      wardNo: wardNo || "",   // ← NEW
       createdAt: new Date(),
     };
 
@@ -89,16 +92,16 @@ async function childScreening(req, res) {
       .add(screeningData);
 
     let followupType = "routine";
-    let followUpDate = new Date(); // ✅ consistent name
+    let followUpDate = new Date();
 
     if (result.level === "high") {
       followupType = "urgent";
-      followUpDate.setDate(followUpDate.getDate() + 1); // ✅ fixed
+      followUpDate.setDate(followUpDate.getDate() + 1);
     } else if (result.level === "medium") {
       followupType = "soon";
-      followUpDate.setDate(followUpDate.getDate() + 3); // ✅ fixed
+      followUpDate.setDate(followUpDate.getDate() + 3);
     } else {
-      followUpDate.setDate(followUpDate.getDate() + 7); // ✅ fixed
+      followUpDate.setDate(followUpDate.getDate() + 7);
     }
 
     await db.collection("followups").add({
@@ -107,10 +110,11 @@ async function childScreening(req, res) {
       workerId,
       name,
       address: address || "",
+      wardNo: wardNo || "",   // ← NEW
       type: followupType,
       beneficiaryType: "child",
       riskLevel: result.level,
-      followUpDate, // ✅ consistent name
+      followUpDate,
       status: "pending",
       createdAt: new Date(),
     });
@@ -131,7 +135,7 @@ async function childScreening(req, res) {
       screeningId: screeningRef.id,
       level: result.level,
       nutritionNeed,
-      mealPlan
+      mealPlan,
     });
   } catch (error) {
     console.error(error);
@@ -159,6 +163,7 @@ async function pregWomenScreening(req, res) {
       lowAppetite,
       pastAnemia,
       address,
+      wardNo,   // ← NEW
       notes,
     } = req.body;
 
@@ -172,6 +177,7 @@ async function pregWomenScreening(req, res) {
     await beneficiaryRef.set({
       name,
       address: address || "",
+      wardNo: wardNo || "",   // ← NEW
       type: "pregnant",
       createdAt: new Date(),
     });
@@ -192,7 +198,7 @@ async function pregWomenScreening(req, res) {
     const nutritionNeed = getWomenNutrition({
       hemoglobin,
       fatigue,
-      swelling
+      swelling,
     });
 
     const mealDoc = await db
@@ -223,6 +229,7 @@ async function pregWomenScreening(req, res) {
       nutritionNeed,
       mealPlan,
       address: address || "",
+      wardNo: wardNo || "",   // ← NEW
       notes: notes || "",
       riskLevel: result.level,
       createdAt: new Date(),
@@ -235,16 +242,16 @@ async function pregWomenScreening(req, res) {
       .add(screeningData);
 
     let followupType = "routine";
-    let followUpDate = new Date(); // ✅ consistent name
+    let followUpDate = new Date();
 
     if (result.level === "high") {
       followupType = "urgent";
-      followUpDate.setDate(followUpDate.getDate() + 1); // ✅ fixed
+      followUpDate.setDate(followUpDate.getDate() + 1);
     } else if (result.level === "medium") {
       followupType = "soon";
-      followUpDate.setDate(followUpDate.getDate() + 3); // ✅ fixed
+      followUpDate.setDate(followUpDate.getDate() + 3);
     } else {
-      followUpDate.setDate(followUpDate.getDate() + 7); // ✅ fixed
+      followUpDate.setDate(followUpDate.getDate() + 7);
     }
 
     await db.collection("followups").add({
@@ -253,11 +260,12 @@ async function pregWomenScreening(req, res) {
       workerId,
       name,
       address: address || "",
+      wardNo: wardNo || "",   // ← NEW
       type: followupType,
       beneficiaryType: "pregnant",
       riskLevel: result.level,
       nutritionNeed,
-      followUpDate, // ✅ consistent name
+      followUpDate,
       status: "pending",
       createdAt: new Date(),
     });
@@ -278,7 +286,7 @@ async function pregWomenScreening(req, res) {
       screeningId: screeningRef.id,
       level: result.level,
       nutritionNeed,
-      mealPlan
+      mealPlan,
     });
   } catch (error) {
     console.error(error);

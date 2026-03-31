@@ -22,6 +22,7 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
   final diastolicController = TextEditingController();
   final notesController = TextEditingController();
   final addressController = TextEditingController();
+  final wardController = TextEditingController(); // ← NEW
 
   String? trimester;
   String dizziness = "No";
@@ -64,8 +65,12 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
     );
   }
 
-  Widget yesNoDropdown(String title, String value, Function(String?) onChanged,
-      {IconData? icon}) {
+  Widget yesNoDropdown(
+      String title,
+      String value,
+      Function(String?) onChanged, {
+        IconData? icon,
+      }) {
     return DropdownButtonFormField<String>(
       value: value,
       decoration: fieldDecoration(title, icon: icon),
@@ -120,7 +125,8 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
               height: 1,
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                    colors: [Color(0xFF90CAF9), Colors.transparent]),
+                  colors: [Color(0xFF90CAF9), Colors.transparent],
+                ),
               ),
             ),
           ),
@@ -227,8 +233,11 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
               ),
             ),
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white, size: 20),
+              icon: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
               onPressed: () => Navigator.of(context).pop(),
             ),
           ),
@@ -244,44 +253,62 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                     // ── Basic Info ──────────────────────────────────────
                     _formCard([
                       _sectionHeader(
-                          "Basic Information", Icons.person_outline_rounded),
+                        "Basic Information",
+                        Icons.person_outline_rounded,
+                      ),
                       TextFormField(
                         controller: nameController,
-                        style: GoogleFonts.nunito(fontSize: 15, color: textDark),
-                        decoration: fieldDecoration("Name",
-                            icon: Icons.face_outlined),
+                        style:
+                        GoogleFonts.nunito(fontSize: 15, color: textDark),
+                        decoration: fieldDecoration(
+                          "Name",
+                          icon: Icons.face_outlined,
+                        ),
                         validator: (v) =>
                         v!.isEmpty ? "Please enter name" : null,
                       ),
                       const SizedBox(height: 14),
                       TextFormField(
                         controller: husbandController,
-                        style: GoogleFonts.nunito(fontSize: 15, color: textDark),
-                        decoration: fieldDecoration("Husband / Father Name",
-                            icon: Icons.people_outline_rounded),
+                        style:
+                        GoogleFonts.nunito(fontSize: 15, color: textDark),
+                        decoration: fieldDecoration(
+                          "Husband / Father Name",
+                          icon: Icons.people_outline_rounded,
+                        ),
                       ),
                       const SizedBox(height: 14),
                       TextFormField(
                         controller: ageController,
                         keyboardType: TextInputType.number,
-                        style: GoogleFonts.nunito(fontSize: 15, color: textDark),
-                        decoration: fieldDecoration("Age", icon: Icons.cake_outlined),
+                        style:
+                        GoogleFonts.nunito(fontSize: 15, color: textDark),
+                        decoration: fieldDecoration(
+                          "Age",
+                          icon: Icons.cake_outlined,
+                        ),
                       ),
                       const SizedBox(height: 14),
                       DropdownButtonFormField<String>(
                         value: trimester,
-                        decoration: fieldDecoration("Trimester",
-                            icon: Icons.pregnant_woman_outlined),
+                        decoration: fieldDecoration(
+                          "Trimester",
+                          icon: Icons.pregnant_woman_outlined,
+                        ),
                         dropdownColor: Colors.white,
-                        icon: const Icon(Icons.keyboard_arrow_down_rounded,
-                            color: accent),
-                        style: GoogleFonts.nunito(color: textDark, fontSize: 15),
+                        icon: const Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: accent,
+                        ),
+                        style:
+                        GoogleFonts.nunito(color: textDark, fontSize: 15),
                         items: [
                           "1st Trimester",
                           "2nd Trimester",
                           "3rd Trimester",
                         ]
-                            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                            .map((e) =>
+                            DropdownMenuItem(value: e, child: Text(e)))
                             .toList(),
                         onChanged: (val) => setState(() => trimester = val),
                       ),
@@ -293,26 +320,36 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                       TextFormField(
                         controller: addressController,
                         maxLines: 3,
-                        style: GoogleFonts.nunito(fontSize: 15, color: textDark),
+                        style:
+                        GoogleFonts.nunito(fontSize: 15, color: textDark),
                         decoration: InputDecoration(
                           labelText: "Full Address",
                           alignLabelWithHint: true,
                           labelStyle: GoogleFonts.nunito(
-                              color: textMuted, fontSize: 14),
+                            color: textMuted,
+                            fontSize: 14,
+                          ),
                           prefixIcon: const Padding(
                             padding: EdgeInsets.only(bottom: 44),
-                            child: Icon(Icons.home_outlined,
-                                color: accent, size: 20),
+                            child: Icon(
+                              Icons.home_outlined,
+                              color: accent,
+                              size: 20,
+                            ),
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                                color: Color(0xFFBBDEFB), width: 1.5),
+                              color: Color(0xFFBBDEFB),
+                              width: 1.5,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                                color: Color(0xFFBBDEFB), width: 1.5),
+                              color: Color(0xFFBBDEFB),
+                              width: 1.5,
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -322,17 +359,35 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                           filled: true,
                           fillColor: Colors.white,
                           contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 14),
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                         ),
                         validator: (v) =>
                         v!.isEmpty ? "Please enter address" : null,
+                      ),
+                      const SizedBox(height: 14),
+                      // ── Ward No. ──────────────────────────────────────
+                      TextFormField(
+                        controller: wardController,
+                        keyboardType: TextInputType.number,
+                        style:
+                        GoogleFonts.nunito(fontSize: 15, color: textDark),
+                        decoration: fieldDecoration(
+                          "Ward No.",
+                          icon: Icons.map_outlined,
+                        ),
+                        validator: (v) =>
+                        v!.isEmpty ? "Please enter ward number" : null,
                       ),
                     ]),
 
                     // ── Measurements ────────────────────────────────────
                     _formCard([
                       _sectionHeader(
-                          "Measurements", Icons.monitor_weight_outlined),
+                        "Measurements",
+                        Icons.monitor_weight_outlined,
+                      ),
                       Row(
                         children: [
                           Expanded(
@@ -340,9 +395,13 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                               controller: weightController,
                               keyboardType: TextInputType.number,
                               style: GoogleFonts.nunito(
-                                  fontSize: 15, color: textDark),
-                              decoration: fieldDecoration("Weight (kg)",
-                                  icon: Icons.fitness_center_rounded),
+                                fontSize: 15,
+                                color: textDark,
+                              ),
+                              decoration: fieldDecoration(
+                                "Weight (kg)",
+                                icon: Icons.fitness_center_rounded,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -351,9 +410,13 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                               controller: hbController,
                               keyboardType: TextInputType.number,
                               style: GoogleFonts.nunito(
-                                  fontSize: 15, color: textDark),
-                              decoration: fieldDecoration("Hb (g/dL)",
-                                  icon: Icons.bloodtype_outlined),
+                                fontSize: 15,
+                                color: textDark,
+                              ),
+                              decoration: fieldDecoration(
+                                "Hb (g/dL)",
+                                icon: Icons.bloodtype_outlined,
+                              ),
                             ),
                           ),
                         ],
@@ -366,9 +429,13 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                               controller: systolicController,
                               keyboardType: TextInputType.number,
                               style: GoogleFonts.nunito(
-                                  fontSize: 15, color: textDark),
-                              decoration: fieldDecoration("Systolic BP",
-                                  icon: Icons.favorite_border_rounded),
+                                fontSize: 15,
+                                color: textDark,
+                              ),
+                              decoration: fieldDecoration(
+                                "Systolic BP",
+                                icon: Icons.favorite_border_rounded,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -377,9 +444,13 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                               controller: diastolicController,
                               keyboardType: TextInputType.number,
                               style: GoogleFonts.nunito(
-                                  fontSize: 15, color: textDark),
-                              decoration: fieldDecoration("Diastolic BP",
-                                  icon: Icons.favorite_border_rounded),
+                                fontSize: 15,
+                                color: textDark,
+                              ),
+                              decoration: fieldDecoration(
+                                "Diastolic BP",
+                                icon: Icons.favorite_border_rounded,
+                              ),
                             ),
                           ),
                         ],
@@ -389,7 +460,9 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                     // ── Symptoms ────────────────────────────────────────
                     _formCard([
                       _sectionHeader(
-                          "Symptoms", Icons.medical_services_outlined),
+                        "Symptoms",
+                        Icons.medical_services_outlined,
+                      ),
                       yesNoDropdown(
                         "Dizziness",
                         dizziness,
@@ -432,24 +505,33 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                       TextFormField(
                         controller: notesController,
                         maxLines: 4,
-                        style: GoogleFonts.nunito(fontSize: 15, color: textDark),
+                        style:
+                        GoogleFonts.nunito(fontSize: 15, color: textDark),
                         decoration: InputDecoration(
                           labelText: "Notes (optional)",
                           alignLabelWithHint: true,
                           hintText: "Any additional observations...",
                           hintStyle: GoogleFonts.nunito(
-                              color: textMuted.withOpacity(0.6), fontSize: 13),
+                            color: textMuted.withOpacity(0.6),
+                            fontSize: 13,
+                          ),
                           labelStyle: GoogleFonts.nunito(
-                              color: textMuted, fontSize: 14),
+                            color: textMuted,
+                            fontSize: 14,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                                color: Color(0xFFBBDEFB), width: 1.5),
+                              color: Color(0xFFBBDEFB),
+                              width: 1.5,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                                color: Color(0xFFBBDEFB), width: 1.5),
+                              color: Color(0xFFBBDEFB),
+                              width: 1.5,
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -459,7 +541,9 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                           filled: true,
                           fillColor: Colors.white,
                           contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 14),
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                         ),
                       ),
                     ]),
@@ -482,16 +566,24 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
                             try {
-                              final result = await ApiService.submitPregnantScreening(
+                              final result =
+                              await ApiService.submitPregnantScreening(
                                 name: nameController.text,
                                 husbandName: husbandController.text,
                                 age: int.tryParse(ageController.text) ?? 0,
                                 trimester: trimester ?? "1st Trimester",
-                                weight: double.tryParse(weightController.text) ?? 0,
+                                weight: double.tryParse(
+                                    weightController.text) ??
+                                    0,
                                 address: addressController.text,
-                                hemoglobin: double.tryParse(hbController.text) ?? 0,
-                                systolicBP: int.tryParse(systolicController.text) ?? 0,
-                                diastolicBP: int.tryParse(diastolicController.text) ?? 0,
+                                wardNo: wardController.text, // ← NEW
+                                hemoglobin:
+                                double.tryParse(hbController.text) ?? 0,
+                                systolicBP:
+                                int.tryParse(systolicController.text) ?? 0,
+                                diastolicBP:
+                                int.tryParse(diastolicController.text) ??
+                                    0,
                                 dizziness: dizziness == "Yes",
                                 fatigue: fatigue == "Yes",
                                 swelling: swelling == "Yes",
@@ -507,17 +599,27 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                                 MaterialPageRoute(
                                   builder: (_) => RiskResultPage(
                                     womenData: {
-                                      'hemoglobin':    double.tryParse(hbController.text) ?? 0,
-                                      'systolicBP':    double.tryParse(systolicController.text) ?? 0,
-                                      'diastolicBP':   double.tryParse(diastolicController.text) ?? 0,
-                                      'weight':        double.tryParse(weightController.text) ?? 0,
-                                      'dizziness':     dizziness == "Yes",
-                                      'fatigue':       fatigue == "Yes",
-                                      'swelling':      swelling == "Yes",
-                                      'lowAppetite':   lowAppetite == "Yes",
-                                      'pastAnemia':    pastAnemia == "Yes",
-                                      'mealPlan':      result['mealPlan'],
-                                      'nutritionNeed': result['nutritionNeed'],
+                                      'hemoglobin':
+                                      double.tryParse(hbController.text) ??
+                                          0,
+                                      'systolicBP': double.tryParse(
+                                          systolicController.text) ??
+                                          0,
+                                      'diastolicBP': double.tryParse(
+                                          diastolicController.text) ??
+                                          0,
+                                      'weight': double.tryParse(
+                                          weightController.text) ??
+                                          0,
+                                      'dizziness': dizziness == "Yes",
+                                      'fatigue': fatigue == "Yes",
+                                      'swelling': swelling == "Yes",
+                                      'lowAppetite': lowAppetite == "Yes",
+                                      'pastAnemia': pastAnemia == "Yes",
+                                      'wardNo': wardController.text, // ← NEW
+                                      'mealPlan': result['mealPlan'],
+                                      'nutritionNeed':
+                                      result['nutritionNeed'],
                                     },
                                   ),
                                 ),
@@ -536,8 +638,10 @@ class _PregnantScreeningPageState extends State<PregnantScreeningPage> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.check_circle_outline_rounded,
-                                size: 20),
+                            const Icon(
+                              Icons.check_circle_outline_rounded,
+                              size: 20,
+                            ),
                             const SizedBox(width: 10),
                             Text(
                               "Submit Screening",

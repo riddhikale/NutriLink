@@ -21,6 +21,7 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
   final muacController = TextEditingController();
   final notesController = TextEditingController();
   final addressController = TextEditingController();
+  final wardController = TextEditingController(); // ← NEW
 
   String? gender;
   String weakness = "No";
@@ -63,11 +64,11 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
   }
 
   Widget yesNoDropdown(
-    String title,
-    String value,
-    Function(String?) onChanged, {
-    IconData? icon,
-  }) {
+      String title,
+      String value,
+      Function(String?) onChanged, {
+        IconData? icon,
+      }) {
     return DropdownButtonFormField<String>(
       value: value,
       decoration: fieldDecoration(title, icon: icon),
@@ -176,7 +177,6 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
                 ),
                 child: Stack(
                   children: [
-                    // Decorative circles
                     Positioned(
                       right: -30,
                       top: -20,
@@ -201,7 +201,6 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
                         ),
                       ),
                     ),
-                    // Header text
                     Positioned(
                       bottom: 20,
                       left: 20,
@@ -266,7 +265,7 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
                           icon: Icons.child_care_rounded,
                         ),
                         validator: (v) =>
-                            v!.isEmpty ? "Please enter child name" : null,
+                        v!.isEmpty ? "Please enter child name" : null,
                       ),
                       const SizedBox(height: 14),
                       Row(
@@ -305,10 +304,10 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
                               items: ["Male", "Female"]
                                   .map(
                                     (e) => DropdownMenuItem(
-                                      value: e,
-                                      child: Text(e),
-                                    ),
-                                  )
+                                  value: e,
+                                  child: Text(e),
+                                ),
+                              )
                                   .toList(),
                               onChanged: (val) => setState(() => gender = val),
                             ),
@@ -383,7 +382,23 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
                           ),
                         ),
                         validator: (v) =>
-                            v!.isEmpty ? "Please enter address" : null,
+                        v!.isEmpty ? "Please enter address" : null,
+                      ),
+                      const SizedBox(height: 14),
+                      // ── Ward No. ──────────────────────────────────────
+                      TextFormField(
+                        controller: wardController,
+                        keyboardType: TextInputType.number,
+                        style: GoogleFonts.nunito(
+                          fontSize: 15,
+                          color: textDark,
+                        ),
+                        decoration: fieldDecoration(
+                          "Ward No.",
+                          icon: Icons.map_outlined,
+                        ),
+                        validator: (v) =>
+                        v!.isEmpty ? "Please enter ward number" : null,
                       ),
                     ]),
 
@@ -450,28 +465,28 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
                       yesNoDropdown(
                         "Weakness",
                         weakness,
-                        (val) => setState(() => weakness = val!),
+                            (val) => setState(() => weakness = val!),
                         icon: Icons.battery_alert_outlined,
                       ),
                       const SizedBox(height: 12),
                       yesNoDropdown(
                         "Low Appetite",
                         lowAppetite,
-                        (val) => setState(() => lowAppetite = val!),
+                            (val) => setState(() => lowAppetite = val!),
                         icon: Icons.no_food_outlined,
                       ),
                       const SizedBox(height: 12),
                       yesNoDropdown(
                         "Frequent Illness",
                         frequentIllness,
-                        (val) => setState(() => frequentIllness = val!),
+                            (val) => setState(() => frequentIllness = val!),
                         icon: Icons.sick_outlined,
                       ),
                       const SizedBox(height: 12),
                       yesNoDropdown(
                         "Diarrhea",
                         diarrhea,
-                        (val) => setState(() => diarrhea = val!),
+                            (val) => setState(() => diarrhea = val!),
                         icon: Icons.water_drop_outlined,
                       ),
                     ]),
@@ -539,7 +554,8 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
                           backgroundColor: primaryGreen,
                           foregroundColor: Colors.white,
                           elevation: 4,
-                          shadowColor: const Color(0xFF1565C0).withOpacity(0.4),
+                          shadowColor:
+                          const Color(0xFF1565C0).withOpacity(0.4),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
@@ -547,15 +563,23 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
                             try {
-                              final result = await ApiService.submitChildScreening(
+                              final result =
+                              await ApiService.submitChildScreening(
                                 name: nameController.text,
-                                ageMonths: int.tryParse(ageController.text) ?? 0,
+                                ageMonths:
+                                int.tryParse(ageController.text) ?? 0,
                                 gender: gender ?? "Male",
                                 parentName: parentController.text,
-                                weight: double.tryParse(weightController.text) ?? 0,
-                                height: double.tryParse(heightController.text) ?? 0,
-                                muac: double.tryParse(muacController.text) ?? 0,
+                                weight: double.tryParse(
+                                    weightController.text) ??
+                                    0,
+                                height: double.tryParse(
+                                    heightController.text) ??
+                                    0,
+                                muac:
+                                double.tryParse(muacController.text) ?? 0,
                                 address: addressController.text,
+                                wardNo: wardController.text, // ← NEW
                                 weakness: weakness == "Yes",
                                 lowAppetite: lowAppetite == "Yes",
                                 frequentIllness: frequentIllness == "Yes",
@@ -570,16 +594,27 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
                                 MaterialPageRoute(
                                   builder: (_) => RiskResultPage(
                                     childData: {
-                                      'ageMonths':       double.tryParse(ageController.text) ?? 0,
-                                      'muac':            double.tryParse(muacController.text) ?? 0,
-                                      'weight':          double.tryParse(weightController.text) ?? 0,
-                                      'height':          double.tryParse(heightController.text) ?? 0,
-                                      'weakness':        weakness == "Yes",
-                                      'lowAppetite':     lowAppetite == "Yes",
-                                      'frequentIllness': frequentIllness == "Yes",
-                                      'diarrhea':        diarrhea == "Yes",
-                                      'mealPlan':        result['mealPlan'],
-                                      'nutritionNeed':   result['nutritionNeed'],
+                                      'ageMonths': double.tryParse(
+                                          ageController.text) ??
+                                          0,
+                                      'muac': double.tryParse(
+                                          muacController.text) ??
+                                          0,
+                                      'weight': double.tryParse(
+                                          weightController.text) ??
+                                          0,
+                                      'height': double.tryParse(
+                                          heightController.text) ??
+                                          0,
+                                      'weakness': weakness == "Yes",
+                                      'lowAppetite': lowAppetite == "Yes",
+                                      'frequentIllness':
+                                      frequentIllness == "Yes",
+                                      'diarrhea': diarrhea == "Yes",
+                                      'wardNo': wardController.text, // ← NEW
+                                      'mealPlan': result['mealPlan'],
+                                      'nutritionNeed':
+                                      result['nutritionNeed'],
                                     },
                                   ),
                                 ),
