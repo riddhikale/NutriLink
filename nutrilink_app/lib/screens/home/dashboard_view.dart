@@ -73,24 +73,47 @@ class _DashboardViewState extends State<DashboardView> {
       return f["workerId"]?.toString() == currentPhone;
     }).toList();
 
+    final todayDate = DateTime(today.year, today.month, today.day);
+
     final todayCount = myFollowups.where((f) {
       final raw = f["createdAt"];
       DateTime? date;
 
       if (raw is Map && raw.containsKey('_seconds')) {
-        date = DateTime.fromMillisecondsSinceEpoch(raw['_seconds'] * 1000);
+        date = DateTime.fromMillisecondsSinceEpoch(
+          raw['_seconds'] * 1000,
+          isUtc: true,
+        ).toLocal();
       } else if (raw is String) {
-        date = DateTime.tryParse(raw);
+        date = DateTime.tryParse(raw)?.toLocal();
       }
 
       if (date == null) return false;
-      return date.year == today.year &&
-          date.month == today.month &&
-          date.day == today.day;
+
+      final itemDate = DateTime(date.year, date.month, date.day);
+
+      return itemDate == todayDate;
     }).length;
 
     final highRiskCount = myFollowups.where((f) {
-      return f["riskLevel"]?.toString().toLowerCase() == "high";
+      final raw = f["createdAt"];
+      DateTime? date;
+
+      if (raw is Map && raw.containsKey('_seconds')) {
+        date = DateTime.fromMillisecondsSinceEpoch(
+          raw['_seconds'] * 1000,
+          isUtc: true,
+        ).toLocal();
+      } else if (raw is String) {
+        date = DateTime.tryParse(raw)?.toLocal();
+      }
+
+      if (date == null) return false;
+
+      final itemDate = DateTime(date.year, date.month, date.day);
+
+      return itemDate == todayDate &&
+          f["riskLevel"]?.toString().toLowerCase() == "high";
     }).length;
 
     setState(() {
@@ -125,7 +148,7 @@ class _DashboardViewState extends State<DashboardView> {
                 const Text("Quick Add Screening",
                     style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 6),
-                const Text("No hot followed",
+                const Text("No followups",
                     style: TextStyle(color: Colors.grey)),
                 const SizedBox(height: 14),
                 SizedBox(
