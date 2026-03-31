@@ -33,6 +33,8 @@ class _DashboardViewState extends State<DashboardView> {
   List followups = [];
   bool isLoading = true;
 
+  List alerts = [];
+
   int screenedToday = 0;
   int highRiskCases = 0;
 
@@ -40,6 +42,7 @@ class _DashboardViewState extends State<DashboardView> {
   void initState() {
     super.initState();
     loadFollowups();
+    loadAlerts();
   }
 
   void loadFollowups() async {
@@ -64,6 +67,19 @@ class _DashboardViewState extends State<DashboardView> {
       setState(() => isLoading = false);
     }
   }
+
+  void loadAlerts() async {
+  try {
+    final data = await ApiService.getAlerts();
+
+    setState(() {
+      alerts = data;
+    });
+
+  } catch (e) {
+    print("Error fetching alerts: $e");
+  }
+}
 
   void loadSummaryStats() {
     final today = DateTime.now();
@@ -179,6 +195,29 @@ class _DashboardViewState extends State<DashboardView> {
           ),
 
           const SizedBox(height: 24),
+
+          if (alerts.isNotEmpty) ...[
+            const Text(
+              "🚨 Alerts",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+
+            ...alerts.map((a) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade100,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  a["message"] ?? "High risk detected",
+                  style: const TextStyle(color: Colors.red),
+                ),
+              );
+            }).toList(),
+          ],
 
           isLoading
               ? const Center(child: CircularProgressIndicator())

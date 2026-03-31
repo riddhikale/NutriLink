@@ -165,4 +165,13 @@ class ApiService {
     );
     print(response.body);
   }
+
+  static Future<List<dynamic>> getAlerts() async {
+  final response = await http.get(
+    Uri.parse("$baseUrl/api/alerts/pending"),
+    headers: {"Content-Type": "application/json"},
+  );
+
+  return jsonDecode(response.body);
+}
 }

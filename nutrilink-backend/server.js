@@ -11,6 +11,7 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 const voiceRoutes = require("./routes/voice");
 const followup = require("./routes/followupRouter");
 const alert = require("./routes/alertRoutes");
+const supervisor = require("./routes/dashboardRoutesSupervisor");
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -29,6 +30,7 @@ app.use("/api", dashboardRoutes);
 app.use("/api", voiceRoutes);
 app.use("/api", followup);
 app.use("/alerts", alert);
+app.use("/api/dashboard", supervisor);
 
 app.listen(port, "0.0.0.0", () => {
     console.log(`Server running on port ${port}`);
