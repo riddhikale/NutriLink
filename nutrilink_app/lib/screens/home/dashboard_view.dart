@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../screening/add_screening_page.dart';
 import '../../services/api_service.dart';
 import 'followup_page.dart';
+import 'followup_detail_page.dart';
 
 String formatDate(dynamic value) {
   if (value == null) return "No Date";
