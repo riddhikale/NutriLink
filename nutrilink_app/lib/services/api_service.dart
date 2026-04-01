@@ -187,4 +187,28 @@ class ApiService {
     );
     return jsonDecode(response.body);
   }
+
+  static Future<Map<String, dynamic>> getScreeningByBeneficiary(String id) async {
+    final response = await http.get(
+      Uri.parse("$baseUrl/api/screening/$id"), // ← confirm this with backend
+      headers: _headers,
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception("Failed to fetch screening");
+    }
+  }
+
+  static Future<Map<String, dynamic>> getScreening(String beneficiaryId, String screeningId) async {
+    final response = await http.get(
+      Uri.parse("$baseUrl/api/beneficiaries/$beneficiaryId/screenings/$screeningId"),
+      headers: _headers,
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception("Failed to fetch screening");
+    }
+  }
 }

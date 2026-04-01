@@ -24,7 +24,7 @@ String formatDate(dynamic value) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Colours (shared)
+// Colours
 // ─────────────────────────────────────────────────────────────
 const Color kPrimary = Color(0xFF1565C0);
 const Color kAccent = Color(0xFF1E88E5);
@@ -35,36 +35,28 @@ const Color kTextMuted = Color(0xFF546E7A);
 
 Color _riskColor(String risk) {
   switch (risk.toLowerCase()) {
-    case 'high':
-      return Colors.red.shade600;
-    case 'medium':
-      return Colors.orange.shade700;
-    default:
-      return Colors.green.shade700;
+    case 'high': return Colors.red.shade600;
+    case 'medium': return Colors.orange.shade700;
+    default: return Colors.green.shade700;
   }
 }
 
 Color _riskBg(String risk) {
   switch (risk.toLowerCase()) {
-    case 'high':
-      return Colors.red.shade50;
-    case 'medium':
-      return Colors.orange.shade50;
-    default:
-      return Colors.green.shade50;
+    case 'high': return Colors.red.shade50;
+    case 'medium': return Colors.orange.shade50;
+    default: return Colors.green.shade50;
   }
 }
 
 IconData _riskIcon(String risk) {
   switch (risk.toLowerCase()) {
-    case 'high':
-      return Icons.warning_amber_rounded;
-    case 'medium':
-      return Icons.info_outline_rounded;
-    default:
-      return Icons.check_circle_outline_rounded;
+    case 'high': return Icons.warning_amber_rounded;
+    case 'medium': return Icons.info_outline_rounded;
+    default: return Icons.check_circle_outline_rounded;
   }
 }
+
 class FollowupDetailPage extends StatelessWidget {
   final Map data;
   final VoidCallback onComplete;
@@ -95,8 +87,7 @@ class FollowupDetailPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label,
-                    style:
-                    GoogleFonts.nunito(fontSize: 12, color: kTextMuted)),
+                    style: GoogleFonts.nunito(fontSize: 12, color: kTextMuted)),
                 const SizedBox(height: 2),
                 Text(value,
                     style: GoogleFonts.poppins(
@@ -111,8 +102,101 @@ class FollowupDetailPage extends StatelessWidget {
     );
   }
 
+  // ─────────────────────────────────────────────────────────────
+  // Fetch meal plan — uses beneficiaryId + screeningId from
+  // the followup document (both are already stored there)
+  // ─────────────────────────────────────────────────────────────
+  Future<Map<String, dynamic>> _fetchMealPlan() async {
+    final beneficiaryId = data["beneficiaryId"]?.toString();
+    final screeningId = data["screeningId"]?.toString();
+
+    if (beneficiaryId == null || screeningId == null) {
+      throw Exception("Missing beneficiaryId or screeningId");
+    }
+
+    final screening = await ApiService.getScreening(beneficiaryId, screeningId);
+
+    final mealPlan = screening["mealPlan"];
+    if (mealPlan == null) throw Exception("No meal plan found");
+
+    // mealPlan is a Map (Firestore object), return it directly
+    return Map<String, dynamic>.from(mealPlan);
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Build meal plan widgets from the Firestore object
+  // mealPlan fields are dynamic — render each key as a section
+  // ─────────────────────────────────────────────────────────────
+  List<Widget> _buildMealWidgets(Map<String, dynamic> mealPlan) {
+    final List<Widget> widgets = [];
+
+    mealPlan.forEach((key, value) {
+      // Section header — convert camelCase key to readable label
+      final label = key
+          .replaceAllMapped(RegExp(r'([A-Z])'), (m) => ' ${m[0]}')
+          .trim()
+          .split(' ')
+          .map((w) => w[0].toUpperCase() + w.substring(1))
+          .join(' ');
+
+      widgets.add(
+        Padding(
+          padding: const EdgeInsets.only(top: 16, bottom: 8),
+          child: Text(
+            label,
+            style: GoogleFonts.poppins(
+                fontSize: 14, fontWeight: FontWeight.w600, color: kPrimary),
+          ),
+        ),
+      );
+
+      // Value can be a String, List, or nested Map
+      if (value is List) {
+        for (final item in value) {
+          widgets.add(_bulletItem(item.toString()));
+        }
+      } else if (value is Map) {
+        value.forEach((subKey, subValue) {
+          widgets.add(_bulletItem("$subKey: $subValue"));
+        });
+      } else {
+        widgets.add(_bulletItem(value.toString()));
+      }
+    });
+
+    return widgets;
+  }
+
+  Widget _bulletItem(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            margin: const EdgeInsets.only(top: 6),
+            width: 6,
+            height: 6,
+            decoration: const BoxDecoration(
+                color: kAccent, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: GoogleFonts.nunito(
+                  fontSize: 13, color: kTextDark, height: 1.5),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Bottom sheet
+  // ─────────────────────────────────────────────────────────────
   void _showMealPlan(BuildContext context, String name, String risk) {
-    final String meal = _generateMealPlan(risk);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -187,65 +271,56 @@ class FollowupDetailPage extends StatelessWidget {
                 ),
               ),
               const Divider(height: 24),
-              // Meal content
+              // ── Async meal content ──
               Expanded(
-                child: ListView(
-                  controller: controller,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  children: meal
-                      .split('\n')
-                      .where((line) => line.trim().isNotEmpty)
-                      .map((line) {
-                    final isHeader = line.startsWith('##');
-                    final isItem = line.startsWith('-');
-                    if (isHeader) {
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 16, bottom: 8),
-                        child: Text(
-                          line.replaceAll('##', '').trim(),
-                          style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: kPrimary),
-                        ),
-                      );
-                    } else if (isItem) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                child: FutureBuilder<Map<String, dynamic>>(
+                  future: _fetchMealPlan(),
+                  builder: (context, snapshot) {
+                    // Loading
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Container(
-                              margin: const EdgeInsets.only(top: 6),
-                              width: 6,
-                              height: 6,
-                              decoration: const BoxDecoration(
-                                  color: kAccent, shape: BoxShape.circle),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                line.replaceFirst('-', '').trim(),
-                                style: GoogleFonts.nunito(
-                                    fontSize: 13,
-                                    color: kTextDark,
-                                    height: 1.5),
-                              ),
-                            ),
+                            CircularProgressIndicator(color: kPrimary),
+                            SizedBox(height: 16),
+                            Text("Loading meal plan…"),
                           ],
                         ),
                       );
-                    } else {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 6),
-                        child: Text(line,
-                            style: GoogleFonts.nunito(
-                                fontSize: 13,
-                                color: kTextMuted,
-                                height: 1.5)),
+                    }
+
+                    // Error
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.error_outline_rounded,
+                                  color: Colors.red, size: 40),
+                              const SizedBox(height: 12),
+                              Text(
+                                "Could not load meal plan.\nPlease try again.",
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.nunito(
+                                    fontSize: 14, color: kTextMuted),
+                              ),
+                            ],
+                          ),
+                        ),
                       );
                     }
-                  }).toList(),
+
+                    // Success
+                    final mealPlan = snapshot.data!;
+                    return ListView(
+                      controller: controller,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      children: _buildMealWidgets(mealPlan),
+                    );
+                  },
                 ),
               ),
               const SizedBox(height: 20),
@@ -256,101 +331,13 @@ class FollowupDetailPage extends StatelessWidget {
     );
   }
 
-  String _generateMealPlan(String risk) {
-    switch (risk.toLowerCase()) {
-      case 'high':
-        return '''
-## Breakfast
-- Iron-rich porridge with jaggery and groundnuts
-- Boiled egg or dal
-- Fresh fruit (banana or papaya)
-- Warm milk with turmeric
-
-## Mid-Morning Snack
-- Roasted chana or peanuts
-- Fresh coconut water
-
-## Lunch
-- 2 rotis with green leafy vegetable sabzi (palak/methi)
-- Rice with dal (protein-rich)
-- Curd / buttermilk
-- Seasonal vegetables (cooked with ghee)
-
-## Evening Snack
-- Sprouted moong chaat
-- Fruit with a handful of nuts
-
-## Dinner
-- Khichdi (rice + moong dal) with ghee
-- Steamed vegetables or soup
-- Warm milk before bed
-
-## Key Nutrients to Focus On
-- Iron, Protein, Calcium, Vitamin C, Zinc
-''';
-      case 'medium':
-        return '''
-## Breakfast
-- Upma or poha with vegetables
-- Boiled egg (optional)
-- Fresh fruit
-
-## Mid-Morning Snack
-- Buttermilk or lassi
-- Handful of mixed nuts
-
-## Lunch
-- 2 rotis with sabzi
-- Rice with dal or sambar
-- Salad with lemon dressing
-
-## Evening Snack
-- Fruits or roasted snacks
-- Herbal tea
-
-## Dinner
-- Khichdi or light rice with dal
-- Vegetable soup
-- Warm milk
-
-## Key Nutrients to Focus On
-- Balanced macros, Vitamin A, Iron, Calcium
-''';
-      default:
-        return '''
-## Breakfast
-- Idli / dosa with sambar
-- Fresh fruit or juice
-- Milk
-
-## Mid-Morning Snack
-- Seasonal fruit
-- Nuts
-
-## Lunch
-- Rice, dal, sabzi, curd
-- Salad
-
-## Evening Snack
-- Sprouts or fruit
-- Buttermilk
-
-## Dinner
-- Roti with dal or vegetable curry
-- Warm milk
-
-## Key Nutrients to Focus On
-- General balanced diet, Hydration, Fiber
-''';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final String name =
         data["name"]?.toString() ?? data["beneficiaryId"]?.toString() ?? "N/A";
     final String risk = data["riskLevel"]?.toString() ?? "low";
-    final String date = formatDate(data["followUpDate"] ?? data["followupDate"]);
+    final String date =
+    formatDate(data["followUpDate"] ?? data["followupDate"]);
     final String address = data["address"]?.toString() ?? "—";
 
     return Scaffold(
@@ -542,8 +529,7 @@ class FollowupDetailPage extends StatelessWidget {
                                     "Recommended diet for ${risk.toLowerCase()} risk",
                                     style: GoogleFonts.nunito(
                                         fontSize: 12,
-                                        color:
-                                        Colors.white.withOpacity(0.8))),
+                                        color: Colors.white.withOpacity(0.8))),
                               ],
                             ),
                           ),
