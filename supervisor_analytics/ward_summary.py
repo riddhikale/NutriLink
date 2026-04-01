@@ -1,0 +1,1 @@
+#calculates ward wise risk counts for bar chart and tables
