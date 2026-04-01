@@ -18,15 +18,15 @@ def ward_summary(data):
     return summary.to_dict(orient="records")
 
 #TESTING
-if __name__ == "__main__":
-
-    sample_data = [
-        {"wardNo":1,"riskTag":"High"},
-        {"wardNo":1,"riskTag":"Medium"},
-        {"wardNo":1,"riskTag":"High"},
-        {"wardNo":2,"riskTag":"Low"},
-        {"wardNo":2,"riskTag":"Medium"},
-        {"wardNo":3,"riskTag":"High"}
-    ]
-
-    print(ward_summary(sample_data))
+# if __name__ == "__main__":
+#
+#     sample_data = [
+#         {"wardNo":1,"riskTag":"High"},
+#         {"wardNo":1,"riskTag":"Medium"},
+#         {"wardNo":1,"riskTag":"High"},
+#         {"wardNo":2,"riskTag":"Low"},
+#         {"wardNo":2,"riskTag":"Medium"},
+#         {"wardNo":3,"riskTag":"High"}
+#     ]
+#
+#     print(ward_summary(sample_data))
