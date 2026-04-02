@@ -1,3 +1,6 @@
+import sys
+import json
+
 from risk_distribution import risk_distribution
 from ward_summary import ward_summary
 from heatmap import heatmap_data
@@ -14,6 +17,25 @@ def run_all_analytics(data):
     }
 
     return results
+
+if __name__ == "__main__":
+
+    try:
+        # Read JSON input from Node
+        input_data = json.loads(sys.stdin.read())
+
+        result = run_all_analytics(input_data)
+
+        # Return JSON output
+        print(json.dumps(result))
+
+    except Exception as e:
+
+        # Return error in JSON format
+        print(json.dumps({
+            "error": str(e)
+        }))
+
 
 #TESTING
 # if __name__ == "__main__":
