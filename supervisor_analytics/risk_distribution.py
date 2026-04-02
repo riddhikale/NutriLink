@@ -1,24 +1,36 @@
-#calculates risk (hig/medium/low) for pie charts
+#calculates risk (hig/medium/low) with child and pregnant women comparison used for stacked bar chart
 
 import pandas as pd
 
 def risk_distribution(data):
 
-    # Convert input data into dataframe
     df = pd.DataFrame(data)
 
-    # Count each risk category
     distribution = (
         df["riskTag"]
         .value_counts()
         .reset_index()
     )
 
-    # Rename columns
-    distribution.columns = ["riskLevel", "count"]
+    distribution.columns = ["riskLevel","count"]
 
-    # Convert result back to JSON format
     return distribution.to_dict(orient="records")
+
+
+def risk_distribution_by_type(data):
+
+    df = pd.DataFrame(data)
+
+    summary = (
+        df.groupby("type")["riskTag"]
+        .value_counts()
+        .unstack(fill_value=0)
+        .reset_index()
+    )
+
+    return summary.to_dict(orient="records")
+
+
 
 #TESTING
 # if __name__ == "__main__":
