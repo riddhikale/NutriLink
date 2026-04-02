@@ -1,26 +1,30 @@
 import pandas as pd
+import numpy as np
 
 def risk_index(data):
 
     df = pd.DataFrame(data)
 
-    # Assign risk scores
+    if "riskTag" not in df.columns:
+        return []
+
     risk_scores = {
-        "High": 3,
-        "Medium": 2,
-        "Low": 1
+        "high": 3,
+        "medium": 2,
+        "low": 1
     }
 
-    df["riskScore"] = df["riskTag"].map(risk_scores)
+    df["riskScore"] = df["riskTag"].str.lower().map(risk_scores)
 
-    # Calculate average risk score per ward
     index = (
         df.groupby("wardNo")["riskScore"]
         .mean()
         .reset_index(name="riskIndex")
     )
 
-    # Round values for cleaner dashboard display
+    # Replace NaN with 0 so JSON stays valid
+    index["riskIndex"] = index["riskIndex"].fillna(0)
+
     index["riskIndex"] = index["riskIndex"].round(2)
 
     return index.to_dict(orient="records")

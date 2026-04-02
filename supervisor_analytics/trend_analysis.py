@@ -5,8 +5,12 @@ def monthly_trend(data):
 
     df = pd.DataFrame(data)
 
+    if "screeningDate" not in df.columns:
+        return []
+
     # Convert screeningDate to datetime
-    df["screeningDate"] = pd.to_datetime(df["screeningDate"])
+    df["screeningDate"] = pd.to_datetime(df["screeningDate"], errors='coerce')
+    df["screeningDate"] = df["screeningDate"].dt.tz_localize(None)
 
     # Extract month
     df["month"] = df["screeningDate"].dt.to_period("M")

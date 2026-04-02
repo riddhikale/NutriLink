@@ -2,9 +2,14 @@
 
 import pandas as pd
 
+import pandas as pd
+
 def risk_distribution(data):
 
     df = pd.DataFrame(data)
+
+    if "riskTag" not in df.columns:
+        return []
 
     distribution = (
         df["riskTag"]
@@ -20,6 +25,9 @@ def risk_distribution(data):
 def risk_distribution_by_type(data):
 
     df = pd.DataFrame(data)
+
+    if "type" not in df.columns or "riskTag" not in df.columns:
+        return []
 
     summary = (
         df.groupby("type")["riskTag"]
