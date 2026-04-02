@@ -1,7 +1,8 @@
 import sys
 import json
+import pandas as pd
 
-from risk_distribution import risk_distribution
+from risk_distribution import risk_distribution, risk_distribution_by_type
 from ward_summary import ward_summary
 from heatmap import heatmap_data
 from trend_analysis import monthly_trend
@@ -12,46 +13,46 @@ from risk_index import risk_index
 
 def run_all_analytics(data):
 
+    # Convert incoming JSON to DataFrame
+    df = pd.DataFrame(data)
+
+    # If required columns are missing, return empty analytics
+    required_columns = ["wardNo", "riskTag", "screeningDate"]
+
+    for col in required_columns:
+        if col not in df.columns:
+            return {
+                "message": f"Missing column: {col}"
+            }
+
+    cleaned_data = df.to_dict(orient="records")
+
     results = {
-        "riskDistribution": risk_distribution(data),
-        "wardSummary": ward_summary(data),
-        "heatmap": heatmap_data(data),
-        "trend": monthly_trend(data),
-        "coverage": coverage_analysis(data),
-        "hotspots": hotspot_detection(data),
-        "riskIndex": risk_index(data)
+        "riskDistribution": risk_distribution(cleaned_data),
+        "riskDistributionByType": risk_distribution_by_type(cleaned_data),
+        "wardSummary": ward_summary(cleaned_data),
+        "heatmap": heatmap_data(cleaned_data),
+        "trend": monthly_trend(cleaned_data),
+        "coverage": coverage_analysis(cleaned_data),
+        "hotspots": hotspot_detection(cleaned_data),
+        "riskIndex": risk_index(cleaned_data)
     }
 
     return results
 
+
 if __name__ == "__main__":
 
     try:
-        # Read JSON input from Node
+
         input_data = json.loads(sys.stdin.read())
 
         result = run_all_analytics(input_data)
 
-        # Return JSON output
         print(json.dumps(result))
 
     except Exception as e:
 
-        # Return error in JSON format
         print(json.dumps({
             "error": str(e)
         }))
-
-
-#TESTING
-# if __name__ == "__main__":
-#
-#     sample_data = [
-#         {"wardNo":1,"riskTag":"High","screeningDate":"2026-01-10"},
-#         {"wardNo":1,"riskTag":"Medium","screeningDate":"2026-01-15"},
-#         {"wardNo":2,"riskTag":"High","screeningDate":"2026-02-02"},
-#         {"wardNo":2,"riskTag":"Low","screeningDate":"2026-02-10"},
-#         {"wardNo":3,"riskTag":"High","screeningDate":"2026-03-05"}
-#     ]
-#
-#     print(run_all_analytics(sample_data))

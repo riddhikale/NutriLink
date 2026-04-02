@@ -9,39 +9,49 @@ router.post("/supervisor-analytics", async (req, res) => {
 
         const db = admin.firestore();
 
-        // Fetch screening records from Firestore
-        const snapshot = await db.collection("screenings").get();
-
         let screeningData = [];
 
-        snapshot.forEach(doc => {
-            const data = doc.data();
+        // Get all beneficiaries
+        const beneficiariesSnapshot = await db.collection("beneficiaries").get();
 
-            // Only push fields needed for analytics
-            screeningData.push({
-                wardNo: data.wardNo,
-                riskTag: data.riskTag,
-                screeningDate: data.screeningDate
+        for (const doc of beneficiariesSnapshot.docs) {
+
+            const screeningsSnapshot = await doc.ref.collection("screenings").get();
+
+            screeningsSnapshot.forEach(s => {
+
+                const data = s.data();
+
+                screeningData.push({
+                    wardNo: Number(data.wardNo),
+                    riskTag: data.riskLevel,  // mapping Firestore -> analytics
+                    screeningDate: data.createdAt
+                        ? data.createdAt.toDate().toISOString()
+                        : null,
+                    type: data.type || "unknown"
+                });
+
             });
-        });
 
-        // Run Python analytics script
+        }
+
+        // Run Python analytics
         const pythonProcess = spawn("python", ["../supervisor_analytics/main.py"]);
 
         let result = "";
         let error = "";
 
-        // Send data to Python
         pythonProcess.stdin.write(JSON.stringify(screeningData));
         pythonProcess.stdin.end();
 
-        // Receive Python output
         pythonProcess.stdout.on("data", (data) => {
-            result += data.toString();
+            const text = data.toString();
+            console.log("PYTHON OUTPUT:", text);
+            result += text;
         });
 
         pythonProcess.stderr.on("data", (data) => {
-            error += data.toString();
+            console.error("Python stderr:", data.toString());
         });
 
         pythonProcess.on("close", () => {
