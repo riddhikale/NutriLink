@@ -5,6 +5,9 @@ from risk_distribution import risk_distribution
 from ward_summary import ward_summary
 from heatmap import heatmap_data
 from trend_analysis import monthly_trend
+from coverage_analysis import coverage_analysis
+from hotspot_detection import hotspot_detection
+from risk_index import risk_index
 
 
 def run_all_analytics(data):
@@ -13,7 +16,10 @@ def run_all_analytics(data):
         "riskDistribution": risk_distribution(data),
         "wardSummary": ward_summary(data),
         "heatmap": heatmap_data(data),
-        "trend": monthly_trend(data)
+        "trend": monthly_trend(data),
+        "coverage": coverage_analysis(data),
+        "hotspots": hotspot_detection(data),
+        "riskIndex": risk_index(data)
     }
 
     return results

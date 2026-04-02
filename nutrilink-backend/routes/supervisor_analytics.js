@@ -1,12 +1,29 @@
 const express = require("express");
 const router = express.Router();
 const { spawn } = require("child_process");
+const admin = require("firebase-admin");
 
 router.post("/supervisor-analytics", async (req, res) => {
 
     try {
 
-        const screeningData = req.body;
+        const db = admin.firestore();
+
+        // Fetch screening records from Firestore
+        const snapshot = await db.collection("screenings").get();
+
+        let screeningData = [];
+
+        snapshot.forEach(doc => {
+            const data = doc.data();
+
+            // Only push fields needed for analytics
+            screeningData.push({
+                wardNo: data.wardNo,
+                riskTag: data.riskTag,
+                screeningDate: data.screeningDate
+            });
+        });
 
         // Run Python analytics script
         const pythonProcess = spawn("python", ["../supervisor_analytics/main.py"]);
@@ -14,11 +31,11 @@ router.post("/supervisor-analytics", async (req, res) => {
         let result = "";
         let error = "";
 
-        // Send JSON data to Python
+        // Send data to Python
         pythonProcess.stdin.write(JSON.stringify(screeningData));
         pythonProcess.stdin.end();
 
-        // Receive analytics output
+        // Receive Python output
         pythonProcess.stdout.on("data", (data) => {
             result += data.toString();
         });
