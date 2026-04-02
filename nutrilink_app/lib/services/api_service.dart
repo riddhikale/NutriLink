@@ -7,6 +7,8 @@ class ApiService {
   // ── Stored after login ──────────────────────────────────
   static String? authToken;
   static String? currentUserPhone;
+  static String? currentUserName;
+  static String? currentUserRole;
 
   // ── Attach token to every protected request ─────────────
   static Map<String, String> get _headers => {
@@ -53,9 +55,11 @@ class ApiService {
 
     final data = jsonDecode(response.body);
 
-    // ── Save token and phone from login response ────────────
-    authToken = data["token"];
+    // ── Save all user info from login response ──────────────
+    authToken        = data["token"];
     currentUserPhone = data["user"]?["phone"];
+    currentUserName  = data["user"]?["name"];
+    currentUserRole  = data["user"]?["role"];
 
     return data;
   }
@@ -73,7 +77,7 @@ class ApiService {
     required bool frequentIllness,
     required bool diarrhea,
     required String address,
-    required String wardNo,   // ← NEW
+    required String wardNo,
     required String notes,
   }) async {
     final response = await http.post(
@@ -92,7 +96,7 @@ class ApiService {
         "frequentIllness": frequentIllness,
         "diarrhea": diarrhea,
         "address": address,
-        "wardNo": wardNo,     // ← NEW
+        "wardNo": wardNo,
         "notes": notes,
       }),
     );
@@ -125,7 +129,7 @@ class ApiService {
     required bool lowAppetite,
     required bool pastAnemia,
     required String address,
-    required String wardNo,   // ← NEW
+    required String wardNo,
     required String notes,
   }) async {
     final response = await http.post(
@@ -146,7 +150,7 @@ class ApiService {
         "lowAppetite": lowAppetite,
         "pastAnemia": pastAnemia,
         "address": address,
-        "wardNo": wardNo,     // ← NEW
+        "wardNo": wardNo,
         "notes": notes,
       }),
     );
@@ -190,7 +194,7 @@ class ApiService {
 
   static Future<Map<String, dynamic>> getScreeningByBeneficiary(String id) async {
     final response = await http.get(
-      Uri.parse("$baseUrl/api/screening/$id"), // ← confirm this with backend
+      Uri.parse("$baseUrl/api/screening/$id"),
       headers: _headers,
     );
     if (response.statusCode == 200) {
@@ -200,9 +204,11 @@ class ApiService {
     }
   }
 
-  static Future<Map<String, dynamic>> getScreening(String beneficiaryId, String screeningId) async {
+  static Future<Map<String, dynamic>> getScreening(
+      String beneficiaryId, String screeningId) async {
     final response = await http.get(
-      Uri.parse("$baseUrl/api/beneficiaries/$beneficiaryId/screenings/$screeningId"),
+      Uri.parse(
+          "$baseUrl/api/beneficiaries/$beneficiaryId/screenings/$screeningId"),
       headers: _headers,
     );
     if (response.statusCode == 200) {

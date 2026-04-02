@@ -3,10 +3,28 @@ import '../profile/settings_page.dart';
 import '../profile/work_history_page.dart';
 
 class ProfileView extends StatelessWidget {
-  const ProfileView({super.key});
+  final String name;
+  final String phoneNumber;
+  final String role;
+
+  const ProfileView({
+    super.key,
+    required this.name,
+    required this.phoneNumber,
+    this.role = 'NGO Worker',
+  });
 
   @override
   Widget build(BuildContext context) {
+    // Generate initials dynamically from name
+    final initials = name
+        .trim()
+        .split(' ')
+        .where((e) => e.isNotEmpty)
+        .map((e) => e[0].toUpperCase())
+        .take(2)
+        .join();
+
     return Scaffold(
       backgroundColor: const Color(0xFFF0F6FF),
       body: SafeArea(
@@ -19,9 +37,9 @@ class ProfileView extends StatelessWidget {
               CircleAvatar(
                 radius: 44,
                 backgroundColor: const Color(0xFFBDD7F5),
-                child: const Text(
-                  'VC',
-                  style: TextStyle(
+                child: Text(
+                  initials,
+                  style: const TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF2A6DB5),
@@ -31,9 +49,9 @@ class ProfileView extends StatelessWidget {
               const SizedBox(height: 14),
 
               // Name
-              const Text(
-                'Vedant Chaudhari',
-                style: TextStyle(
+              Text(
+                name,
+                style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
                   color: Color(0xFF1A3A5C),
@@ -41,10 +59,10 @@ class ProfileView extends StatelessWidget {
               ),
               const SizedBox(height: 4),
 
-              // Phone number  ← NEW
-              const Text(
-                '+91 98765 43210',
-                style: TextStyle(
+              // Phone number
+              Text(
+                phoneNumber,
+                style: const TextStyle(
                   fontSize: 14,
                   color: Color(0xFF4A90C4),
                   fontWeight: FontWeight.w500,
@@ -53,9 +71,9 @@ class ProfileView extends StatelessWidget {
               const SizedBox(height: 4),
 
               // Role
-              const Text(
-                'NGO Worker',
-                style: TextStyle(
+              Text(
+                role,
+                style: const TextStyle(
                   fontSize: 14,
                   color: Color(0xFF6A9FC0),
                   fontWeight: FontWeight.w400,
@@ -69,14 +87,14 @@ class ProfileView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _buildMenuItem(
+                    buildMenuItem(
                       context,
                       icon: Icons.work_outline_rounded,
                       title: 'Work History',
                       page: const WorkHistoryPage(),
                     ),
                     const SizedBox(height: 12),
-                    _buildMenuItem(
+                    buildMenuItem(
                       context,
                       icon: Icons.settings_outlined,
                       title: 'Settings',
@@ -92,7 +110,7 @@ class ProfileView extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuItem(
+  Widget buildMenuItem(
       BuildContext context, {
         required IconData icon,
         required String title,
