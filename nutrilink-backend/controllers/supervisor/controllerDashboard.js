@@ -1,13 +1,10 @@
-const { db } = require("../config/firebaseConfig");
+const { db } = require("../../config/firebaseConfig");
 
 async function getDashboardSummary(req, res) {
   try {
     const snapshot = await db.collectionGroup("screenings").get();
 
-    let total = 0;
-    let high = 0;
-    let medium = 0;
-    let low = 0;
+    let total = 0, high = 0, medium = 0, low = 0;
 
     snapshot.forEach(doc => {
       const data = doc.data();
@@ -18,18 +15,14 @@ async function getDashboardSummary(req, res) {
       else low++;
     });
 
-    res.json({
-      totalScreenings: total,
-      highRisk: high,
-      mediumRisk: medium,
-      lowRisk: low
-    });
+    res.json({ total, high, medium, low });
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error fetching dashboard summary" });
+    res.status(500).json({ message: "Error fetching summary" });
   }
 }
+
 
 async function getAreaSummary(req, res) {
   try {
@@ -42,12 +35,7 @@ async function getAreaSummary(req, res) {
       const area = data.address || "Unknown";
 
       if (!areaMap[area]) {
-        areaMap[area] = {
-          high: 0,
-          medium: 0,
-          low: 0,
-          total: 0
-        };
+        areaMap[area] = { high: 0, medium: 0, low: 0, total: 0 };
       }
 
       areaMap[area].total++;
@@ -60,30 +48,34 @@ async function getAreaSummary(req, res) {
     res.json(areaMap);
 
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Error fetching area summary" });
   }
 }
 
-async function getDueFollowups(req, res) {
-  try {
-    const today = new Date();
 
+async function getFollowupsDue(req, res) {
+  try {
     const snapshot = await db
       .collection("followups")
       .where("status", "==", "pending")
       .get();
 
+    const today = new Date();
     const result = [];
 
     snapshot.forEach(doc => {
       const data = doc.data();
 
-      // if (new Date(data.followupDate) <= today) {
-      if (new Date(data.followupDate) <= today) {
+      const followupDate = new Date(data.followupDate);
+
+      //if (followupDate <= today || data.riskLevel === "high") {
+      if (true) {
         result.push({
           name: data.name,
           risk: data.riskLevel,
-          followupDate: data.followupDate
+          date: data.followupDate,
+          address: data.address
         });
       }
     });
@@ -91,6 +83,7 @@ async function getDueFollowups(req, res) {
     res.json(result);
 
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Error fetching followups" });
   }
 }
@@ -98,5 +91,5 @@ async function getDueFollowups(req, res) {
 module.exports = {
   getDashboardSummary,
   getAreaSummary,
-  getDueFollowups
+  getFollowupsDue
 };
