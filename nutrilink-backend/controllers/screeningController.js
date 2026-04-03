@@ -17,7 +17,7 @@ async function childScreening(req, res) {
       frequentIllness,
       diarrhea,
       address,
-      wardNo,   // ← NEW
+      wardNo, 
       notes,
     } = req.body;
 
@@ -63,7 +63,11 @@ async function childScreening(req, res) {
       ? mealDoc.data()
       : (await db.collection("meal_plans").doc("balanced").get()).data();
 
+    const uniqueIds = Date.now().toString().slice(-4);
+    const screeningId = `${safeName}_${uniqueIds}`;
+
     const screeningData = {
+      screeningId,
       beneficiaryId,
       name,
       ageMonths,
@@ -81,15 +85,18 @@ async function childScreening(req, res) {
       nutritionNeed,
       mealPlan,
       address: address || "",
-      wardNo: wardNo || "",   // ← NEW
+      wardNo: wardNo || "",   
       createdAt: new Date(),
     };
 
-    const screeningRef = await db
+
+    const screeningRef = db
       .collection("beneficiaries")
       .doc(beneficiaryId)
       .collection("screenings")
-      .add(screeningData);
+      .doc(screeningId);
+
+    await screeningRef.set(screeningData);
 
     let followupType = "routine";
     let followUpDate = new Date();
@@ -104,13 +111,18 @@ async function childScreening(req, res) {
       followUpDate.setDate(followUpDate.getDate() + 7);
     }
 
-    await db.collection("followups").add({
+    const uniqueId = Date.now().toString().slice(-4);
+    const followupId = `${safeName}_${uniqueId}`;
+    
+    await db.collection("followups")
+    .doc(followupId)
+    .set({
       beneficiaryId,
       screeningId: screeningRef.id,
-      workerId,
+      workerId: workerId || null,
       name,
       address: address || "",
-      wardNo: wardNo || "",   // ← NEW
+      wardNo: wardNo || "", 
       type: followupType,
       beneficiaryType: "child",
       riskLevel: result.level,
@@ -163,7 +175,7 @@ async function pregWomenScreening(req, res) {
       lowAppetite,
       pastAnemia,
       address,
-      wardNo,   // ← NEW
+      wardNo,  
       notes,
     } = req.body;
 
@@ -177,7 +189,7 @@ async function pregWomenScreening(req, res) {
     await beneficiaryRef.set({
       name,
       address: address || "",
-      wardNo: wardNo || "",   // ← NEW
+      wardNo: wardNo || "",  
       type: "pregnant",
       createdAt: new Date(),
     });
@@ -210,7 +222,11 @@ async function pregWomenScreening(req, res) {
       ? mealDoc.data()
       : (await db.collection("meal_plans").doc("balanced").get()).data();
 
+    const uniqueIds = Date.now().toString().slice(-4);
+    const screeningId = `${safeName}_${uniqueIds}`;
+
     const screeningData = {
+      screeningId,
       type: "pregnantWomen",
       beneficiaryId,
       name,
@@ -229,17 +245,19 @@ async function pregWomenScreening(req, res) {
       nutritionNeed,
       mealPlan,
       address: address || "",
-      wardNo: wardNo || "",   // ← NEW
+      wardNo: wardNo || "",   
       notes: notes || "",
       riskLevel: result.level,
       createdAt: new Date(),
     };
 
-    const screeningRef = await db
+    const screeningRef = db
       .collection("beneficiaries")
       .doc(beneficiaryId)
       .collection("screenings")
-      .add(screeningData);
+      .doc(screeningId);
+
+    await screeningRef.set(screeningData);
 
     let followupType = "routine";
     let followUpDate = new Date();
@@ -254,7 +272,12 @@ async function pregWomenScreening(req, res) {
       followUpDate.setDate(followUpDate.getDate() + 7);
     }
 
-    await db.collection("followups").add({
+    const uniqueId = Date.now().toString().slice(-4);
+    const followupId = `${safeName}_${uniqueId}`;
+
+    await db.collection("followups")
+    .doc(followupId)
+    .set({
       beneficiaryId,
       screeningId: screeningRef.id,
       workerId,

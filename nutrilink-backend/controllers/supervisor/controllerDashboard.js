@@ -67,14 +67,16 @@ async function getFollowupsDue(req, res) {
     snapshot.forEach(doc => {
       const data = doc.data();
 
-      const followupDate = new Date(data.followupDate);
+      //const followupDate = new Date(data.followupDate);
+      const rawDate = data.followUpDate;
+      const followUpDate = rawDate?.toDate ? rawDate.toDate() : new Date(rawDate);
 
       //if (followupDate <= today || data.riskLevel === "high") {
       if (true) {
         result.push({
           name: data.name,
           risk: data.riskLevel,
-          date: data.followupDate,
+          date: followUpDate,
           address: data.address
         });
       }
@@ -87,9 +89,83 @@ async function getFollowupsDue(req, res) {
     res.status(500).json({ message: "Error fetching followups" });
   }
 }
+async function getRiskHeatmap(req, res) {
+  try {
+    const snapshot = await db.collection("followups").get();
+
+    const areaMap = {};
+
+    snapshot.forEach(doc => {
+      const data = doc.data();
+
+      const area = data.address || "Unknown";
+
+      if (!areaMap[area]) {
+        areaMap[area] = {
+          count: 0
+        };
+      }
+
+      if (data.riskLevel === "high") {
+        areaMap[area].count += 2; // high weight
+      } else if (data.riskLevel === "medium") {
+        areaMap[area].count += 1;
+      }
+    });
+
+    const result = Object.keys(areaMap).map(area => ({
+      area,
+      lat: 19.0,   // temporary
+      lng: 72.8,   // temporary
+      riskScore: areaMap[area].count
+    }));
+
+    res.json(result);
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+async function getTrendAnalysis(req, res) {
+  try {
+    const snapshot = await db.collection("followups").get();
+
+    const monthMap = {};
+
+    snapshot.forEach(doc => {
+      const data = doc.data();
+
+      if (!data.followUpDate || data.riskLevel !== "high") return;
+
+      //const date = new Date(data.followUpDate);
+      const rawDate = data.followUpDate;
+      const date = rawDate.toDate ? rawDate.toDate() : new Date(rawDate);
+      const month = date.toLocaleString("default", { month: "short" });
+
+      if (!monthMap[month]) {
+        monthMap[month] = 0;
+      }
+
+      monthMap[month]++;
+    });
+
+    const result = Object.keys(monthMap).map(month => ({
+      month,
+      highRisk: monthMap[month]
+    }));
+
+    res.json(result);
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
 
 module.exports = {
   getDashboardSummary,
   getAreaSummary,
-  getFollowupsDue
+  getFollowupsDue,
+  getRiskHeatmap,
+  getTrendAnalysis
 };
