@@ -5,7 +5,7 @@ const  jwt = require("jsonwebtoken");
 async function registerTest(req, res){
   try {
     const { name, phone, pin, role} = req.body;
-    const allowedRoles = ["WORKER", "SUPERVISOR"];
+    const allowedRoles = ["FIELD_WORKER","SUPERVISOR"];
     const cleanPhone = phone.trim();
 
     if (!name || !phone || !pin ||!role) {
@@ -111,7 +111,7 @@ async function loginTest(req,res){
             {expiresIn: "1d"}
         );
 
-        if (!["WORKER", "SUPERVISOR"].includes(userData.role)) {
+        if (!["FIELD_WORKER", "SUPERVISOR"].includes(userData.role)) {
           return res.status(403).json({
             success: false,
             message: "Unauthorized role"
