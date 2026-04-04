@@ -4,6 +4,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'screens/auth/login_page.dart';
 import 'package:provider/provider.dart';
 import 'screens/home/followup_provider.dart';
+import 'screens/home/home_dashboard.dart';
+
 
 
 // --- CONSTANTS ---
@@ -118,7 +120,9 @@ class _NutriLinkAppState extends State<NutriLinkApp> {
       title: 'NutriLink',
       debugShowCheckedModeBanner: false,
       locale: _locale,
-
+      routes: {
+        '/dashboard': (context) => const HomeDashboard(),
+      },
       supportedLocales: const [
         Locale('en'),
         Locale('hi'),
