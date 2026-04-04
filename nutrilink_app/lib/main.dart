@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'screens/auth/login_page.dart';
+import 'package:provider/provider.dart';
+import 'screens/home/followup_provider.dart';
+
 
 // --- CONSTANTS ---
 const Color kPrimaryBlue = Color(0xFF1976D2);
@@ -9,7 +12,15 @@ const Color kLightBlueBg = Color(0xFFE3F2FD);
 const Color kTextColor = Color(0xFF2D2D2D);
 
 void main() {
-  runApp(const NutriLinkApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => FollowUpProvider()),
+        // add other providers here if needed
+      ],
+      child: const NutriLinkApp(),
+    ),
+  );
 }
 
 // --- SIMPLE TRANSLATION MAP ---

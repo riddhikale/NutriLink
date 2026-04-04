@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../services/api_service.dart';
+import 'package:provider/provider.dart';
+import 'followup_provider.dart';
 import 'followup_detail_page.dart';
 
 // ─────────────────────────────────────────────────────────────
@@ -68,7 +69,7 @@ IconData _riskIcon(String risk) {
 }
 
 // ═════════════════════════════════════════════════════════════
-// FOLLOWUP LIST PAGE
+// FOLLOWUP LIST PAGE  (now uses FollowUpProvider)
 // ═════════════════════════════════════════════════════════════
 class FollowupPage extends StatefulWidget {
   const FollowupPage({super.key});
@@ -78,172 +79,201 @@ class FollowupPage extends StatefulWidget {
 }
 
 class _FollowupPageState extends State<FollowupPage> {
-  List followups = [];
-  bool isLoading = true;
-
   @override
   void initState() {
     super.initState();
-    loadFollowups();
+    // Load on first open
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<FollowUpProvider>().loadFollowups();
+    });
   }
 
-  void loadFollowups() async {
+  Future<void> _handleComplete(String id) async {
     try {
-      final data = await ApiService.getFollowups();
-      data.sort((a, b) {
-        final sA = (a["followUpDate"] ?? a["followupDate"])?["_seconds"] ?? 0;
-        final sB = (b["followUpDate"] ?? b["followupDate"])?["_seconds"] ?? 0;
-        return sA.compareTo(sB);
-      });
-      setState(() {
-        followups = data;
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() => isLoading = false);
-    }
-  }
+      await context.read<FollowUpProvider>().completeFollowup(id);
 
-  Future<void> completeFollowup(String id) async {
-    await ApiService.completeFollowup(id);
-    loadFollowups();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle_rounded,
+                    color: Colors.white, size: 18),
+                const SizedBox(width: 10),
+                Text("Follow-up marked as done!",
+                    style: GoogleFonts.nunito(color: Colors.white)),
+              ],
+            ),
+            backgroundColor: Colors.green.shade600,
+            behavior: SnackBarBehavior.floating,
+            shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Failed to update. Please try again.",
+                style: GoogleFonts.nunito(color: Colors.white)),
+            backgroundColor: Colors.red.shade600,
+            behavior: SnackBarBehavior.floating,
+            shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: kSurface,
-      body: CustomScrollView(
-        slivers: [
-          // ── App Bar ─────────────────────────────────────────
-          SliverAppBar(
-            expandedHeight: 120,
-            pinned: true,
-            backgroundColor: kPrimary,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFF0D47A1), Color(0xFF42A5F5)],
-                  ),
-                ),
-                child: Stack(children: [
-                  Positioned(
-                    right: -20,
-                    top: -20,
-                    child: Container(
-                      width: 130,
-                      height: 130,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.06),
+    return Consumer<FollowUpProvider>(
+      builder: (context, provider, _) {
+        final followups = provider.pendingFollowups;
+        final isLoading = provider.isLoading;
+
+        return Scaffold(
+          backgroundColor: kSurface,
+          body: CustomScrollView(
+            slivers: [
+              // ── App Bar ──────────────────────────────────
+              SliverAppBar(
+                expandedHeight: 120,
+                pinned: true,
+                backgroundColor: kPrimary,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF0D47A1), Color(0xFF42A5F5)],
                       ),
                     ),
-                  ),
-                  Positioned(
-                    bottom: 18,
-                    left: 20,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Follow-ups",
-                            style: GoogleFonts.poppins(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white)),
-                        Text("Scheduled beneficiary visits",
-                            style: GoogleFonts.nunito(
-                                fontSize: 13,
-                                color: Colors.white.withOpacity(0.85))),
-                      ],
-                    ),
-                  ),
-                ]),
-              ),
-            ),
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white, size: 20),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ),
-
-          // ── Body ────────────────────────────────────────────
-          if (isLoading)
-            const SliverFillRemaining(
-              child: Center(
-                child: CircularProgressIndicator(color: kAccent),
-              ),
-            )
-          else if (followups.isEmpty)
-            SliverFillRemaining(
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.event_available_outlined,
-                        size: 56, color: kAccent.withOpacity(0.4)),
-                    const SizedBox(height: 12),
-                    Text("No follow-ups scheduled",
-                        style: GoogleFonts.poppins(
-                            color: kTextMuted, fontSize: 15)),
-                  ],
-                ),
-              ),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.all(16),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                    final f = followups[index];
-                    final String name = f["name"]?.toString() ??
-                        f["beneficiaryId"]?.toString() ?? "N/A";
-                    final String date = formatDate(f["followUpDate"] ?? f["followupDate"]);
-                    final String risk =
-                        f["riskLevel"]?.toString() ?? "low";
-                    final String id = f["id"]?.toString() ?? "";
-
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: FollowUpCard(
-                        name: name,
-                        date: date,
-                        risk: risk,
-                        followupId: id,
-                        data: f,
-                        onComplete: () => completeFollowup(id),
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => FollowupDetailPage(
-                              data: f,
-                              onComplete: () async {
-                                await completeFollowup(id);
-                                if (context.mounted) Navigator.pop(context);
-                              },
-                            ),
+                    child: Stack(children: [
+                      Positioned(
+                        right: -20,
+                        top: -20,
+                        child: Container(
+                          width: 130,
+                          height: 130,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withOpacity(0.06),
                           ),
                         ),
                       ),
-                    );
-                  },
-                  childCount: followups.length,
+                      Positioned(
+                        bottom: 18,
+                        left: 20,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("Follow-ups",
+                                style: GoogleFonts.poppins(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white)),
+                            Text("Scheduled beneficiary visits",
+                                style: GoogleFonts.nunito(
+                                    fontSize: 13,
+                                    color: Colors.white.withOpacity(0.85))),
+                          ],
+                        ),
+                      ),
+                    ]),
+                  ),
+                ),
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                      color: Colors.white, size: 20),
+                  onPressed: () => Navigator.of(context).pop(),
                 ),
               ),
-            ),
-        ],
-      ),
+
+              // ── Body ─────────────────────────────────────
+              if (isLoading)
+                const SliverFillRemaining(
+                  child: Center(
+                    child: CircularProgressIndicator(color: kAccent),
+                  ),
+                )
+              else if (followups.isEmpty)
+                SliverFillRemaining(
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.event_available_outlined,
+                            size: 56, color: kAccent.withOpacity(0.4)),
+                        const SizedBox(height: 12),
+                        Text("No follow-ups scheduled",
+                            style: GoogleFonts.poppins(
+                                color: kTextMuted, fontSize: 15)),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.all(16),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                        final f = followups[index];
+                        final String name = f["name"]?.toString() ??
+                            f["beneficiaryId"]?.toString() ??
+                            "N/A";
+                        final String date = formatDate(
+                            f["followUpDate"] ?? f["followupDate"]);
+                        final String risk =
+                            f["riskLevel"]?.toString() ?? "low";
+                        final String id = f["id"]?.toString() ?? "";
+
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: FollowUpCard(
+                            name: name,
+                            date: date,
+                            risk: risk,
+                            followupId: id,
+                            data: f,
+                            onComplete: () => _handleComplete(id),
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => FollowupDetailPage(
+                                  data: f,
+                                  onComplete: () async {
+                                    await _handleComplete(id);
+                                    if (context.mounted) {
+                                      Navigator.pop(context);
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                      childCount: followups.length,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
 
 // ─────────────────────────────────────────────────────────────
-// FOLLOWUP CARD WIDGET
+// FOLLOWUP CARD WIDGET  (unchanged from original)
 // ─────────────────────────────────────────────────────────────
 class FollowUpCard extends StatelessWidget {
   final String name;
@@ -255,6 +285,7 @@ class FollowUpCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const FollowUpCard({
+    super.key,
     required this.name,
     required this.date,
     required this.risk,
@@ -290,8 +321,7 @@ class FollowUpCard extends StatelessWidget {
                 color: _riskBg(risk),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child:
-              Icon(_riskIcon(risk), color: _riskColor(risk), size: 22),
+              child: Icon(_riskIcon(risk), color: _riskColor(risk), size: 22),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -340,7 +370,3 @@ class FollowUpCard extends StatelessWidget {
     );
   }
 }
-
-// ═════════════════════════════════════════════════════════════
-// FOLLOWUP DETAIL PAGE
-// ═════════════════════════════════════════════════════════════
