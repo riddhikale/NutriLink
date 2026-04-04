@@ -1,0 +1,162 @@
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: #f4f7f4;
+}
+
+.layout {
+  display: flex;
+}
+
+.sidebar {
+  width: 240px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background: linear-gradient(180deg, #2e7d32, #1b5e20);
+  color: white;
+  padding: 20px;
+  box-sizing: border-box;
+  transition: 0.3s;
+}
+
+
+.sidebar.collapsed {
+  width: 70px;
+}
+
+.main {
+  margin-left: 240px;
+  padding: 20px;
+  width: calc(100% - 240px);
+  transition: 0.3s;
+}
+
+.main.expanded {
+  margin-left: 70px;
+  width: calc(100% - 70px);
+}
+
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.header h2 {
+  color: #2e7d32;
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile button {
+  background: #2e7d32;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.card {
+  padding: 20px;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  border-left: 6px solid #2e7d32;
+}
+
+.card.high { border-left-color: #d32f2f; }
+.card.medium { border-left-color: #f9a825; }
+.card.low { border-left-color: #388e3c; }
+
+.card h4 {
+  margin: 0;
+  color: #555;
+}
+
+.card p {
+  font-size: 22px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+
+.section {
+  background: white;
+  padding: 18px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.box {
+  background: white;
+  padding: 15px;
+  border-radius: 12px;
+}
+
+.follow-item {
+  padding: 10px;
+  border-left: 4px solid #66bb6a;
+  margin-bottom: 10px;
+  background: #f9fdf9;
+}
+
+.collapse-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+
+.sidebar.collapsed h2,
+.sidebar.collapsed p,
+.sidebar.collapsed .profile-box {
+  display: none;
+}
+
+/* profile bottom */
+.profile-box {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  background: rgba(255,255,255,0.1);
+  padding: 10px;
+  border-radius: 8px;
+}
+
+@media (max-width: 1000px) {
+  .cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
