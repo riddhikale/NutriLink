@@ -344,7 +344,10 @@ class _ReturnToDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: TextButton.icon(
-        onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
+        onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil(
+          '/dashboard',
+              (route) => false,
+        ),
         icon: const Icon(Icons.home_outlined, size: 16, color: _blue400),
         label: Text(
           'Return to dashboard',
@@ -359,7 +362,6 @@ class _ReturnToDashboard extends StatelessWidget {
     );
   }
 }
-
 class _HeroCard extends StatelessWidget {
   final RiskLevel level;
   const _HeroCard({required this.level});

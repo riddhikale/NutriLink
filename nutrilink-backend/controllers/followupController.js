@@ -10,7 +10,6 @@ async function createFollowUp(req, res) {
       riskLevel,
     } = req.body;
 
-    // ── Use logged-in user's phone as workerId ──────────────
     const workerId = req.user.phone;
 
     const followupData = {
@@ -18,7 +17,7 @@ async function createFollowUp(req, res) {
       screeningId,
       type,
       followUpDate,
-      workerId,                    // always taken from token, not req.body
+      workerId,
       riskLevel: riskLevel || null,
       status: "pending",
       createdAt: new Date(),
@@ -42,7 +41,6 @@ async function createFollowUp(req, res) {
 
 async function getDueFollowups(req, res) {
   try {
-    // ── Only fetch followups belonging to this worker ───────
     const workerId = req.user.phone;
 
     const snapshot = await db
@@ -77,6 +75,43 @@ async function getDueFollowups(req, res) {
   }
 }
 
+// ── NEW: fetch completed followups for Work History ──────────
+async function getCompletedFollowups(req, res) {
+  try {
+    const workerId = req.user.phone;
+
+    const snapshot = await db
+      .collection("followups")
+      .where("status", "==", "completed")
+      .where("workerId", "==", workerId)
+      .get();
+
+    const followups = [];
+
+    for (const doc of snapshot.docs) {
+      const data = doc.data();
+
+      const beneficiaryDoc = await db
+        .collection("beneficiaries")
+        .doc(data.beneficiaryId)
+        .get();
+
+      const beneficiaryData = beneficiaryDoc.data();
+
+      followups.push({
+        id: doc.id,
+        name: beneficiaryData?.name || "Unknown",
+        ...data,
+      });
+    }
+
+    res.json(followups);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to fetch completed followups" });
+  }
+}
+
 async function completeFollowup(req, res) {
   try {
     const followupId = req.params.id;
@@ -99,5 +134,6 @@ async function completeFollowup(req, res) {
 module.exports = {
   createFollowUp,
   getDueFollowups,
+  getCompletedFollowups, // ← export new function
   completeFollowup,
 };

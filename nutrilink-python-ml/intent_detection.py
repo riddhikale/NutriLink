@@ -9,19 +9,22 @@ model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
 def normalize_text(text):
 
     text = text.lower().strip()
-    # Remove extra spaces (fixes "स्क्रीनिंकरा" type issues after transcription)
-    text = re.sub(r'\s+', ' ', text)
+    text = re.sub(r'\s+', ' ', text)  # collapse spaces first
 
     replacements = {
 
-        # ---- Whisper garbled Devanagari → English (from your logs) ----
+        # ---- Whisper garbled Devanagari → English (from logs) ----
         "रजिस्टर": "register",
         "रजीस्टर": "register",
         "निव": "new",
         "निएव": "new",
+        "नवीन": "new",
+        "नवी": "new",
+        "नया": "new",
         "चाल": "child",
         "चालिल्द": "child",
         "चाएलद": "child",
+        "चालिल.": "child",       # from latest log: रजिस्टर निव चालिल.
         "फो लोबस": "followups",
         "फोलोबस": "followups",
         "फॉलोअप्स": "followups",
@@ -29,8 +32,12 @@ def normalize_text(text):
         "सेटिंग": "settings",
         "स्खोलो": "open",
         "खोलो": "open",
+        "उघडा": "open",
+        "उगडा": "open",
+        "उबडा": "open",           # Whisper variant from logs
         "होम": "home",
         "प्रोफाइल": "profile",
+        "प्रोफाईल": "profile",    # alternate spelling in logs
         "हिस्ट्री": "history",
         "स्क्रीनिंकरा": "screening",
         "स्क्रीनिं": "screening",
@@ -42,8 +49,8 @@ def normalize_text(text):
         "महिला": "woman",
         "मुलाचे": "child",
         "मुलाची": "child",
-        "नवीन": "new",
         "बाळ": "child",
+        "बच्चा": "child",
         "लाभार्थी": "beneficiary",
         "आहार": "meal",
         "योजना": "plan",
@@ -51,18 +58,17 @@ def normalize_text(text):
         "जोखिम": "high risk",
         "दाखवा": "show",
         "दिखाओ": "show",
-        "उघडा": "open",
+        "दिकाो": "show",          # garbled variant from logs
         "करा": "",
         "जोड़ो": "add",
+        "जोडो": "add",            # from logs: नया लाभार्थी जोडो
         "जोडा": "add",
+        "पन्जिकरंग": "register",  # garbled: लाभार्थी पन्जिकरंग from logs
 
         # ---- Marathi romanization ----
         "mulache": "child",
         "mulachi": "child",
         "mulacha": "child",
-        "bal": "child",
-        "bala": "child",
-        "mul": "child",
         "navin": "new",
         "nond": "register",
         "noond": "register",
@@ -83,11 +89,13 @@ def normalize_text(text):
         "bachche": "child",
     }
 
-    for k, v in replacements.items():
+    # Apply multi-word replacements first (longer keys first to avoid partial matches)
+    sorted_replacements = sorted(replacements.items(), key=lambda x: len(x[0]), reverse=True)
+    for k, v in sorted_replacements:
         text = text.replace(k, v)
 
-    # Clean up any double spaces left after replacements
-    text = re.sub(r'\s+', ' ').strip() if '  ' in text else text.strip()
+    # Final cleanup
+    text = re.sub(r'\s+', ' ', text).strip()
 
     return text
 
@@ -131,6 +139,7 @@ intents = {
         "start screening",
         "add screening",
         "record screening",
+        "new screening",
         "नई स्क्रीनिंग",
         "स्क्रीनिंग जोड़ो",
         "स्क्रीनिंग करा"
@@ -201,7 +210,6 @@ intents = {
 
 # ================= KEYWORD RULES ================= #
 
-# Priority order matters — more specific first
 keyword_rules = [
     ("add_child_screening",     ["child"]),
     ("add_pregnant_screening",  ["pregnant"]),
@@ -213,7 +221,7 @@ keyword_rules = [
     ("navigation_profile",      ["profile"]),
     ("navigation_settings",     ["settings", "setting"]),
     ("navigation_work_history", ["history"]),
-    ("add_screening",           ["screening"]),   # screening last — it's generic
+    ("add_screening",           ["screening"]),
 ]
 
 
@@ -235,7 +243,7 @@ def detect_intent(text):
     normalized = normalize_text(text)
     print(f"Normalized text: '{normalized}'")
 
-    # PRIORITY RULES — keyword combos first
+    # PRIORITY RULES — most specific combos first
     if "child" in normalized and ("screening" in normalized or "register" in normalized or "new" in normalized):
         return "add_child_screening"
 
@@ -260,6 +268,12 @@ def detect_intent(text):
     if "profile" in normalized:
         return "navigation_profile"
 
+    if "high risk" in normalized or "risk" in normalized:
+        return "view_high_risk"
+
+    if "meal" in normalized or "diet" in normalized or "nutrition" in normalized:
+        return "generate_meal_plan"
+
     # SEMANTIC MATCH
     text_embedding = model.encode(normalized, convert_to_tensor=True)
 
@@ -276,7 +290,7 @@ def detect_intent(text):
 
     print(f"Best semantic match: {best_intent} (score: {best_score:.2f})")
 
-    if best_score >= 0.55:   # slightly lower threshold since text is normalized
+    if best_score >= 0.55:
         return best_intent
 
     # KEYWORD FALLBACK

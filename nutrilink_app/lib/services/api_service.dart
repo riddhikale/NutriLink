@@ -4,13 +4,11 @@ import 'package:http/http.dart' as http;
 class ApiService {
   static const baseUrl = "http://192.168.0.222:8080";
 
-  // ── Stored after login ──────────────────────────────────
   static String? authToken;
   static String? currentUserPhone;
   static String? currentUserName;
   static String? currentUserRole;
 
-  // ── Attach token to every protected request ─────────────
   static Map<String, String> get _headers => {
     "Content-Type": "application/json",
     if (authToken != null) "Authorization": "Bearer $authToken",
@@ -27,14 +25,19 @@ class ApiService {
       Uri.parse("$baseUrl/api/auth/register"),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({
-        "name": name,
-        "phone": phone,
-        "pin": pin,
-        "role": role,
-        "assignedAreaId": assignedAreaId,
+        "name": name, "phone": phone, "pin": pin,
+        "role": role, "assignedAreaId": assignedAreaId,
       }),
     );
-    return jsonDecode(response.body);
+
+    final data = jsonDecode(response.body);
+
+    authToken        = data["token"];
+    currentUserName  = data["user"]?["name"]  ?? name;
+    currentUserPhone = data["user"]?["phone"] ?? phone;
+    currentUserRole  = data["user"]?["role"]  ?? role;
+
+    return data;
   }
 
   static Future<Map<String, dynamic>> loginUser({
@@ -44,136 +47,91 @@ class ApiService {
     final response = await http.post(
       Uri.parse("$baseUrl/api/auth/login-test"),
       headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "phone": phone,
-        "pin": pin,
-      }),
+      body: jsonEncode({"phone": phone, "pin": pin}),
     );
 
-    print("Response body:");
-    print(response.body);
-
     final data = jsonDecode(response.body);
-
-    // ── Save all user info from login response ──────────────
     authToken        = data["token"];
-    currentUserPhone = data["user"]?["phone"];
     currentUserName  = data["user"]?["name"];
     currentUserRole  = data["user"]?["role"];
+
+    // ✅ Backend doesn't return phone in user object,
+    // so use the phone the user typed in directly
+    currentUserPhone = phone;
 
     return data;
   }
 
   static Future<Map<String, dynamic>> submitChildScreening({
-    required String name,
-    required int ageMonths,
-    required String gender,
-    required String parentName,
-    required double weight,
-    required double height,
-    required double muac,
-    required bool weakness,
-    required bool lowAppetite,
-    required bool frequentIllness,
-    required bool diarrhea,
-    required String address,
-    required String wardNo,
-    required String notes,
+    required String name, required int ageMonths, required String gender,
+    required String parentName, required double weight, required double height,
+    required double muac, required bool weakness, required bool lowAppetite,
+    required bool frequentIllness, required bool diarrhea,
+    required String address, required String wardNo, required String notes,
   }) async {
     final response = await http.post(
       Uri.parse("$baseUrl/api/screening/child"),
       headers: _headers,
       body: jsonEncode({
-        "name": name,
-        "ageMonths": ageMonths,
-        "gender": gender,
-        "parentName": parentName,
-        "weight": weight,
-        "height": height,
-        "muac": muac,
-        "weakness": weakness,
-        "lowAppetite": lowAppetite,
-        "frequentIllness": frequentIllness,
-        "diarrhea": diarrhea,
-        "address": address,
-        "wardNo": wardNo,
-        "notes": notes,
+        "name": name, "ageMonths": ageMonths, "gender": gender,
+        "parentName": parentName, "weight": weight, "height": height,
+        "muac": muac, "weakness": weakness, "lowAppetite": lowAppetite,
+        "frequentIllness": frequentIllness, "diarrhea": diarrhea,
+        "address": address, "wardNo": wardNo, "notes": notes,
       }),
     );
-
-    print("=== CHILD SCREENING DEBUG ===");
-    print("STATUS: ${response.statusCode}");
-    print("BODY: ${response.body}");
-    print("HEADERS SENT: $_headers");
-    print("=============================");
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception("Failed to calculate risk");
-    }
+    if (response.statusCode == 200) return jsonDecode(response.body);
+    throw Exception("Failed to calculate risk");
   }
 
   static Future<Map<String, dynamic>> submitPregnantScreening({
-    required String name,
-    required String husbandName,
-    required int age,
-    required String trimester,
-    required double weight,
-    required double hemoglobin,
-    required int systolicBP,
-    required int diastolicBP,
-    required bool dizziness,
-    required bool fatigue,
-    required bool swelling,
-    required bool lowAppetite,
-    required bool pastAnemia,
-    required String address,
-    required String wardNo,
-    required String notes,
+    required String name, required String husbandName, required int age,
+    required String trimester, required double weight, required double hemoglobin,
+    required int systolicBP, required int diastolicBP, required bool dizziness,
+    required bool fatigue, required bool swelling, required bool lowAppetite,
+    required bool pastAnemia, required String address,
+    required String wardNo, required String notes,
   }) async {
     final response = await http.post(
       Uri.parse("$baseUrl/api/screening/pregWomen"),
       headers: _headers,
       body: jsonEncode({
-        "name": name,
-        "husbandName": husbandName,
-        "age": age,
-        "trimester": trimester,
-        "weight": weight,
-        "hemoglobin": hemoglobin,
-        "systolicBP": systolicBP,
-        "diastolicBP": diastolicBP,
-        "dizziness": dizziness,
-        "fatigue": fatigue,
-        "swelling": swelling,
-        "lowAppetite": lowAppetite,
-        "pastAnemia": pastAnemia,
-        "address": address,
-        "wardNo": wardNo,
-        "notes": notes,
+        "name": name, "husbandName": husbandName, "age": age,
+        "trimester": trimester, "weight": weight, "hemoglobin": hemoglobin,
+        "systolicBP": systolicBP, "diastolicBP": diastolicBP,
+        "dizziness": dizziness, "fatigue": fatigue, "swelling": swelling,
+        "lowAppetite": lowAppetite, "pastAnemia": pastAnemia,
+        "address": address, "wardNo": wardNo, "notes": notes,
       }),
     );
-
-    print("=== PREGNANT SCREENING DEBUG ===");
-    print("STATUS: ${response.statusCode}");
-    print("BODY: ${response.body}");
-    print("HEADERS SENT: $_headers");
-    print("================================");
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception("Failed to submit screening");
-    }
+    if (response.statusCode == 200) return jsonDecode(response.body);
+    throw Exception("Failed to submit screening");
   }
 
+  // ── Pending follow-ups ───────────────────────────────────
   static Future<List<dynamic>> getFollowups() async {
     final response = await http.get(
       Uri.parse("$baseUrl/api/followups/due"),
       headers: _headers,
     );
+    print("📋 [API] getFollowups status: ${response.statusCode}");
     return jsonDecode(response.body);
+  }
+
+  // ── Completed follow-ups (Work History) ─────────────────
+  static Future<List<dynamic>> getCompletedFollowups() async {
+
+    final response = await http.get(
+      Uri.parse("$baseUrl/api/followups/completed"),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      print("⚠️ [API] Completed endpoint failed: ${response.statusCode}");
+      return [];
+    }
   }
 
   static Future completeFollowup(String id) async {
@@ -181,7 +139,7 @@ class ApiService {
       Uri.parse("$baseUrl/api/followup/complete/$id"),
       headers: _headers,
     );
-    print(response.body);
+    print("📋 [API] completeFollowup status: ${response.statusCode}, body: ${response.body}");
   }
 
   static Future<List<dynamic>> getAlerts() async {
@@ -197,24 +155,26 @@ class ApiService {
       Uri.parse("$baseUrl/api/screening/$id"),
       headers: _headers,
     );
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception("Failed to fetch screening");
-    }
+    if (response.statusCode == 200) return jsonDecode(response.body);
+    throw Exception("Failed to fetch screening");
   }
 
   static Future<Map<String, dynamic>> getScreening(
       String beneficiaryId, String screeningId) async {
     final response = await http.get(
-      Uri.parse(
-          "$baseUrl/api/beneficiaries/$beneficiaryId/screenings/$screeningId"),
+      Uri.parse("$baseUrl/api/beneficiaries/$beneficiaryId/screenings/$screeningId"),
       headers: _headers,
     );
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception("Failed to fetch screening");
-    }
+    if (response.statusCode == 200) return jsonDecode(response.body);
+    throw Exception("Failed to fetch screening");
   }
+  static Future<void> deleteAccount() async {
+    final response = await http.delete(
+      Uri.parse("$baseUrl/api/auth/user/account"), // ← add /auth/
+      headers: _headers,
+    );
+   if (response.statusCode != 200) {
+     throw Exception("Failed to delete account");
+  }
+}
 }
