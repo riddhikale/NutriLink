@@ -18,7 +18,6 @@ model = WhisperModel(
     compute_type="int8"
 )
 
-# Biases Whisper toward Indic + English mixed speech without forcing a language
 INITIAL_PROMPT = (
     "This is a voice command in Hindi, Marathi, or English. "
     "Commands include: register child, pregnant screening, add beneficiary, "
@@ -47,8 +46,6 @@ async def transcribe_audio(file: UploadFile = File(...)):
         converted_audio
     ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    # No forced language — let Whisper auto-detect
-    # initial_prompt biases toward your domain vocabulary
     segments, info = model.transcribe(
         converted_audio,
         beam_size=1,
@@ -61,15 +58,13 @@ async def transcribe_audio(file: UploadFile = File(...)):
     transcription = "".join([s.text for s in segments]).lower().strip()
 
     print(f"Transcription: {transcription}")
-    print(f"Whisper detected language: {info.language} ({info.language_probability:.0%} confidence)")
+    print(f"Whisper raw language: {info.language} ({info.language_probability:.0%} confidence)")
 
     intent = detect_intent(transcription)
 
-    # Whisper's detection as primary, text-based as fallback
-    if info.language in ["hi", "mr", "en"]:
-        language = info.language
-    else:
-        language = detect_language(transcription)
+    # KEY FIX: always use script-aware detection
+    # Whisper confidence is consistently low (0.2–0.6) for short clips — don't trust it
+    language = detect_language(transcription)
 
     print(f"Intent: {intent}")
     print(f"Language: {language}")
