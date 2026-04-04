@@ -4,9 +4,6 @@ import 'package:provider/provider.dart';
 import 'followup_provider.dart';
 import 'followup_detail_page.dart';
 
-// ─────────────────────────────────────────────────────────────
-// Date formatter
-// ─────────────────────────────────────────────────────────────
 String formatDate(dynamic value) {
   if (value == null) return "No Date";
   try {
@@ -25,9 +22,6 @@ String formatDate(dynamic value) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-// Colours (shared)
-// ─────────────────────────────────────────────────────────────
 const Color kPrimary = Color(0xFF1565C0);
 const Color kAccent = Color(0xFF1E88E5);
 const Color kAccentLight = Color(0xFFE3F2FD);
@@ -68,9 +62,6 @@ IconData _riskIcon(String risk) {
   }
 }
 
-// ═════════════════════════════════════════════════════════════
-// FOLLOWUP LIST PAGE  (now uses FollowUpProvider)
-// ═════════════════════════════════════════════════════════════
 class FollowupPage extends StatefulWidget {
   const FollowupPage({super.key});
 
@@ -79,10 +70,12 @@ class FollowupPage extends StatefulWidget {
 }
 
 class _FollowupPageState extends State<FollowupPage> {
+  // ── Filter state ──────────────────────────────────────────
+  String _selectedRisk = 'all';
+
   @override
   void initState() {
     super.initState();
-    // Load on first open
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<FollowUpProvider>().loadFollowups();
     });
@@ -128,11 +121,61 @@ class _FollowupPageState extends State<FollowupPage> {
     }
   }
 
+  // ── Filter chip builder ───────────────────────────────────
+  Widget _filterChip(String value, String label) {
+    final isSelected = _selectedRisk == value;
+
+    final Map<String, Color> bgColors = {
+      'all':    kAccentLight,
+      'high':   Colors.red.shade50,
+      'medium': Colors.orange.shade50,
+      'low':    Colors.green.shade50,
+    };
+    final Map<String, Color> textColors = {
+      'all':    kPrimary,
+      'high':   Colors.red.shade700,
+      'medium': Colors.orange.shade800,
+      'low':    Colors.green.shade700,
+    };
+
+    return GestureDetector(
+      onTap: () => setState(() => _selectedRisk = value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? bgColors[value] : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected
+                ? textColors[value]!.withOpacity(0.4)
+                : const Color(0xFFDDE3EA),
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+            color: isSelected ? textColors[value] : kTextMuted,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<FollowUpProvider>(
       builder: (context, provider, _) {
-        final followups = provider.pendingFollowups;
+        // ── Apply risk filter ─────────────────────────────
+        final allFollowups = provider.pendingFollowups;
+        final followups = _selectedRisk == 'all'
+            ? allFollowups
+            : allFollowups.where((f) =>
+        f["riskLevel"]?.toString().toLowerCase() == _selectedRisk
+        ).toList();
+
         final isLoading = provider.isLoading;
 
         return Scaffold(
@@ -195,6 +238,26 @@ class _FollowupPageState extends State<FollowupPage> {
                 ),
               ),
 
+              // ── Filter Chips ──────────────────────────────
+              SliverToBoxAdapter(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 12),
+                  child: Row(
+                    children: [
+                      _filterChip('all', 'All'),
+                      const SizedBox(width: 8),
+                      _filterChip('high', 'High risk'),
+                      const SizedBox(width: 8),
+                      _filterChip('medium', 'Medium risk'),
+                      const SizedBox(width: 8),
+                      _filterChip('low', 'Low risk'),
+                    ],
+                  ),
+                ),
+              ),
+
               // ── Body ─────────────────────────────────────
               if (isLoading)
                 const SliverFillRemaining(
@@ -211,16 +274,20 @@ class _FollowupPageState extends State<FollowupPage> {
                         Icon(Icons.event_available_outlined,
                             size: 56, color: kAccent.withOpacity(0.4)),
                         const SizedBox(height: 12),
-                        Text("No follow-ups scheduled",
-                            style: GoogleFonts.poppins(
-                                color: kTextMuted, fontSize: 15)),
+                        Text(
+                          _selectedRisk == 'all'
+                              ? "No follow-ups scheduled"
+                              : "No ${_selectedRisk} risk follow-ups",
+                          style: GoogleFonts.poppins(
+                              color: kTextMuted, fontSize: 15),
+                        ),
                       ],
                     ),
                   ),
                 )
               else
                 SliverPadding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
                           (context, index) {
@@ -272,9 +339,6 @@ class _FollowupPageState extends State<FollowupPage> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-// FOLLOWUP CARD WIDGET  (unchanged from original)
-// ─────────────────────────────────────────────────────────────
 class FollowUpCard extends StatelessWidget {
   final String name;
   final String date;

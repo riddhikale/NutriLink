@@ -11,7 +11,7 @@ class ProfileView extends StatelessWidget {
     super.key,
     required this.name,
     required this.phoneNumber,
-    this.role = 'NGO Worker',
+    this.role = 'Field_Worker',
   });
 
   @override

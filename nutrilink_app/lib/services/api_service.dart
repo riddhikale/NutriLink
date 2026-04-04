@@ -29,7 +29,15 @@ class ApiService {
         "role": role, "assignedAreaId": assignedAreaId,
       }),
     );
-    return jsonDecode(response.body);
+
+    final data = jsonDecode(response.body);
+
+    authToken        = data["token"];
+    currentUserName  = data["user"]?["name"]  ?? name;
+    currentUserPhone = data["user"]?["phone"] ?? phone;
+    currentUserRole  = data["user"]?["role"]  ?? role;
+
+    return data;
   }
 
   static Future<Map<String, dynamic>> loginUser({
@@ -41,12 +49,16 @@ class ApiService {
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({"phone": phone, "pin": pin}),
     );
-    print("Response body: ${response.body}");
+
     final data = jsonDecode(response.body);
     authToken        = data["token"];
-    currentUserPhone = data["user"]?["phone"];
     currentUserName  = data["user"]?["name"];
     currentUserRole  = data["user"]?["role"];
+
+    // ✅ Backend doesn't return phone in user object,
+    // so use the phone the user typed in directly
+    currentUserPhone = phone;
+
     return data;
   }
 
@@ -108,16 +120,11 @@ class ApiService {
 
   // ── Completed follow-ups (Work History) ─────────────────
   static Future<List<dynamic>> getCompletedFollowups() async {
-    print("📋 [API] getCompletedFollowups calling: $baseUrl/api/followups/completed");
-    print("📋 [API] Auth token present: ${authToken != null}");
 
     final response = await http.get(
       Uri.parse("$baseUrl/api/followups/completed"),
       headers: _headers,
     );
-
-    print("📋 [API] getCompletedFollowups status: ${response.statusCode}");
-    print("📋 [API] getCompletedFollowups body: ${response.body}");
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
@@ -166,8 +173,6 @@ class ApiService {
       Uri.parse("$baseUrl/api/auth/user/account"), // ← add /auth/
       headers: _headers,
     );
-   print("Response status: ${response.statusCode}"); // ← add this
-   print("Response body: ${response.body}");
    if (response.statusCode != 200) {
      throw Exception("Failed to delete account");
   }
