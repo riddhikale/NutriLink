@@ -161,4 +161,15 @@ class ApiService {
     if (response.statusCode == 200) return jsonDecode(response.body);
     throw Exception("Failed to fetch screening");
   }
+  static Future<void> deleteAccount() async {
+    final response = await http.delete(
+      Uri.parse("$baseUrl/api/auth/user/account"), // ← add /auth/
+      headers: _headers,
+    );
+   print("Response status: ${response.statusCode}"); // ← add this
+   print("Response body: ${response.body}");
+   if (response.statusCode != 200) {
+     throw Exception("Failed to delete account");
+  }
+}
 }
