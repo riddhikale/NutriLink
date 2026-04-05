@@ -9,11 +9,17 @@ model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
 def normalize_text(text):
 
     text = text.lower().strip()
-    text = re.sub(r'\s+', ' ', text)  # collapse spaces first
+    text = re.sub(r'\s+', ' ', text)
+
+    # Strip punctuation Whisper adds
+    text = re.sub(r'[,\.।\?\!]+', ' ', text)
+    text = re.sub(r'\s+', ' ', text).strip()
 
     replacements = {
 
-        # ---- Whisper garbled Devanagari → English (from logs) ----
+        # ---- Whisper garbled Devanagari → English ----
+
+        # Register / new
         "रजिस्टर": "register",
         "रजीस्टर": "register",
         "निव": "new",
@@ -21,49 +27,105 @@ def normalize_text(text):
         "नवीन": "new",
         "नवी": "new",
         "नया": "new",
+
+        # Child variants
         "चाल": "child",
         "चालिल्द": "child",
         "चाएलद": "child",
-        "चालिल.": "child",       # from latest log: रजिस्टर निव चालिल.
+        "चालिल": "child",
+        "बाळ": "child",
+        "बच्चा": "child",
+        "मुलाचे": "child",
+        "मुलाची": "child",
+
+        # Beneficiary — KEY FIX: added all garbled variants from logs
+        "लाभार्थी": "beneficiary",
+        "भीच्छरी": "beneficiary",      # नवीन भीच्छरी → new beneficiary
+        "बनिप्षरीव": "beneficiary",    # ख्रीएड बनिप्षरीव → create beneficiary
+        "बनिफिशरी": "beneficiary",
+        "बेनिफिशरी": "beneficiary",
+
+        # Pregnant
+        "गर्बवती": "pregnant",
+        "गर्भवती": "pregnant",
+        "गर्भ्वती": "pregnant",
+
+        # Woman
+        "महीराज्क्": "woman",
+        "महिला": "woman",
+
+        # Screening — longer variants first
+        "स्क्रीनिंकरा": "screening",
+        "स्क्रीनिंग": "screening",
+        "स्क्रीनिं": "screening",
+
+        # Followups
         "फो लोबस": "followups",
         "फोलोबस": "followups",
         "फॉलोअप्स": "followups",
+        "फोलोअप्स": "followups",
+
+        # Settings — longer variants first to avoid partial match
+        "सेट्टिंग्स": "settings",
+        "सेटिंग्स": "settings",
         "सेट्टिंग": "settings",
         "सेटिंग": "settings",
+
+        # Open variants
         "स्खोलो": "open",
         "खोलो": "open",
         "उघडा": "open",
         "उगडा": "open",
-        "उबडा": "open",           # Whisper variant from logs
+        "उबडा": "open",
+
+        # Home
         "होम": "home",
+
+        # Profile — KEY FIX: added all garbled variants from logs
         "प्रोफाइल": "profile",
-        "प्रोफाईल": "profile",    # alternate spelling in logs
+        "प्रोफाईल": "profile",
+        "प्रोफाएल": "profile",
+        "प्रोँपाई": "profile",         # प्रोँपाई लुग्डा → profile open
+        "प्रोपाल": "profile",          # अपन प्रोपाल → open profile
+        "प्रोफाल": "profile",
+        "प्रोपाइल": "profile",
+
+        # History
         "हिस्ट्री": "history",
-        "स्क्रीनिंकरा": "screening",
-        "स्क्रीनिं": "screening",
-        "स्क्रीनिंग": "screening",
-        "गर्बवती": "pregnant",
-        "गर्भवती": "pregnant",
-        "गर्भ्वती": "pregnant",
-        "महीराज्क्": "woman",
-        "महिला": "woman",
-        "मुलाचे": "child",
-        "मुलाची": "child",
-        "बाळ": "child",
-        "बच्चा": "child",
-        "लाभार्थी": "beneficiary",
+
+        # Meal / diet
         "आहार": "meal",
         "योजना": "plan",
+        "डाइट": "diet",
+
+        # Risk
         "जोखमीची": "high risk",
         "जोखिम": "high risk",
+
+        # Show
         "दाखवा": "show",
         "दिखाओ": "show",
-        "दिकाो": "show",          # garbled variant from logs
-        "करा": "",
+        "दिकाो": "show",
+
+        # Add
         "जोड़ो": "add",
-        "जोडो": "add",            # from logs: नया लाभार्थी जोडो
+        "जोडो": "add",
         "जोडा": "add",
-        "पन्जिकरंग": "register",  # garbled: लाभार्थी पन्जिकरंग from logs
+
+        # Create — KEY FIX: ख्रीएड is garbled "create"
+        "ख्रीएड": "create",
+        "क्रिएट": "create",
+
+        # Misc
+        "करा": "",
+        "पन्जिकरंग": "register",
+        "अपन": "",                      # Whisper prefix garbage
+        "अपना": "",
+
+        # Work history garbled variants
+        "वर्ख": "work",
+        "आज़ीजना": "history",          # अपन वर्ख आज़ीजना → work history
+        "हिस्टरी": "history",
 
         # ---- Marathi romanization ----
         "mulache": "child",
@@ -89,14 +151,11 @@ def normalize_text(text):
         "bachche": "child",
     }
 
-    # Apply multi-word replacements first (longer keys first to avoid partial matches)
-    sorted_replacements = sorted(replacements.items(), key=lambda x: len(x[0]), reverse=True)
-    for k, v in sorted_replacements:
+    # Longest keys first — prevents partial matches
+    for k, v in sorted(replacements.items(), key=lambda x: len(x[0]), reverse=True):
         text = text.replace(k, v)
 
-    # Final cleanup
     text = re.sub(r'\s+', ' ', text).strip()
-
     return text
 
 
@@ -220,7 +279,7 @@ keyword_rules = [
     ("navigation_home",         ["home"]),
     ("navigation_profile",      ["profile"]),
     ("navigation_settings",     ["settings", "setting"]),
-    ("navigation_work_history", ["history"]),
+    ("navigation_work_history", ["history", "work"]),
     ("add_screening",           ["screening"]),
 ]
 
@@ -235,6 +294,10 @@ for intent, phrases in intents.items():
         convert_to_tensor=True
     )
 
+# Warmup — prevents first-request JIT lag
+_ = model.encode("warmup", convert_to_tensor=True)
+print("✅ Intent model warmed up")
+
 
 # ================= DETECT INTENT ================= #
 
@@ -243,7 +306,7 @@ def detect_intent(text):
     normalized = normalize_text(text)
     print(f"Normalized text: '{normalized}'")
 
-    # PRIORITY RULES — most specific combos first
+    # Priority keyword rules — most specific combos first
     if "child" in normalized and ("screening" in normalized or "register" in normalized or "new" in normalized):
         return "add_child_screening"
 
@@ -259,7 +322,7 @@ def detect_intent(text):
     if "settings" in normalized or "setting" in normalized:
         return "navigation_settings"
 
-    if "history" in normalized:
+    if "history" in normalized or "work" in normalized:
         return "navigation_work_history"
 
     if "home" in normalized:
@@ -274,7 +337,7 @@ def detect_intent(text):
     if "meal" in normalized or "diet" in normalized or "nutrition" in normalized:
         return "generate_meal_plan"
 
-    # SEMANTIC MATCH
+    # Semantic match
     text_embedding = model.encode(normalized, convert_to_tensor=True)
 
     best_intent = "unknown"
@@ -283,7 +346,6 @@ def detect_intent(text):
     for intent, embeddings in intent_embeddings.items():
         similarity = util.cos_sim(text_embedding, embeddings)
         score = similarity.max().item()
-
         if score > best_score:
             best_score = score
             best_intent = intent
@@ -293,7 +355,7 @@ def detect_intent(text):
     if best_score >= 0.55:
         return best_intent
 
-    # KEYWORD FALLBACK
+    # Keyword fallback
     for intent, keywords in keyword_rules:
         for word in keywords:
             if word in normalized:
