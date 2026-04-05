@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../widgets/app_bar_with_lang.dart';
+import '../../l10n/app_translations.dart';
 
 const _blue800 = Color(0xFF0C447C);
 const _blue600 = Color(0xFF185FA5);
@@ -19,20 +20,32 @@ class MealPlanPage extends StatelessWidget {
     required this.nutritionNeed,
   });
 
-  ({String label, Color color, Color bg, IconData icon}) _planMeta() {
+  ({String labelKey, Color color, Color bg, IconData icon}) _planMeta() {
     switch (nutritionNeed) {
-      case 'energy_dense':   return (label: 'Energy Dense',   color: const Color(0xFF854F0B), bg: const Color(0xFFFAEEDA), icon: Icons.bolt_rounded);
-      case 'iron_rich':      return (label: 'Iron Rich',       color: const Color(0xFF791F1F), bg: const Color(0xFFFCEBEB), icon: Icons.bloodtype_outlined);
-      case 'immunity_boost': return (label: 'Immunity Boost',  color: const Color(0xFF0F6E56), bg: const Color(0xFFE1F5EE), icon: Icons.shield_outlined);
-      case 'light_meals':    return (label: 'Light Meals',     color: const Color(0xFF3B6D11), bg: const Color(0xFFEAF3DE), icon: Icons.eco_outlined);
-      case 'protein_rich':   return (label: 'Protein Rich',    color: const Color(0xFF534AB7), bg: const Color(0xFFEEEDFE), icon: Icons.fitness_center_rounded);
-      case 'low_sodium':     return (label: 'Low Sodium',      color: const Color(0xFF185FA5), bg: const Color(0xFFE6F1FB), icon: Icons.water_drop_outlined);
-      default:               return (label: 'Balanced',        color: const Color(0xFF27500A), bg: const Color(0xFFEAF3DE), icon: Icons.balance_outlined);
+      case 'energy_dense':   return (labelKey: 'plan_energy_dense',   color: const Color(0xFF854F0B), bg: const Color(0xFFFAEEDA), icon: Icons.bolt_rounded);
+      case 'iron_rich':      return (labelKey: 'plan_iron_rich',       color: const Color(0xFF791F1F), bg: const Color(0xFFFCEBEB), icon: Icons.bloodtype_outlined);
+      case 'immunity_boost': return (labelKey: 'plan_immunity_boost',  color: const Color(0xFF0F6E56), bg: const Color(0xFFE1F5EE), icon: Icons.shield_outlined);
+      case 'light_meals':    return (labelKey: 'plan_light_meals',     color: const Color(0xFF3B6D11), bg: const Color(0xFFEAF3DE), icon: Icons.eco_outlined);
+      case 'protein_rich':   return (labelKey: 'plan_protein_rich',    color: const Color(0xFF534AB7), bg: const Color(0xFFEEEDFE), icon: Icons.fitness_center_rounded);
+      case 'low_sodium':     return (labelKey: 'plan_low_sodium',      color: const Color(0xFF185FA5), bg: const Color(0xFFE6F1FB), icon: Icons.water_drop_outlined);
+      default:               return (labelKey: 'plan_balanced',        color: const Color(0xFF27500A), bg: const Color(0xFFEAF3DE), icon: Icons.balance_outlined);
     }
   }
 
-  List<String> _parseItems(dynamic value) {
-    if (value == null) return ['Not specified'];
+  String _tipKey() {
+    switch (nutritionNeed) {
+      case 'energy_dense':   return 'tip_energy_dense';
+      case 'iron_rich':      return 'tip_iron_rich';
+      case 'immunity_boost': return 'tip_immunity_boost';
+      case 'light_meals':    return 'tip_light_meals';
+      case 'protein_rich':   return 'tip_protein_rich';
+      case 'low_sodium':     return 'tip_low_sodium';
+      default:               return 'tip_balanced';
+    }
+  }
+
+  List<String> _parseItems(dynamic value, String notSpecified) {
+    if (value == null) return [notSpecified];
     if (value is List) return value.map((e) => e.toString()).toList();
     if (value is String) return value.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
     return [value.toString()];
@@ -40,18 +53,21 @@ class MealPlanPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String t(String key) => AppTranslations.t(context, key);
+
     final meta = _planMeta();
+    final translatedLabel = t(meta.labelKey);
 
     final meals = [
-      _MealSection(title: 'Breakfast', icon: Icons.wb_sunny_outlined,    iconColor: const Color(0xFFBA7517), iconBg: const Color(0xFFFAEEDA), timeLabel: 'Morning',   items: _parseItems(mealPlan['breakfast'])),
-      _MealSection(title: 'Lunch',     icon: Icons.lunch_dining_outlined, iconColor: const Color(0xFF185FA5), iconBg: const Color(0xFFE6F1FB), timeLabel: 'Afternoon', items: _parseItems(mealPlan['lunch'])),
-      _MealSection(title: 'Snacks',    icon: Icons.cookie_outlined,       iconColor: const Color(0xFF0F6E56), iconBg: const Color(0xFFE1F5EE), timeLabel: 'Mid-day',   items: _parseItems(mealPlan['snack'])),
-      _MealSection(title: 'Dinner',    icon: Icons.nightlight_outlined,   iconColor: const Color(0xFF534AB7), iconBg: const Color(0xFFEEEDFE), timeLabel: 'Evening',   items: _parseItems(mealPlan['dinner'])),
+      _MealSection(title: t('meal_breakfast'), icon: Icons.wb_sunny_outlined,    iconColor: const Color(0xFFBA7517), iconBg: const Color(0xFFFAEEDA), timeLabel: t('time_morning'),   items: _parseItems(mealPlan['breakfast'], t('not_specified'))),
+      _MealSection(title: t('meal_lunch'),     icon: Icons.lunch_dining_outlined, iconColor: const Color(0xFF185FA5), iconBg: const Color(0xFFE6F1FB), timeLabel: t('time_afternoon'), items: _parseItems(mealPlan['lunch'],      t('not_specified'))),
+      _MealSection(title: t('meal_snacks'),    icon: Icons.cookie_outlined,       iconColor: const Color(0xFF0F6E56), iconBg: const Color(0xFFE1F5EE), timeLabel: t('time_midday'),   items: _parseItems(mealPlan['snack'],      t('not_specified'))),
+      _MealSection(title: t('meal_dinner'),    icon: Icons.nightlight_outlined,   iconColor: const Color(0xFF534AB7), iconBg: const Color(0xFFEEEDFE), timeLabel: t('time_evening'),  items: _parseItems(mealPlan['dinner'],     t('not_specified'))),
     ];
 
     return Scaffold(
       backgroundColor: _pageBg,
-      appBar: const AppBarWithLang(title: "NutriLink", showBackButton: false),
+      appBar: const AppBarWithLang(titleKey: 'app_title', showBackButton: false),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -64,9 +80,9 @@ class MealPlanPage extends StatelessWidget {
             title: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('Meal Plan',
+                Text(t('meal_plan_title'),
                     style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white)),
-                Text('Personalised nutrition guide',
+                Text(t('meal_plan_subtitle'),
                     style: GoogleFonts.poppins(fontSize: 11, color: Colors.white70)),
               ],
             ),
@@ -78,19 +94,25 @@ class MealPlanPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _PlanHeroCard(meta: meta, mealPlan: mealPlan),
+                  _PlanHeroCard(
+                    meta: (label: translatedLabel, color: meta.color, bg: meta.bg, icon: meta.icon),
+                    mealPlan: mealPlan,
+                    recommendedPlanLabel: t('recommended_plan'),
+                  ),
                   const SizedBox(height: 20),
-                  _SectionLabel(text: 'Daily meal schedule'),
+                  _SectionLabel(text: t('daily_meal_schedule')),
                   const SizedBox(height: 10),
                   ...meals.map((m) => Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: _MealCard(section: m),
                   )),
                   const SizedBox(height: 8),
-                  _TipsBanner(nutritionNeed: nutritionNeed),
+                  _TipsBanner(
+                    tip: t(_tipKey()),
+                    nutritionTipLabel: t('nutrition_tip'),
+                  ),
                   const SizedBox(height: 8),
-                  // ── Return to dashboard ───────────────────────────────
-                  const _ReturnToDashboard(),
+                  _ReturnToDashboard(label: t('return_to_dashboard')),
                   const SizedBox(height: 16),
                 ],
               ),
@@ -105,19 +127,19 @@ class MealPlanPage extends StatelessWidget {
 // ── Shared widget ─────────────────────────────────────────────────────────────
 
 class _ReturnToDashboard extends StatelessWidget {
-  const _ReturnToDashboard();
+  final String label;
+  const _ReturnToDashboard({required this.label});
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: TextButton.icon(
         onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil(
-          '/dashboard',
-              (route) => false,
+          '/dashboard', (route) => false,
         ),
         icon: const Icon(Icons.home_outlined, size: 16, color: _blue400),
         label: Text(
-          'Return to dashboard',
+          label,
           style: GoogleFonts.poppins(
             fontSize: 13,
             color: _blue400,
@@ -129,6 +151,7 @@ class _ReturnToDashboard extends StatelessWidget {
     );
   }
 }
+
 // ── Data model ────────────────────────────────────────────────────────────────
 
 class _MealSection {
@@ -154,7 +177,13 @@ class _MealSection {
 class _PlanHeroCard extends StatelessWidget {
   final ({String label, Color color, Color bg, IconData icon}) meta;
   final Map<String, dynamic> mealPlan;
-  const _PlanHeroCard({required this.meta, required this.mealPlan});
+  final String recommendedPlanLabel;
+
+  const _PlanHeroCard({
+    required this.meta,
+    required this.mealPlan,
+    required this.recommendedPlanLabel,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -178,7 +207,7 @@ class _PlanHeroCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Recommended plan',
+                Text(recommendedPlanLabel,
                     style: GoogleFonts.poppins(fontSize: 11, color: Colors.grey[500])),
                 const SizedBox(height: 2),
                 Text(planName,
@@ -267,20 +296,10 @@ class _MealCard extends StatelessWidget {
 }
 
 class _TipsBanner extends StatelessWidget {
-  final String nutritionNeed;
-  const _TipsBanner({required this.nutritionNeed});
+  final String tip;
+  final String nutritionTipLabel;
 
-  String get _tip {
-    switch (nutritionNeed) {
-      case 'energy_dense':   return 'Offer small frequent meals every 2–3 hours. Add healthy fats like ghee or peanut butter to increase calorie density.';
-      case 'iron_rich':      return 'Pair iron-rich foods with vitamin C sources like lemon or tomato to improve absorption. Avoid tea/coffee around mealtimes.';
-      case 'immunity_boost': return 'Include colourful fruits and vegetables daily. Zinc-rich foods like lentils and seeds help fight infections.';
-      case 'light_meals':    return 'Serve smaller portions more often. Avoid strongly spiced or fried foods. Keep meals simple and easy to digest.';
-      case 'protein_rich':   return 'Include a protein source in every meal — eggs, dal, paneer or meat. Adequate protein supports both mother and baby.';
-      case 'low_sodium':     return 'Avoid adding extra salt. Choose fresh foods over packaged ones. Drink plenty of water to help reduce swelling.';
-      default:               return 'Maintain a varied diet with all food groups. Stay hydrated and follow regular meal timings.';
-    }
-  }
+  const _TipsBanner({required this.tip, required this.nutritionTipLabel});
 
   @override
   Widget build(BuildContext context) {
@@ -304,10 +323,10 @@ class _TipsBanner extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Nutrition tip',
+                Text(nutritionTipLabel,
                     style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: _blue800)),
                 const SizedBox(height: 4),
-                Text(_tip,
+                Text(tip,
                     style: GoogleFonts.nunito(fontSize: 13, color: _blue800, height: 1.5)),
               ],
             ),

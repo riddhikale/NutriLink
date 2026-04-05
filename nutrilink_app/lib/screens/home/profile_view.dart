@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_translations.dart';
 import '../profile/settings_page.dart';
 import '../profile/work_history_page.dart';
 
@@ -16,6 +17,8 @@ class ProfileView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String t(String key) => AppTranslations.t(context, key);
+
     // Generate initials dynamically from name
     final initials = name
         .trim()
@@ -81,23 +84,23 @@ class ProfileView extends StatelessWidget {
               ),
               const SizedBox(height: 36),
 
-              // Menu items — stretched to full width
+              // Menu items
               SizedBox(
                 width: double.infinity,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    buildMenuItem(
+                    _buildMenuItem(
                       context,
                       icon: Icons.work_outline_rounded,
-                      title: 'Work History',
+                      title: t('work_history'),
                       page: const WorkHistoryPage(),
                     ),
                     const SizedBox(height: 12),
-                    buildMenuItem(
+                    _buildMenuItem(
                       context,
                       icon: Icons.settings_outlined,
-                      title: 'Settings',
+                      title: t('settings'),
                       page: const SettingsPage(),
                     ),
                   ],
@@ -110,7 +113,7 @@ class ProfileView extends StatelessWidget {
     );
   }
 
-  Widget buildMenuItem(
+  Widget _buildMenuItem(
       BuildContext context, {
         required IconData icon,
         required String title,

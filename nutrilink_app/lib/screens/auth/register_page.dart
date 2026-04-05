@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../main.dart';
+import '../../l10n/app_translations.dart';
 import '../home/home_dashboard.dart';
 import '../../services/api_service.dart';
 import '../../widgets/app_bar_with_lang.dart';
@@ -91,7 +92,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6F8),
-      appBar: const AppBarWithLang(title: "NutriLink", showBackButton: false),
+      appBar: const AppBarWithLang(titleKey: "app_title", showBackButton: false),
       body: SingleChildScrollView(
         child: Column(
           children: [

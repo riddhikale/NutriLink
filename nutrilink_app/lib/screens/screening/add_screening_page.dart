@@ -1,26 +1,29 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_translations.dart';
 import 'child_screening_page.dart';
 import 'pregnant_screening_page.dart';
 import '../../widgets/app_bar_with_lang.dart';
+
 
 class AddScreeningPage extends StatelessWidget {
   const AddScreeningPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    String t(String key) => AppTranslations.t(context, key);
     return Scaffold(
       backgroundColor: const Color(0xFFF2F4F7),
 
 
-      appBar: const AppBarWithLang(title: "Add Screening"),
+      appBar: const AppBarWithLang(titleKey: "add_screening_title"),
 
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Choose Screening Type",
+            Text(
+              t("choose_screening_type"),
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -31,8 +34,8 @@ class AddScreeningPage extends StatelessWidget {
 
             _card(
               context,
-              title: "Child Screening",
-              subtitle: "For children health checkup",
+              title: t("child_screening_header"),
+              subtitle: t("child_screening_sub"),
               icon: Icons.child_care,
               color: Colors.blue,
               page: const ChildScreeningPage(),
@@ -42,8 +45,8 @@ class AddScreeningPage extends StatelessWidget {
 
             _card(
               context,
-              title: "Pregnant Women Screening",
-              subtitle: "For maternal health tracking",
+              title: t("pregnant_screening_header"),
+              subtitle: t("pregnant_screening_sub"),
               icon: Icons.pregnant_woman,
               color: Colors.pink,
               page: const PregnantScreeningPage(),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'meal_plan_page.dart';
 import '../../widgets/app_bar_with_lang.dart';
+import '../../l10n/app_translations.dart';
 
 const _blue900 = Color(0xFF042C53);
 const _blue800 = Color(0xFF0C447C);
@@ -28,25 +29,26 @@ extension RiskLevelX on RiskLevel {
       case RiskLevel.low:    return const Color(0xFFEAF3DE);
     }
   }
-  String get label {
+  // These now return translation KEYS instead of hardcoded strings
+  String get labelKey {
     switch (this) {
-      case RiskLevel.high:   return 'High';
-      case RiskLevel.medium: return 'Moderate';
-      case RiskLevel.low:    return 'Normal';
+      case RiskLevel.high:   return 'risk_high';
+      case RiskLevel.medium: return 'risk_moderate';
+      case RiskLevel.low:    return 'risk_normal';
     }
   }
-  String get overallLabel {
+  String get overallLabelKey {
     switch (this) {
-      case RiskLevel.high:   return 'High risk';
-      case RiskLevel.medium: return 'Moderate risk';
-      case RiskLevel.low:    return 'Low risk';
+      case RiskLevel.high:   return 'risk_high_overall';
+      case RiskLevel.medium: return 'risk_moderate_overall';
+      case RiskLevel.low:    return 'risk_low_overall';
     }
   }
-  String get subtitle {
+  String get subtitleKey {
     switch (this) {
-      case RiskLevel.high:   return 'Immediate attention needed';
-      case RiskLevel.medium: return 'Monitor closely';
-      case RiskLevel.low:    return 'Within safe range';
+      case RiskLevel.high:   return 'risk_high_subtitle';
+      case RiskLevel.medium: return 'risk_moderate_subtitle';
+      case RiskLevel.low:    return 'risk_low_subtitle';
     }
   }
   IconData get icon {
@@ -81,6 +83,7 @@ RiskLevel _scoreToRisk(double avg) {
   return RiskLevel.low;
 }
 
+// ... all your risk calculation functions unchanged ...
 RiskLevel _muacRisk(double ageMonths, double muac) {
   final y = ageMonths / 12;
   if (ageMonths >= 6 && ageMonths <= 59) {
@@ -154,7 +157,8 @@ class RiskResultPage extends StatelessWidget {
   const RiskResultPage({super.key, this.childData, this.womenData})
       : assert(childData != null || womenData != null);
 
-  (RiskLevel, List<FieldRisk>, List<SymptomResult>) _buildChild() {
+  // Build methods now accept t() to return translated FieldRisk/SymptomResult
+  (RiskLevel, List<FieldRisk>, List<SymptomResult>) _buildChild(String Function(String) t) {
     final d = childData!;
     final age    = (d['ageMonths'] as num).toDouble();
     final muac   = (d['muac']     as num).toDouble();
@@ -179,25 +183,25 @@ class RiskResultPage extends StatelessWidget {
       (level: rSymptom, weight: 1),
     ]);
 
-    final ageLabel = age <= 24 ? '≤24 months' : '>24 months';
+    final ageLabel = age <= 24 ? t('age_label_under') : t('age_label_over');
 
     return (
     overall,
     [
-      FieldRisk(label: 'MUAC',   detail: '${muac.toStringAsFixed(1)} cm · ${age.round()} mo', icon: Icons.straighten_rounded,      level: rMuac),
-      FieldRisk(label: 'Weight', detail: '${weight.toStringAsFixed(1)} kg · $ageLabel',        icon: Icons.monitor_weight_outlined, level: rWeight),
-      FieldRisk(label: 'Height', detail: '${height.toStringAsFixed(1)} cm · $ageLabel',        icon: Icons.height_rounded,          level: rHeight),
+      FieldRisk(label: t('field_muac'),   detail: '${muac.toStringAsFixed(1)} cm · ${age.round()} mo', icon: Icons.straighten_rounded,      level: rMuac),
+      FieldRisk(label: t('field_weight'), detail: '${weight.toStringAsFixed(1)} kg · $ageLabel',        icon: Icons.monitor_weight_outlined, level: rWeight),
+      FieldRisk(label: t('field_height'), detail: '${height.toStringAsFixed(1)} cm · $ageLabel',        icon: Icons.height_rounded,          level: rHeight),
     ],
     [
-      SymptomResult(label: 'Weakness',        present: weakness,        icon: Icons.battery_alert_outlined),
-      SymptomResult(label: 'Low appetite',     present: lowAppetite,     icon: Icons.no_food_outlined),
-      SymptomResult(label: 'Frequent illness', present: frequentIllness, icon: Icons.sick_outlined),
-      SymptomResult(label: 'Diarrhea',         present: diarrhea,        icon: Icons.water_drop_outlined),
+      SymptomResult(label: t('symptom_weakness'),         present: weakness,        icon: Icons.battery_alert_outlined),
+      SymptomResult(label: t('symptom_low_appetite'),     present: lowAppetite,     icon: Icons.no_food_outlined),
+      SymptomResult(label: t('symptom_frequent_illness'), present: frequentIllness, icon: Icons.sick_outlined),
+      SymptomResult(label: t('symptom_diarrhea'),         present: diarrhea,        icon: Icons.water_drop_outlined),
     ],
     );
   }
 
-  (RiskLevel, List<FieldRisk>, List<SymptomResult>) _buildWomen() {
+  (RiskLevel, List<FieldRisk>, List<SymptomResult>) _buildWomen(String Function(String) t) {
     final d = womenData!;
     final hb     = (d['hemoglobin']  as num).toDouble();
     final sys    = (d['systolicBP']  as num).toDouble();
@@ -226,23 +230,25 @@ class RiskResultPage extends StatelessWidget {
     return (
     overall,
     [
-      FieldRisk(label: 'Hemoglobin',     detail: '${hb.toStringAsFixed(1)} g/dL',     icon: Icons.water_drop_outlined,     level: rHb),
-      FieldRisk(label: 'Blood pressure', detail: '${sys.round()}/${dia.round()} mmHg', icon: Icons.favorite_border_rounded, level: rBp),
-      FieldRisk(label: 'Weight',         detail: '${weight.toStringAsFixed(1)} kg',    icon: Icons.monitor_weight_outlined, level: rWeight),
+      FieldRisk(label: t('field_hemoglobin'),     detail: '${hb.toStringAsFixed(1)} g/dL',     icon: Icons.water_drop_outlined,     level: rHb),
+      FieldRisk(label: t('field_blood_pressure'), detail: '${sys.round()}/${dia.round()} mmHg', icon: Icons.favorite_border_rounded, level: rBp),
+      FieldRisk(label: t('field_weight'),         detail: '${weight.toStringAsFixed(1)} kg',    icon: Icons.monitor_weight_outlined, level: rWeight),
     ],
     [
-      SymptomResult(label: 'Dizziness',    present: dizziness,   icon: Icons.blind_outlined),
-      SymptomResult(label: 'Fatigue',      present: fatigue,     icon: Icons.battery_alert_outlined),
-      SymptomResult(label: 'Swelling',     present: swelling,    icon: Icons.water_outlined),
-      SymptomResult(label: 'Low appetite', present: lowAppetite, icon: Icons.no_food_outlined),
-      SymptomResult(label: 'Past anemia',  present: pastAnemia,  icon: Icons.history_outlined),
+      SymptomResult(label: t('symptom_dizziness'),    present: dizziness,   icon: Icons.blind_outlined),
+      SymptomResult(label: t('symptom_fatigue'),      present: fatigue,     icon: Icons.battery_alert_outlined),
+      SymptomResult(label: t('symptom_swelling'),     present: swelling,    icon: Icons.water_outlined),
+      SymptomResult(label: t('symptom_low_appetite'), present: lowAppetite, icon: Icons.no_food_outlined),
+      SymptomResult(label: t('symptom_past_anemia'),  present: pastAnemia,  icon: Icons.history_outlined),
     ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final (overall, fields, symptoms) = childData != null ? _buildChild() : _buildWomen();
+    String t(String key) => AppTranslations.t(context, key);
+
+    final (overall, fields, symptoms) = childData != null ? _buildChild(t) : _buildWomen(t);
     final counts = {
       RiskLevel.high:   fields.where((f) => f.level == RiskLevel.high).length,
       RiskLevel.medium: fields.where((f) => f.level == RiskLevel.medium).length,
@@ -252,7 +258,7 @@ class RiskResultPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: _pageBg,
-      appBar: const AppBarWithLang(title: "NutriLink", showBackButton: false),
+      appBar: const AppBarWithLang(titleKey: 'app_title', showBackButton: false),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -265,9 +271,9 @@ class RiskResultPage extends StatelessWidget {
             title: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('Risk Assessment',
+                Text(t('risk_assessment'),
                     style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white)),
-                Text(isChild ? 'Child profile' : 'Women\'s profile',
+                Text(isChild ? t('child_profile') : t('women_profile'),
                     style: GoogleFonts.poppins(fontSize: 11, color: Colors.white70)),
               ],
             ),
@@ -279,53 +285,51 @@ class RiskResultPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _HeroCard(level: overall),
+                  _HeroCard(
+                    level: overall,
+                    overallLabel: t(overall.overallLabelKey),
+                    subtitle: t(overall.subtitleKey),
+                    overallRiskLabel: t('overall_risk_level'),
+                  ),
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      _ScoreChip(count: counts[RiskLevel.high]!,   label: 'High',     color: const Color(0xFFA32D2D)),
+                      _ScoreChip(count: counts[RiskLevel.high]!,   label: t('risk_high'),     color: const Color(0xFFA32D2D)),
                       const SizedBox(width: 8),
-                      _ScoreChip(count: counts[RiskLevel.medium]!, label: 'Moderate', color: const Color(0xFF633806)),
+                      _ScoreChip(count: counts[RiskLevel.medium]!, label: t('risk_moderate'), color: const Color(0xFF633806)),
                       const SizedBox(width: 8),
-                      _ScoreChip(count: counts[RiskLevel.low]!,    label: 'Normal',   color: const Color(0xFF27500A)),
+                      _ScoreChip(count: counts[RiskLevel.low]!,    label: t('risk_normal'),   color: const Color(0xFF27500A)),
                     ],
                   ),
                   const SizedBox(height: 20),
-                  const _SectionLabel(text: 'Metrics breakdown'),
+                  _SectionLabel(text: t('metrics_breakdown')),
                   const SizedBox(height: 8),
-                  _FieldsCard(fields: fields),
+                  _FieldsCard(fields: fields, yesLabel: t('yes'), noLabel: t('no')),
                   const SizedBox(height: 20),
-                  const _SectionLabel(text: 'Symptoms reported'),
+                  _SectionLabel(text: t('symptoms_reported')),
                   const SizedBox(height: 8),
-                  _SymptomsCard(symptoms: symptoms),
+                  _SymptomsCard(symptoms: symptoms, yesLabel: t('yes'), noLabel: t('no')),
                   const SizedBox(height: 24),
 
-                  // ── Actions ───────────────────────────────────────────
                   _BlueButton(
-                    label: 'Generate meal plan',
+                    label: t('generate_meal_plan'),
                     onTap: () {
                       final data = childData ?? womenData!;
                       final mealPlan      = data['mealPlan']      as Map<String, dynamic>?;
                       final nutritionNeed = data['nutritionNeed'] as String?;
-
                       if (mealPlan == null || nutritionNeed == null) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Meal plan not available')),
+                          SnackBar(content: Text(t('meal_plan_unavailable'))),
                         );
                         return;
                       }
-
                       Navigator.push(context, MaterialPageRoute(
-                        builder: (_) => MealPlanPage(
-                          mealPlan: mealPlan,
-                          nutritionNeed: nutritionNeed,
-                        ),
+                        builder: (_) => MealPlanPage(mealPlan: mealPlan, nutritionNeed: nutritionNeed),
                       ));
                     },
                   ),
                   const SizedBox(height: 8),
-                  // ── Return to dashboard ───────────────────────────────
-                  const _ReturnToDashboard(),
+                  _ReturnToDashboard(label: t('return_to_dashboard')),
                   const SizedBox(height: 16),
                 ],
               ),
@@ -340,22 +344,21 @@ class RiskResultPage extends StatelessWidget {
 // ── Sub-widgets ───────────────────────────────────────────────────────────────
 
 class _ReturnToDashboard extends StatelessWidget {
-  const _ReturnToDashboard();
+  final String label;
+  const _ReturnToDashboard({required this.label});
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: TextButton.icon(
         onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil(
-          '/dashboard',
-              (route) => false,
+          '/dashboard', (route) => false,
         ),
         icon: const Icon(Icons.home_outlined, size: 16, color: _blue400),
         label: Text(
-          'Return to dashboard',
+          label,
           style: GoogleFonts.poppins(
-            fontSize: 13,
-            color: _blue400,
+            fontSize: 13, color: _blue400,
             decoration: TextDecoration.underline,
             decorationColor: _blue400,
           ),
@@ -364,9 +367,18 @@ class _ReturnToDashboard extends StatelessWidget {
     );
   }
 }
+
 class _HeroCard extends StatelessWidget {
   final RiskLevel level;
-  const _HeroCard({required this.level});
+  final String overallLabel;
+  final String subtitle;
+  final String overallRiskLabel;
+  const _HeroCard({
+    required this.level,
+    required this.overallLabel,
+    required this.subtitle,
+    required this.overallRiskLabel,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -384,16 +396,16 @@ class _HeroCard extends StatelessWidget {
           child: const Icon(Icons.health_and_safety_rounded, size: 30, color: _blue600),
         ),
         const SizedBox(height: 12),
-        Text('Overall risk level',
+        Text(overallRiskLabel,
             style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[500])),
         const SizedBox(height: 4),
-        Text(level.overallLabel,
+        Text(overallLabel,
             style: GoogleFonts.poppins(fontSize: 26, fontWeight: FontWeight.w600, color: level.foreground)),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
           decoration: BoxDecoration(color: level.background, borderRadius: BorderRadius.circular(20)),
-          child: Text(level.subtitle,
+          child: Text(subtitle,
               style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w500, color: level.foreground)),
         ),
       ]),
@@ -439,7 +451,9 @@ class _SectionLabel extends StatelessWidget {
 
 class _FieldsCard extends StatelessWidget {
   final List<FieldRisk> fields;
-  const _FieldsCard({required this.fields});
+  final String yesLabel;
+  final String noLabel;
+  const _FieldsCard({required this.fields, required this.yesLabel, required this.noLabel});
 
   @override
   Widget build(BuildContext context) {
@@ -491,7 +505,8 @@ class _FieldRow extends StatelessWidget {
           child: Row(mainAxisSize: MainAxisSize.min, children: [
             Icon(field.level.icon, size: 13, color: field.level.foreground),
             const SizedBox(width: 4),
-            Text(field.level.label,
+            // FieldRow label is already translated when FieldRisk is constructed
+            Text(field.label,
                 style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w500, color: field.level.foreground)),
           ]),
         ),
@@ -502,7 +517,9 @@ class _FieldRow extends StatelessWidget {
 
 class _SymptomsCard extends StatelessWidget {
   final List<SymptomResult> symptoms;
-  const _SymptomsCard({required this.symptoms});
+  final String yesLabel;
+  final String noLabel;
+  const _SymptomsCard({required this.symptoms, required this.yesLabel, required this.noLabel});
 
   @override
   Widget build(BuildContext context) {
@@ -515,7 +532,7 @@ class _SymptomsCard extends StatelessWidget {
       child: Column(
         children: [
           for (int i = 0; i < symptoms.length; i++) ...[
-            _SymptomRow(symptom: symptoms[i]),
+            _SymptomRow(symptom: symptoms[i], yesLabel: yesLabel, noLabel: noLabel),
             if (i < symptoms.length - 1) Divider(height: 0, thickness: 0.5, color: _blue50),
           ],
         ],
@@ -526,13 +543,15 @@ class _SymptomsCard extends StatelessWidget {
 
 class _SymptomRow extends StatelessWidget {
   final SymptomResult symptom;
-  const _SymptomRow({required this.symptom});
+  final String yesLabel;
+  final String noLabel;
+  const _SymptomRow({required this.symptom, required this.yesLabel, required this.noLabel});
 
   @override
   Widget build(BuildContext context) {
     final color       = symptom.present ? const Color(0xFFA32D2D) : const Color(0xFF27500A);
     final bgColor     = symptom.present ? const Color(0xFFFCEBEB) : const Color(0xFFEAF3DE);
-    final statusLabel = symptom.present ? 'Yes' : 'No';
+    final statusLabel = symptom.present ? yesLabel : noLabel;  // ← localized
     final statusIcon  = symptom.present ? Icons.check_rounded : Icons.close_rounded;
 
     return Padding(

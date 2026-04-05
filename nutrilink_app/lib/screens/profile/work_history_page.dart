@@ -1,26 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_translations.dart';
 import '../home/followup_provider.dart';
 import '../../widgets/app_bar_with_lang.dart';
 
 // ─────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────
-String formatDate(dynamic value) {
-  if (value == null) return "No Date";
+String formatDate(dynamic value,
+    {String noDate = 'No Date', String invalidDate = 'Invalid Date'}) {
+  if (value == null) return noDate;
   try {
     if (value is Map && value.containsKey('_seconds')) {
-      final date = DateTime.fromMillisecondsSinceEpoch(value['_seconds'] * 1000);
+      final date =
+      DateTime.fromMillisecondsSinceEpoch(value['_seconds'] * 1000);
       return "${date.day}/${date.month}/${date.year}";
     }
     if (value is String) {
       final date = DateTime.tryParse(value);
       if (date != null) return "${date.day}/${date.month}/${date.year}";
     }
-    return "Invalid Date";
+    return invalidDate;
   } catch (_) {
-    return "Invalid Date";
+    return invalidDate;
   }
 }
 
@@ -44,8 +47,10 @@ Map<String, List> _groupByMonth(List followups) {
   }
   for (final key in grouped.keys) {
     grouped[key]!.sort((a, b) {
-      final dA = _toDateTime(a["completedAt"] ?? a["followUpDate"] ?? a["followupDate"]);
-      final dB = _toDateTime(b["completedAt"] ?? b["followUpDate"] ?? b["followupDate"]);
+      final dA = _toDateTime(
+          a["completedAt"] ?? a["followUpDate"] ?? a["followupDate"]);
+      final dB = _toDateTime(
+          b["completedAt"] ?? b["followUpDate"] ?? b["followupDate"]);
       return (dB ?? DateTime(0)).compareTo(dA ?? DateTime(0));
     });
   }
@@ -62,26 +67,26 @@ String _monthName(int month) {
 
 Color _riskColor(String risk) {
   switch (risk.toLowerCase()) {
-    case 'high': return Colors.red.shade600;
+    case 'high':   return Colors.red.shade600;
     case 'medium': return Colors.orange.shade700;
-    default: return Colors.green.shade700;
+    default:       return Colors.green.shade700;
   }
 }
 
 Color _riskBg(String risk) {
   switch (risk.toLowerCase()) {
-    case 'high': return Colors.red.shade50;
+    case 'high':   return Colors.red.shade50;
     case 'medium': return Colors.orange.shade50;
-    default: return Colors.green.shade50;
+    default:       return Colors.green.shade50;
   }
 }
 
-const Color kPrimary    = Color(0xFF1565C0);
-const Color kAccent     = Color(0xFF1E88E5);
+const Color kPrimary     = Color(0xFF1565C0);
+const Color kAccent      = Color(0xFF1E88E5);
 const Color kAccentLight = Color(0xFFE3F2FD);
-const Color kSurface    = Color(0xFFF5F9FF);
-const Color kTextDark   = Color(0xFF0D1B2A);
-const Color kTextMuted  = Color(0xFF546E7A);
+const Color kSurface     = Color(0xFFF5F9FF);
+const Color kTextDark    = Color(0xFF0D1B2A);
+const Color kTextMuted   = Color(0xFF546E7A);
 
 // ═════════════════════════════════════════════════════════════
 // WORK HISTORY PAGE
@@ -100,13 +105,14 @@ class _WorkHistoryPageState extends State<WorkHistoryPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      print("🔄 [WorkHistory] calling loadFollowups()");
       context.read<FollowUpProvider>().loadFollowups();
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    String t(String key) => AppTranslations.t(context, key);
+
     return Consumer<FollowUpProvider>(
       builder: (context, provider, _) {
         final allCompleted = provider.completedFollowups;
@@ -114,7 +120,8 @@ class _WorkHistoryPageState extends State<WorkHistoryPage> {
             ? allCompleted
             : allCompleted.where((f) {
           final name = (f["name"]?.toString() ??
-              f["beneficiaryId"]?.toString() ?? "")
+              f["beneficiaryId"]?.toString() ??
+              "")
               .toLowerCase();
           return name.contains(_searchQuery.toLowerCase());
         }).toList();
@@ -124,10 +131,11 @@ class _WorkHistoryPageState extends State<WorkHistoryPage> {
 
         return Scaffold(
           backgroundColor: kSurface,
-          appBar: const AppBarWithLang(title: "NutriLink", showBackButton: false),
+          appBar:
+          const AppBarWithLang(titleKey: 'app_title', showBackButton: false),
           body: CustomScrollView(
             slivers: [
-              // ── App Bar ──────────────────────────────────
+              // ── Sliver App Bar ──────────────────────────
               SliverAppBar(
                 expandedHeight: 150,
                 pinned: true,
@@ -143,9 +151,11 @@ class _WorkHistoryPageState extends State<WorkHistoryPage> {
                     ),
                     child: Stack(children: [
                       Positioned(
-                        right: -20, top: -20,
+                        right: -20,
+                        top: -20,
                         child: Container(
-                          width: 130, height: 130,
+                          width: 130,
+                          height: 130,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: Colors.white.withOpacity(0.06),
@@ -153,20 +163,25 @@ class _WorkHistoryPageState extends State<WorkHistoryPage> {
                         ),
                       ),
                       Positioned(
-                        bottom: 20, left: 20,
+                        bottom: 20,
+                        left: 20,
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("Work History",
-                                style: GoogleFonts.poppins(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white)),
-                            Text("Completed follow-ups",
-                                style: GoogleFonts.nunito(
-                                    fontSize: 13,
-                                    color: Colors.white.withOpacity(0.85))),
+                            Text(
+                              t('work_history'),
+                              style: GoogleFonts.poppins(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white),
+                            ),
+                            Text(
+                              t('completed_followups'),
+                              style: GoogleFonts.nunito(
+                                  fontSize: 13,
+                                  color: Colors.white.withOpacity(0.85)),
+                            ),
                           ],
                         ),
                       ),
@@ -188,28 +203,37 @@ class _WorkHistoryPageState extends State<WorkHistoryPage> {
               // ── Search ───────────────────────────────────
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 8),
                   child: TextField(
-                    onChanged: (val) => setState(() => _searchQuery = val),
-                    style: GoogleFonts.nunito(fontSize: 14, color: kTextDark),
+                    onChanged: (val) =>
+                        setState(() => _searchQuery = val),
+                    style: GoogleFonts.nunito(
+                        fontSize: 14, color: kTextDark),
                     decoration: InputDecoration(
-                      hintText: "Search by beneficiary name…",
-                      hintStyle: GoogleFonts.nunito(fontSize: 14, color: kTextMuted),
-                      prefixIcon: const Icon(Icons.search_rounded, color: kAccent),
+                      hintText: t('search_hint'),
+                      hintStyle: GoogleFonts.nunito(
+                          fontSize: 14, color: kTextMuted),
+                      prefixIcon: const Icon(Icons.search_rounded,
+                          color: kAccent),
                       filled: true,
                       fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: Color(0xFFD6E8F8)),
+                        borderSide:
+                        const BorderSide(color: Color(0xFFD6E8F8)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: Color(0xFFD6E8F8)),
+                        borderSide:
+                        const BorderSide(color: Color(0xFFD6E8F8)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: kAccent, width: 1.5),
+                        borderSide: const BorderSide(
+                            color: kAccent, width: 1.5),
                       ),
                     ),
                   ),
@@ -219,7 +243,8 @@ class _WorkHistoryPageState extends State<WorkHistoryPage> {
               // ── Loading ──────────────────────────────────
               if (provider.isLoading)
                 const SliverFillRemaining(
-                  child: Center(child: CircularProgressIndicator(color: kAccent)),
+                  child: Center(
+                      child: CircularProgressIndicator(color: kAccent)),
                 )
 
               // ── Empty ────────────────────────────────────
@@ -230,22 +255,25 @@ class _WorkHistoryPageState extends State<WorkHistoryPage> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.history_rounded,
-                            size: 60, color: kAccent.withOpacity(0.3)),
+                            size: 60,
+                            color: kAccent.withOpacity(0.3)),
                         const SizedBox(height: 14),
                         Text(
                           _searchQuery.isEmpty
-                              ? "No completed follow-ups yet"
-                              : "No results for \"$_searchQuery\"",
-                          style: GoogleFonts.poppins(fontSize: 15, color: kTextMuted),
+                              ? t('no_completed_followups')
+                              : '${t('no_search_results')} "$_searchQuery"',
+                          style: GoogleFonts.poppins(
+                              fontSize: 15, color: kTextMuted),
                         ),
                         if (_searchQuery.isEmpty) ...[
                           const SizedBox(height: 6),
                           Text(
-                            "Mark a follow-up as done\nto see it here",
+                            t('mark_done_hint'),
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.nunito(fontSize: 13, color: kTextMuted),
+                            style: GoogleFonts.nunito(
+                                fontSize: 13, color: kTextMuted),
                           ),
-                        ]
+                        ],
                       ],
                     ),
                   ),
@@ -254,13 +282,15 @@ class _WorkHistoryPageState extends State<WorkHistoryPage> {
               // ── List ─────────────────────────────────────
               else
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                  padding:
+                  const EdgeInsets.fromLTRB(16, 8, 16, 24),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
                           (context, index) {
                         final monthKey = monthKeys[index];
                         final items = grouped[monthKey]!;
-                        return _MonthSection(monthKey: monthKey, items: items);
+                        return _MonthSection(
+                            monthKey: monthKey, items: items);
                       },
                       childCount: monthKeys.length,
                     ),
@@ -284,34 +314,52 @@ class _StatsRow extends StatelessWidget {
   int _countThisMonth(List items) {
     final now = DateTime.now();
     return items.where((f) {
-      final dt = _toDateTime(f["completedAt"] ?? f["followUpDate"] ?? f["followupDate"]);
-      return dt != null && dt.month == now.month && dt.year == now.year;
+      final dt = _toDateTime(
+          f["completedAt"] ?? f["followUpDate"] ?? f["followupDate"]);
+      return dt != null &&
+          dt.month == now.month &&
+          dt.year == now.year;
     }).length;
   }
 
   int _countThisWeek(List items) {
     final now = DateTime.now();
-    final weekStart = now.subtract(Duration(days: now.weekday - 1));
+    final weekStart =
+    now.subtract(Duration(days: now.weekday - 1));
     return items.where((f) {
-      final dt = _toDateTime(f["completedAt"] ?? f["followUpDate"] ?? f["followupDate"]);
-      return dt != null && dt.isAfter(weekStart.subtract(const Duration(days: 1)));
+      final dt = _toDateTime(
+          f["completedAt"] ?? f["followUpDate"] ?? f["followupDate"]);
+      return dt != null &&
+          dt.isAfter(
+              weekStart.subtract(const Duration(days: 1)));
     }).length;
   }
 
   @override
   Widget build(BuildContext context) {
+    String t(String key) => AppTranslations.t(context, key);
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
       child: Row(
         children: [
-          _StatCard(label: "Total", value: allCompleted.length.toString(),
-              icon: Icons.check_circle_rounded, color: kPrimary),
+          _StatCard(
+              label: t('stat_total'),
+              value: allCompleted.length.toString(),
+              icon: Icons.check_circle_rounded,
+              color: kPrimary),
           const SizedBox(width: 10),
-          _StatCard(label: "This Month", value: _countThisMonth(allCompleted).toString(),
-              icon: Icons.calendar_month_rounded, color: Colors.teal.shade600),
+          _StatCard(
+              label: t('stat_this_month'),
+              value: _countThisMonth(allCompleted).toString(),
+              icon: Icons.calendar_month_rounded,
+              color: Colors.teal.shade600),
           const SizedBox(width: 10),
-          _StatCard(label: "This Week", value: _countThisWeek(allCompleted).toString(),
-              icon: Icons.today_rounded, color: Colors.deepPurple.shade400),
+          _StatCard(
+              label: t('stat_this_week'),
+              value: _countThisWeek(allCompleted).toString(),
+              icon: Icons.today_rounded,
+              color: Colors.deepPurple.shade400),
         ],
       ),
     );
@@ -323,8 +371,11 @@ class _StatCard extends StatelessWidget {
   final String value;
   final IconData icon;
   final Color color;
-  const _StatCard({required this.label, required this.value,
-    required this.icon, required this.color});
+  const _StatCard(
+      {required this.label,
+        required this.value,
+        required this.icon,
+        required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -343,9 +394,12 @@ class _StatCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(value,
                 style: GoogleFonts.poppins(
-                    fontSize: 22, fontWeight: FontWeight.w700, color: kTextDark)),
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: kTextDark)),
             Text(label,
-                style: GoogleFonts.nunito(fontSize: 11, color: kTextMuted)),
+                style:
+                GoogleFonts.nunito(fontSize: 11, color: kTextMuted)),
           ],
         ),
       ),
@@ -372,18 +426,27 @@ class _MonthSection extends StatelessWidget {
             children: [
               Text(monthKey,
                   style: GoogleFonts.poppins(
-                      fontSize: 13, fontWeight: FontWeight.w600, color: kPrimary)),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: kPrimary)),
               const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                    color: kAccentLight, borderRadius: BorderRadius.circular(20)),
+                    color: kAccentLight,
+                    borderRadius: BorderRadius.circular(20)),
                 child: Text("${items.length}",
                     style: GoogleFonts.nunito(
-                        fontSize: 11, fontWeight: FontWeight.w700, color: kAccent)),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: kAccent)),
               ),
               const SizedBox(width: 10),
-              Expanded(child: Container(height: 1, color: const Color(0xFFD6E8F8))),
+              Expanded(
+                  child: Container(
+                      height: 1,
+                      color: const Color(0xFFD6E8F8))),
             ],
           ),
         ),
@@ -402,12 +465,23 @@ class _WorkHistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String t(String key) => AppTranslations.t(context, key);
+
     final String name = followup["name"]?.toString() ??
-        followup["beneficiaryId"]?.toString() ?? "N/A";
-    final String risk = followup["riskLevel"]?.toString() ?? "low";
-    final String followupDate =
-    formatDate(followup["followUpDate"] ?? followup["followupDate"]);
-    final String completedDate = formatDate(followup["completedAt"]);
+        followup["beneficiaryId"]?.toString() ??
+        "N/A";
+    final String risk =
+        followup["riskLevel"]?.toString() ?? "low";
+    final String followupDate = formatDate(
+      followup["followUpDate"] ?? followup["followupDate"],
+      noDate: t('no_date'),
+      invalidDate: t('invalid_date'),
+    );
+    final String completedDate = formatDate(
+      followup["completedAt"],
+      noDate: t('no_date'),
+      invalidDate: t('invalid_date'),
+    );
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -426,7 +500,8 @@ class _WorkHistoryCard extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 42, height: 42,
+            width: 42,
+            height: 42,
             decoration: BoxDecoration(
                 color: Colors.green.shade50,
                 borderRadius: BorderRadius.circular(12)),
@@ -440,12 +515,15 @@ class _WorkHistoryCard extends StatelessWidget {
               children: [
                 Text(name,
                     style: GoogleFonts.poppins(
-                        fontSize: 14, fontWeight: FontWeight.w600, color: kTextDark)),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: kTextDark)),
                 const SizedBox(height: 4),
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 2),
                       decoration: BoxDecoration(
                           color: _riskBg(risk),
                           borderRadius: BorderRadius.circular(6)),
@@ -456,10 +534,12 @@ class _WorkHistoryCard extends StatelessWidget {
                               color: _riskColor(risk))),
                     ),
                     const SizedBox(width: 8),
-                    Icon(Icons.event_available_outlined, size: 12, color: kTextMuted),
+                    Icon(Icons.event_available_outlined,
+                        size: 12, color: kTextMuted),
                     const SizedBox(width: 3),
                     Text(followupDate,
-                        style: GoogleFonts.nunito(fontSize: 11, color: kTextMuted)),
+                        style: GoogleFonts.nunito(
+                            fontSize: 11, color: kTextMuted)),
                   ],
                 ),
               ],
@@ -469,21 +549,25 @@ class _WorkHistoryCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                     color: Colors.green.shade50,
                     borderRadius: BorderRadius.circular(8)),
-                child: Text("Done",
-                    style: GoogleFonts.nunito(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.green.shade700)),
+                child: Text(
+                  t('status_done'),
+                  style: GoogleFonts.nunito(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.green.shade700),
+                ),
               ),
-              if (completedDate != "No Date") ...[
+              if (completedDate != t('no_date')) ...[
                 const SizedBox(height: 4),
                 Text(completedDate,
-                    style: GoogleFonts.nunito(fontSize: 10, color: kTextMuted)),
-              ]
+                    style: GoogleFonts.nunito(
+                        fontSize: 10, color: kTextMuted)),
+              ],
             ],
           ),
         ],

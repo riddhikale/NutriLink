@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../l10n/app_translations.dart';
 import '../../services/api_service.dart';
 import '../auth/login_page.dart';
 import '../../widgets/app_bar_with_lang.dart';
@@ -27,17 +28,14 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _logout() async {
     setState(() => _isLoggingOut = true);
 
-    // Clear all stored user data
     ApiService.authToken        = null;
     ApiService.currentUserPhone = null;
     ApiService.currentUserName  = null;
     ApiService.currentUserRole  = null;
 
-    await Future.delayed(const Duration(milliseconds: 300)); // brief pause for UX
-
+    await Future.delayed(const Duration(milliseconds: 300));
     if (!mounted) return;
 
-    // Navigate to login and remove all previous routes
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => LoginPage()),
           (route) => false,
@@ -46,33 +44,41 @@ class _SettingsPageState extends State<SettingsPage> {
 
   // ── Logout confirmation dialog ────────────────────────────
   void _showLogoutDialog() {
+    final t = (String key) => AppTranslations.t(context, key);
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text("Log Out",
-            style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: kTextDark)),
+        title: Text(
+          t('logout_confirm_title'),
+          style: GoogleFonts.poppins(
+              fontWeight: FontWeight.w600, color: kTextDark),
+        ),
         content: Text(
-          "Are you sure you want to log out?",
+          t('logout_confirm_body'),
           style: GoogleFonts.nunito(fontSize: 14, color: kTextMuted),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text("Cancel",
-                style: GoogleFonts.nunito(color: kTextMuted, fontWeight: FontWeight.w600)),
+            child: Text(t('cancel'),
+                style: GoogleFonts.nunito(
+                    color: kTextMuted, fontWeight: FontWeight.w600)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: kPrimary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
             onPressed: () {
               Navigator.pop(ctx);
               _logout();
             },
-            child: Text("Log Out",
-                style: GoogleFonts.nunito(color: Colors.white, fontWeight: FontWeight.w700)),
+            child: Text(t('logout'),
+                style: GoogleFonts.nunito(
+                    color: Colors.white, fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -82,11 +88,11 @@ class _SettingsPageState extends State<SettingsPage> {
   // ── Delete account ───────────────────────────────────────
   Future<void> _deleteAccount() async {
     setState(() => _isDeletingAccount = true);
+    final t = (String key) => AppTranslations.t(context, key);
 
     try {
       await ApiService.deleteAccount();
 
-      // Clear all stored user data
       ApiService.authToken        = null;
       ApiService.currentUserPhone = null;
       ApiService.currentUserName  = null;
@@ -96,11 +102,12 @@ class _SettingsPageState extends State<SettingsPage> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Account deleted successfully",
+          content: Text(t('delete_success'),
               style: GoogleFonts.nunito(color: Colors.white)),
           backgroundColor: Colors.red.shade600,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
 
@@ -111,13 +118,15 @@ class _SettingsPageState extends State<SettingsPage> {
     } catch (e) {
       setState(() => _isDeletingAccount = false);
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Failed to delete account. Try again.",
+          content: Text(t('delete_failed'),
               style: GoogleFonts.nunito(color: Colors.white)),
           backgroundColor: Colors.red.shade700,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
     }
@@ -125,40 +134,48 @@ class _SettingsPageState extends State<SettingsPage> {
 
   // ── Delete account confirmation dialog ───────────────────
   void _showDeleteDialog() {
+    final t = (String key) => AppTranslations.t(context, key);
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.red.shade600, size: 22),
+            Icon(Icons.warning_amber_rounded,
+                color: Colors.red.shade600, size: 22),
             const SizedBox(width: 8),
-            Text("Delete Account",
-                style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w600, color: Colors.red.shade700)),
+            Text(
+              t('delete_confirm_title'),
+              style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600, color: Colors.red.shade700),
+            ),
           ],
         ),
         content: Text(
-          "This will permanently delete your account and all your data. This action cannot be undone.",
+          t('delete_confirm_body'),
           style: GoogleFonts.nunito(fontSize: 14, color: kTextMuted),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text("Cancel",
-                style: GoogleFonts.nunito(color: kTextMuted, fontWeight: FontWeight.w600)),
+            child: Text(t('cancel'),
+                style: GoogleFonts.nunito(
+                    color: kTextMuted, fontWeight: FontWeight.w600)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red.shade600,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
             onPressed: () {
               Navigator.pop(ctx);
               _deleteAccount();
             },
-            child: Text("Delete",
-                style: GoogleFonts.nunito(color: Colors.white, fontWeight: FontWeight.w700)),
+            child: Text(t('delete'),
+                style: GoogleFonts.nunito(
+                    color: Colors.white, fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -167,12 +184,15 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    String t(String key) => AppTranslations.t(context, key);
+
     return Scaffold(
       backgroundColor: kSurface,
-      appBar: const AppBarWithLang(title: "NutriLink", showBackButton: false),
+      appBar:
+      const AppBarWithLang(titleKey: 'app_title', showBackButton: false),
       body: CustomScrollView(
         slivers: [
-          // ── App Bar ────────────────────────────────────────
+          // ── Sliver App Bar ──────────────────────────────
           SliverAppBar(
             expandedHeight: 120,
             pinned: true,
@@ -188,9 +208,11 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 child: Stack(children: [
                   Positioned(
-                    right: -20, top: -20,
+                    right: -20,
+                    top: -20,
                     child: Container(
-                      width: 130, height: 130,
+                      width: 130,
+                      height: 130,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.06),
@@ -198,20 +220,25 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   ),
                   Positioned(
-                    bottom: 20, left: 20,
+                    bottom: 20,
+                    left: 20,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Settings",
-                            style: GoogleFonts.poppins(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white)),
-                        Text("Manage your preferences",
-                            style: GoogleFonts.nunito(
-                                fontSize: 13,
-                                color: Colors.white.withOpacity(0.85))),
+                        Text(
+                          t('settings'),
+                          style: GoogleFonts.poppins(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white),
+                        ),
+                        Text(
+                          t('manage_preferences'),
+                          style: GoogleFonts.nunito(
+                              fontSize: 13,
+                              color: Colors.white.withOpacity(0.85)),
+                        ),
                       ],
                     ),
                   ),
@@ -225,15 +252,15 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
 
-          // ── Settings Body ──────────────────────────────────
+          // ── Settings Body ────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── Section: Preferences ──────────────────
-                  _SectionLabel(label: "Preferences"),
+                  // ── Section: Preferences ────────────────
+                  _SectionLabel(label: t('section_preferences')),
                   const SizedBox(height: 10),
 
                   // Notifications toggle
@@ -247,10 +274,15 @@ class _SettingsPageState extends State<SettingsPage> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              val ? "Notifications enabled" : "Notifications disabled",
-                              style: GoogleFonts.nunito(color: Colors.white),
+                              val
+                                  ? t('notifications_enabled')
+                                  : t('notifications_disabled'),
+                              style:
+                              GoogleFonts.nunito(color: Colors.white),
                             ),
-                            backgroundColor: val ? Colors.green.shade600 : kTextMuted,
+                            backgroundColor: val
+                                ? Colors.green.shade600
+                                : kTextMuted,
                             behavior: SnackBarBehavior.floating,
                             duration: const Duration(seconds: 2),
                             shape: RoundedRectangleBorder(
@@ -266,20 +298,22 @@ class _SettingsPageState extends State<SettingsPage> {
                               color: kAccentLight,
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Icon(Icons.notifications_outlined,
-                                color: kPrimary, size: 20),
+                            child: const Icon(
+                                Icons.notifications_outlined,
+                                color: kPrimary,
+                                size: 20),
                           ),
                           const SizedBox(width: 14),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text("Push Notifications",
+                                Text(t('push_notifications'),
                                     style: GoogleFonts.poppins(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w500,
                                         color: kTextDark)),
-                                Text("Receive in-app alerts",
+                                Text(t('notifications_subtitle'),
                                     style: GoogleFonts.nunito(
                                         fontSize: 12, color: kTextMuted)),
                               ],
@@ -292,11 +326,11 @@ class _SettingsPageState extends State<SettingsPage> {
 
                   const SizedBox(height: 24),
 
-                  // ── Section: Account ──────────────────────
-                  _SectionLabel(label: "Account"),
+                  // ── Section: Account ─────────────────────
+                  _SectionLabel(label: t('section_account')),
                   const SizedBox(height: 10),
 
-                  // Logout button
+                  // Logout
                   _SettingsCard(
                     child: ListTile(
                       contentPadding: EdgeInsets.zero,
@@ -309,20 +343,23 @@ class _SettingsPageState extends State<SettingsPage> {
                         ),
                         child: _isLoggingOut
                             ? SizedBox(
-                          width: 20, height: 20,
+                          width: 20,
+                          height: 20,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.orange.shade700),
+                              strokeWidth: 2,
+                              color: Colors.orange.shade700),
                         )
                             : Icon(Icons.logout_rounded,
                             color: Colors.orange.shade700, size: 20),
                       ),
-                      title: Text("Log Out",
+                      title: Text(t('logout'),
                           style: GoogleFonts.poppins(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                               color: Colors.orange.shade700)),
-                      subtitle: Text("Sign out of your account",
-                          style: GoogleFonts.nunito(fontSize: 12, color: kTextMuted)),
+                      subtitle: Text(t('logout_subtitle'),
+                          style: GoogleFonts.nunito(
+                              fontSize: 12, color: kTextMuted)),
                       trailing: Icon(Icons.arrow_forward_ios_rounded,
                           size: 14, color: Colors.orange.shade300),
                     ),
@@ -330,11 +367,12 @@ class _SettingsPageState extends State<SettingsPage> {
 
                   const SizedBox(height: 12),
 
-                  // Delete account button
+                  // Delete account
                   _SettingsCard(
                     child: ListTile(
                       contentPadding: EdgeInsets.zero,
-                      onTap: _isDeletingAccount ? null : _showDeleteDialog,
+                      onTap:
+                      _isDeletingAccount ? null : _showDeleteDialog,
                       leading: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
@@ -343,20 +381,23 @@ class _SettingsPageState extends State<SettingsPage> {
                         ),
                         child: _isDeletingAccount
                             ? SizedBox(
-                          width: 20, height: 20,
+                          width: 20,
+                          height: 20,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.red.shade600),
+                              strokeWidth: 2,
+                              color: Colors.red.shade600),
                         )
                             : Icon(Icons.delete_forever_rounded,
                             color: Colors.red.shade600, size: 20),
                       ),
-                      title: Text("Delete Account",
+                      title: Text(t('delete_account'),
                           style: GoogleFonts.poppins(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                               color: Colors.red.shade600)),
-                      subtitle: Text("Permanently remove your account",
-                          style: GoogleFonts.nunito(fontSize: 12, color: kTextMuted)),
+                      subtitle: Text(t('delete_account_subtitle'),
+                          style: GoogleFonts.nunito(
+                              fontSize: 12, color: kTextMuted)),
                       trailing: Icon(Icons.arrow_forward_ios_rounded,
                           size: 14, color: Colors.red.shade200),
                     ),
@@ -366,8 +407,11 @@ class _SettingsPageState extends State<SettingsPage> {
 
                   // App version
                   Center(
-                    child: Text("NutriLink v1.0.0",
-                        style: GoogleFonts.nunito(fontSize: 12, color: kTextMuted)),
+                    child: Text(
+                      t('app_version'),
+                      style: GoogleFonts.nunito(
+                          fontSize: 12, color: kTextMuted),
+                    ),
                   ),
                 ],
               ),

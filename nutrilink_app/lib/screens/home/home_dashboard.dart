@@ -175,7 +175,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
     return Scaffold(
       backgroundColor: const Color(0xFFF2F4F7),
 
-      appBar: const AppBarWithLang(title: "NutriLink", showBackButton: false),
+      appBar: const AppBarWithLang(titleKey: "app_title", showBackButton: false),
 
       body: pages[_selectedIndex],
 

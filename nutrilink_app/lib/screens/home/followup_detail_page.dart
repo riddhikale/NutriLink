@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/api_service.dart';
+import '../../widgets/app_bar_with_lang.dart';
+import '../../l10n/app_translations.dart';
 
 // ─────────────────────────────────────────────────────────────
 // Date formatter
 // ─────────────────────────────────────────────────────────────
-String formatDate(dynamic value) {
-  if (value == null) return "No Date";
+String formatDate(dynamic value,
+    {String noDate = "No Date", String invalidDate = "Invalid Date"}) {
+  if (value == null) return noDate;
   try {
     if (value is Map && value.containsKey('_seconds')) {
       final date =
@@ -17,9 +20,9 @@ String formatDate(dynamic value) {
       final date = DateTime.tryParse(value);
       if (date != null) return "${date.day}/${date.month}/${date.year}";
     }
-    return "Invalid Date";
+    return invalidDate;
   } catch (_) {
-    return "Invalid Date";
+    return invalidDate;
   }
 }
 
@@ -35,25 +38,34 @@ const Color kTextMuted = Color(0xFF546E7A);
 
 Color _riskColor(String risk) {
   switch (risk.toLowerCase()) {
-    case 'high': return Colors.red.shade600;
-    case 'medium': return Colors.orange.shade700;
-    default: return Colors.green.shade700;
+    case 'high':
+      return Colors.red.shade600;
+    case 'medium':
+      return Colors.orange.shade700;
+    default:
+      return Colors.green.shade700;
   }
 }
 
 Color _riskBg(String risk) {
   switch (risk.toLowerCase()) {
-    case 'high': return Colors.red.shade50;
-    case 'medium': return Colors.orange.shade50;
-    default: return Colors.green.shade50;
+    case 'high':
+      return Colors.red.shade50;
+    case 'medium':
+      return Colors.orange.shade50;
+    default:
+      return Colors.green.shade50;
   }
 }
 
 IconData _riskIcon(String risk) {
   switch (risk.toLowerCase()) {
-    case 'high': return Icons.warning_amber_rounded;
-    case 'medium': return Icons.info_outline_rounded;
-    default: return Icons.check_circle_outline_rounded;
+    case 'high':
+      return Icons.warning_amber_rounded;
+    case 'medium':
+      return Icons.info_outline_rounded;
+    default:
+      return Icons.check_circle_outline_rounded;
   }
 }
 
@@ -67,6 +79,29 @@ class FollowupDetailPage extends StatelessWidget {
     required this.onComplete,
   });
 
+  // ─────────────────────────────────────────────────────────────
+  // Translation helper — mirrors the pattern used across the app
+  // ─────────────────────────────────────────────────────────────
+  String t(BuildContext context, String key) =>
+      AppTranslations.t(context, key);
+
+  // ─────────────────────────────────────────────────────────────
+  // Localised risk label
+  // ─────────────────────────────────────────────────────────────
+  String _riskLabel(BuildContext context, String risk) {
+    switch (risk.toLowerCase()) {
+      case 'high':
+        return t(context, 'risk_high_overall');
+      case 'medium':
+        return t(context, 'risk_moderate_overall');
+      default:
+        return t(context, 'risk_low_overall');
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Info row widget
+  // ─────────────────────────────────────────────────────────────
   Widget _infoRow(IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
@@ -87,7 +122,8 @@ class FollowupDetailPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label,
-                    style: GoogleFonts.nunito(fontSize: 12, color: kTextMuted)),
+                    style:
+                    GoogleFonts.nunito(fontSize: 12, color: kTextMuted)),
                 const SizedBox(height: 2),
                 Text(value,
                     style: GoogleFonts.poppins(
@@ -103,8 +139,7 @@ class FollowupDetailPage extends StatelessWidget {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // Fetch meal plan — uses beneficiaryId + screeningId from
-  // the followup document (both are already stored there)
+  // Fetch meal plan
   // ─────────────────────────────────────────────────────────────
   Future<Map<String, dynamic>> _fetchMealPlan() async {
     final beneficiaryId = data["beneficiaryId"]?.toString();
@@ -114,24 +149,22 @@ class FollowupDetailPage extends StatelessWidget {
       throw Exception("Missing beneficiaryId or screeningId");
     }
 
-    final screening = await ApiService.getScreening(beneficiaryId, screeningId);
+    final screening =
+    await ApiService.getScreening(beneficiaryId, screeningId);
 
     final mealPlan = screening["mealPlan"];
     if (mealPlan == null) throw Exception("No meal plan found");
 
-    // mealPlan is a Map (Firestore object), return it directly
     return Map<String, dynamic>.from(mealPlan);
   }
 
   // ─────────────────────────────────────────────────────────────
-  // Build meal plan widgets from the Firestore object
-  // mealPlan fields are dynamic — render each key as a section
+  // Build meal plan widgets
   // ─────────────────────────────────────────────────────────────
   List<Widget> _buildMealWidgets(Map<String, dynamic> mealPlan) {
     final List<Widget> widgets = [];
 
     mealPlan.forEach((key, value) {
-      // Section header — convert camelCase key to readable label
       final label = key
           .replaceAllMapped(RegExp(r'([A-Z])'), (m) => ' ${m[0]}')
           .trim()
@@ -150,7 +183,6 @@ class FollowupDetailPage extends StatelessWidget {
         ),
       );
 
-      // Value can be a String, List, or nested Map
       if (value is List) {
         for (final item in value) {
           widgets.add(_bulletItem(item.toString()));
@@ -177,8 +209,8 @@ class FollowupDetailPage extends StatelessWidget {
             margin: const EdgeInsets.only(top: 6),
             width: 6,
             height: 6,
-            decoration: const BoxDecoration(
-                color: kAccent, shape: BoxShape.circle),
+            decoration:
+            const BoxDecoration(color: kAccent, shape: BoxShape.circle),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -241,14 +273,18 @@ class FollowupDetailPage extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("Meal Plan",
-                              style: GoogleFonts.poppins(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w700,
-                                  color: kTextDark)),
-                          Text("Recommended for $name",
-                              style: GoogleFonts.nunito(
-                                  fontSize: 12, color: kTextMuted)),
+                          Text(
+                            t(context, 'meal_plan_title'),
+                            style: GoogleFonts.poppins(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w700,
+                                color: kTextDark),
+                          ),
+                          Text(
+                            "${t(context, 'meal_plan_recommended_for')} $name",
+                            style: GoogleFonts.nunito(
+                                fontSize: 12, color: kTextMuted),
+                          ),
                         ],
                       ),
                     ),
@@ -260,7 +296,7 @@ class FollowupDetailPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        risk.toUpperCase(),
+                        _riskLabel(context, risk),
                         style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
@@ -271,26 +307,24 @@ class FollowupDetailPage extends StatelessWidget {
                 ),
               ),
               const Divider(height: 24),
-              // ── Async meal content ──
+              // Async meal content
               Expanded(
                 child: FutureBuilder<Map<String, dynamic>>(
                   future: _fetchMealPlan(),
                   builder: (context, snapshot) {
-                    // Loading
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(
+                      return Center(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            CircularProgressIndicator(color: kPrimary),
-                            SizedBox(height: 16),
-                            Text("Loading meal plan…"),
+                            const CircularProgressIndicator(color: kPrimary),
+                            const SizedBox(height: 16),
+                            Text(t(context, 'loading_meal_plan')),
                           ],
                         ),
                       );
                     }
 
-                    // Error
                     if (snapshot.hasError) {
                       return Center(
                         child: Padding(
@@ -302,7 +336,7 @@ class FollowupDetailPage extends StatelessWidget {
                                   color: Colors.red, size: 40),
                               const SizedBox(height: 12),
                               Text(
-                                "Could not load meal plan.\nPlease try again.",
+                                t(context, 'meal_plan_error'),
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.nunito(
                                     fontSize: 14, color: kTextMuted),
@@ -313,7 +347,6 @@ class FollowupDetailPage extends StatelessWidget {
                       );
                     }
 
-                    // Success
                     final mealPlan = snapshot.data!;
                     return ListView(
                       controller: controller,
@@ -333,18 +366,28 @@ class FollowupDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String name =
-        data["name"]?.toString() ?? data["beneficiaryId"]?.toString() ?? "N/A";
+    // ── Translation shorthand ──────────────────────────────────
+    String t(String key) => AppTranslations.t(context, key);
+
+    // ── Data ──────────────────────────────────────────────────
+    final String name = data["name"]?.toString() ??
+        data["beneficiaryId"]?.toString() ??
+        "N/A";
     final String risk = data["riskLevel"]?.toString() ?? "low";
-    final String date =
-    formatDate(data["followUpDate"] ?? data["followupDate"]);
+    final String date = formatDate(
+      data["followUpDate"] ?? data["followupDate"],
+      noDate: t('no_date'),
+      invalidDate: t('invalid_date'),
+    );
     final String address = data["address"]?.toString() ?? "—";
 
     return Scaffold(
       backgroundColor: kSurface,
+      appBar:
+      const AppBarWithLang(titleKey: "app_title", showBackButton: false),
       body: CustomScrollView(
         slivers: [
-          // ── App Bar ───────────────────────────────────────
+          // ── Sliver App Bar ──────────────────────────────────
           SliverAppBar(
             expandedHeight: 160,
             pinned: true,
@@ -358,59 +401,63 @@ class FollowupDetailPage extends StatelessWidget {
                     colors: [Color(0xFF0D47A1), Color(0xFF42A5F5)],
                   ),
                 ),
-                child: Stack(children: [
-                  Positioned(
-                    right: -20,
-                    top: -20,
-                    child: Container(
-                      width: 130,
-                      height: 130,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.06),
+                child: Stack(
+                  children: [
+                    Positioned(
+                      right: -20,
+                      top: -20,
+                      child: Container(
+                        width: 130,
+                        height: 130,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withOpacity(0.06),
+                        ),
                       ),
                     ),
-                  ),
-                  Positioned(
-                    bottom: 20,
-                    left: 20,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(name,
+                    Positioned(
+                      bottom: 20,
+                      left: 20,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name,
                             style: GoogleFonts.poppins(
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white)),
-                        const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(20),
+                                color: Colors.white),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(_riskIcon(risk),
-                                  color: Colors.white, size: 14),
-                              const SizedBox(width: 6),
-                              Text(
-                                "${risk.toUpperCase()} RISK",
-                                style: GoogleFonts.nunito(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white),
-                              ),
-                            ],
+                          const SizedBox(height: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(_riskIcon(risk),
+                                    color: Colors.white, size: 14),
+                                const SizedBox(width: 6),
+                                Text(
+                                  _riskLabel(context, risk),
+                                  style: GoogleFonts.nunito(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ]),
+                  ],
+                ),
               ),
             ),
             leading: IconButton(
@@ -420,7 +467,7 @@ class FollowupDetailPage extends StatelessWidget {
             ),
           ),
 
-          // ── Detail Body ────────────────────────────────────
+          // ── Detail Body ─────────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -444,42 +491,48 @@ class FollowupDetailPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(children: [
-                          Container(
-                            padding: const EdgeInsets.all(7),
-                            decoration: BoxDecoration(
-                              color: kAccentLight,
-                              borderRadius: BorderRadius.circular(8),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(7),
+                              decoration: BoxDecoration(
+                                color: kAccentLight,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(Icons.event_note_outlined,
+                                  color: kPrimary, size: 17),
                             ),
-                            child: const Icon(Icons.event_note_outlined,
-                                color: kPrimary, size: 17),
-                          ),
-                          const SizedBox(width: 10),
-                          Text("Follow-up Details",
+                            const SizedBox(width: 10),
+                            Text(
+                              t('follow_up_details'),
                               style: GoogleFonts.poppins(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: kPrimary)),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Container(
-                              height: 1,
-                              decoration: const BoxDecoration(
-                                gradient: LinearGradient(colors: [
-                                  Color(0xFF90CAF9),
-                                  Colors.transparent
-                                ]),
+                                  color: kPrimary),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Container(
+                                height: 1,
+                                decoration: const BoxDecoration(
+                                  gradient: LinearGradient(colors: [
+                                    Color(0xFF90CAF9),
+                                    Colors.transparent,
+                                  ]),
+                                ),
                               ),
                             ),
-                          ),
-                        ]),
+                          ],
+                        ),
                         const SizedBox(height: 16),
-                        _infoRow(Icons.badge_outlined, "Name", name),
+                        _infoRow(
+                            Icons.badge_outlined, t('woman_name'), name),
                         _infoRow(Icons.calendar_today_outlined,
-                            "Follow-up Date", date),
-                        _infoRow(Icons.warning_amber_rounded, "Risk Level",
-                            risk.toUpperCase()),
-                        _infoRow(Icons.home_outlined, "Address", address),
+                            t('follow_up_date'), date),
+                        _infoRow(Icons.warning_amber_rounded, t('risk_level'),
+                            _riskLabel(context, risk)),
+                        _infoRow(
+                            Icons.home_outlined, t('address'), address),
                       ],
                     ),
                   ),
@@ -520,16 +573,19 @@ class FollowupDetailPage extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text("View Meal Plan",
-                                    style: GoogleFonts.poppins(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white)),
                                 Text(
-                                    "Recommended diet for ${risk.toLowerCase()} risk",
-                                    style: GoogleFonts.nunito(
-                                        fontSize: 12,
-                                        color: Colors.white.withOpacity(0.8))),
+                                  t('view_meal_plan'),
+                                  style: GoogleFonts.poppins(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white),
+                                ),
+                                Text(
+                                  t('recommended_diet_prefix'),
+                                  style: GoogleFonts.nunito(
+                                      fontSize: 12,
+                                      color: Colors.white.withOpacity(0.8)),
+                                ),
                               ],
                             ),
                           ),
@@ -565,7 +621,7 @@ class FollowupDetailPage extends StatelessWidget {
                               size: 20),
                           const SizedBox(width: 10),
                           Text(
-                            "Mark as Done",
+                            t('mark_as_done'),
                             style: GoogleFonts.poppins(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,

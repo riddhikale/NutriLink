@@ -4,62 +4,55 @@ import 'package:provider/provider.dart';
 import 'followup_provider.dart';
 import 'followup_detail_page.dart';
 import '../../widgets/app_bar_with_lang.dart';
+import '../../l10n/app_translations.dart';
 
-String formatDate(dynamic value) {
-  if (value == null) return "No Date";
+// formatDate stays non-localized here since it's a utility —
+// pass localized 'no_date' / 'invalid_date' strings where needed
+String formatDate(dynamic value, {String noDate = 'No Date', String invalidDate = 'Invalid Date'}) {
+  if (value == null) return noDate;
   try {
     if (value is Map && value.containsKey('_seconds')) {
-      final date =
-      DateTime.fromMillisecondsSinceEpoch(value['_seconds'] * 1000);
+      final date = DateTime.fromMillisecondsSinceEpoch(value['_seconds'] * 1000);
       return "${date.day}/${date.month}/${date.year}";
     }
     if (value is String) {
       final date = DateTime.tryParse(value);
       if (date != null) return "${date.day}/${date.month}/${date.year}";
     }
-    return "Invalid Date";
+    return invalidDate;
   } catch (_) {
-    return "Invalid Date";
+    return invalidDate;
   }
 }
 
-const Color kPrimary = Color(0xFF1565C0);
-const Color kAccent = Color(0xFF1E88E5);
+const Color kPrimary     = Color(0xFF1565C0);
+const Color kAccent      = Color(0xFF1E88E5);
 const Color kAccentLight = Color(0xFFE3F2FD);
-const Color kSurface = Color(0xFFF5F9FF);
-const Color kTextDark = Color(0xFF0D1B2A);
-const Color kTextMuted = Color(0xFF546E7A);
+const Color kSurface     = Color(0xFFF5F9FF);
+const Color kTextDark    = Color(0xFF0D1B2A);
+const Color kTextMuted   = Color(0xFF546E7A);
 
 Color _riskColor(String risk) {
   switch (risk.toLowerCase()) {
-    case 'high':
-      return Colors.red.shade600;
-    case 'medium':
-      return Colors.orange.shade700;
-    default:
-      return Colors.green.shade700;
+    case 'high':   return Colors.red.shade600;
+    case 'medium': return Colors.orange.shade700;
+    default:       return Colors.green.shade700;
   }
 }
 
 Color _riskBg(String risk) {
   switch (risk.toLowerCase()) {
-    case 'high':
-      return Colors.red.shade50;
-    case 'medium':
-      return Colors.orange.shade50;
-    default:
-      return Colors.green.shade50;
+    case 'high':   return Colors.red.shade50;
+    case 'medium': return Colors.orange.shade50;
+    default:       return Colors.green.shade50;
   }
 }
 
 IconData _riskIcon(String risk) {
   switch (risk.toLowerCase()) {
-    case 'high':
-      return Icons.warning_amber_rounded;
-    case 'medium':
-      return Icons.info_outline_rounded;
-    default:
-      return Icons.check_circle_outline_rounded;
+    case 'high':   return Icons.warning_amber_rounded;
+    case 'medium': return Icons.info_outline_rounded;
+    default:       return Icons.check_circle_outline_rounded;
   }
 }
 
@@ -67,13 +60,11 @@ class FollowupPage extends StatefulWidget {
   final String? initialRisk;
   const FollowupPage({super.key, this.initialRisk});
 
-
   @override
   State<FollowupPage> createState() => _FollowupPageState();
 }
 
 class _FollowupPageState extends State<FollowupPage> {
-  // ── Filter state ──────────────────────────────────────────
   String _selectedRisk = 'all';
 
   @override
@@ -87,26 +78,22 @@ class _FollowupPageState extends State<FollowupPage> {
     });
   }
 
-  Future<void> _handleComplete(String id) async {
+  Future<void> _handleComplete(String id, String Function(String) t) async {
     try {
       await context.read<FollowUpProvider>().completeFollowup(id);
-
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
               children: [
-                const Icon(Icons.check_circle_rounded,
-                    color: Colors.white, size: 18),
+                const Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
                 const SizedBox(width: 10),
-                Text("Follow-up marked as done!",
-                    style: GoogleFonts.nunito(color: Colors.white)),
+                Text(t('followup_done'), style: GoogleFonts.nunito(color: Colors.white)),
               ],
             ),
             backgroundColor: Colors.green.shade600,
             behavior: SnackBarBehavior.floating,
-            shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -115,22 +102,18 @@ class _FollowupPageState extends State<FollowupPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Failed to update. Please try again.",
-                style: GoogleFonts.nunito(color: Colors.white)),
+            content: Text(t('followup_failed'), style: GoogleFonts.nunito(color: Colors.white)),
             backgroundColor: Colors.red.shade600,
             behavior: SnackBarBehavior.floating,
-            shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       }
     }
   }
 
-  // ── Filter chip builder ───────────────────────────────────
   Widget _filterChip(String value, String label) {
     final isSelected = _selectedRisk == value;
-
     final Map<String, Color> bgColors = {
       'all':    kAccentLight,
       'high':   Colors.red.shade50,
@@ -172,24 +155,24 @@ class _FollowupPageState extends State<FollowupPage> {
 
   @override
   Widget build(BuildContext context) {
+    String t(String key) => AppTranslations.t(context, key);
+
     return Consumer<FollowUpProvider>(
       builder: (context, provider, _) {
-        // ── Apply risk filter ─────────────────────────────
         final allFollowups = provider.pendingFollowups;
         final followups = _selectedRisk == 'all'
             ? allFollowups
             : allFollowups.where((f) =>
         f["riskLevel"]?.toString().toLowerCase() == _selectedRisk
         ).toList();
-
         final isLoading = provider.isLoading;
 
         return Scaffold(
           backgroundColor: kSurface,
-          appBar: const AppBarWithLang(title: "NutriLink", showBackButton: false),
+          appBar: const AppBarWithLang(titleKey: 'app_title', showBackButton: false),
           body: CustomScrollView(
             slivers: [
-              // ── App Bar ──────────────────────────────────
+              // ── Gradient Header ──────────────────────────
               SliverAppBar(
                 expandedHeight: 120,
                 pinned: true,
@@ -205,11 +188,9 @@ class _FollowupPageState extends State<FollowupPage> {
                     ),
                     child: Stack(children: [
                       Positioned(
-                        right: -20,
-                        top: -20,
+                        right: -20, top: -20,
                         child: Container(
-                          width: 130,
-                          height: 130,
+                          width: 130, height: 130,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: Colors.white.withOpacity(0.06),
@@ -217,21 +198,17 @@ class _FollowupPageState extends State<FollowupPage> {
                         ),
                       ),
                       Positioned(
-                        bottom: 18,
-                        left: 20,
+                        bottom: 18, left: 20,
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("Follow-ups",
+                            Text(t('followups_title'),
                                 style: GoogleFonts.poppins(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white)),
-                            Text("Scheduled beneficiary visits",
+                                    fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
+                            Text(t('followups_subtitle'),
                                 style: GoogleFonts.nunito(
-                                    fontSize: 13,
-                                    color: Colors.white.withOpacity(0.85))),
+                                    fontSize: 13, color: Colors.white.withOpacity(0.85))),
                           ],
                         ),
                       ),
@@ -239,27 +216,25 @@ class _FollowupPageState extends State<FollowupPage> {
                   ),
                 ),
                 leading: IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                      color: Colors.white, size: 20),
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ),
 
-              // ── Filter Chips ──────────────────────────────
+              // ── Filter Chips ─────────────────────────────
               SliverToBoxAdapter(
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   child: Row(
                     children: [
-                      _filterChip('all', 'All'),
+                      _filterChip('all',    t('filter_all')),
                       const SizedBox(width: 8),
-                      _filterChip('high', 'High risk'),
+                      _filterChip('high',   t('filter_high_risk')),
                       const SizedBox(width: 8),
-                      _filterChip('medium', 'Medium risk'),
+                      _filterChip('medium', t('filter_medium_risk')),
                       const SizedBox(width: 8),
-                      _filterChip('low', 'Low risk'),
+                      _filterChip('low',    t('filter_low_risk')),
                     ],
                   ),
                 ),
@@ -268,9 +243,7 @@ class _FollowupPageState extends State<FollowupPage> {
               // ── Body ─────────────────────────────────────
               if (isLoading)
                 const SliverFillRemaining(
-                  child: Center(
-                    child: CircularProgressIndicator(color: kAccent),
-                  ),
+                  child: Center(child: CircularProgressIndicator(color: kAccent)),
                 )
               else if (followups.isEmpty)
                 SliverFillRemaining(
@@ -283,10 +256,9 @@ class _FollowupPageState extends State<FollowupPage> {
                         const SizedBox(height: 12),
                         Text(
                           _selectedRisk == 'all'
-                              ? "No follow-ups scheduled"
-                              : "No ${_selectedRisk} risk follow-ups",
-                          style: GoogleFonts.poppins(
-                              color: kTextMuted, fontSize: 15),
+                              ? t('no_followups_scheduled')
+                              : t('no_risk_followups').replaceAll('{risk}', _selectedRisk),
+                          style: GoogleFonts.poppins(color: kTextMuted, fontSize: 15),
                         ),
                       ],
                     ),
@@ -300,13 +272,14 @@ class _FollowupPageState extends State<FollowupPage> {
                           (context, index) {
                         final f = followups[index];
                         final String name = f["name"]?.toString() ??
-                            f["beneficiaryId"]?.toString() ??
-                            "N/A";
+                            f["beneficiaryId"]?.toString() ?? "N/A";
                         final String date = formatDate(
-                            f["followUpDate"] ?? f["followupDate"]);
-                        final String risk =
-                            f["riskLevel"]?.toString() ?? "low";
-                        final String id = f["id"]?.toString() ?? "";
+                          f["followUpDate"] ?? f["followupDate"],
+                          noDate: t('no_date'),
+                          invalidDate: t('invalid_date'),
+                        );
+                        final String risk = f["riskLevel"]?.toString() ?? "low";
+                        final String id   = f["id"]?.toString() ?? "";
 
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 12),
@@ -316,17 +289,15 @@ class _FollowupPageState extends State<FollowupPage> {
                             risk: risk,
                             followupId: id,
                             data: f,
-                            onComplete: () => _handleComplete(id),
+                            onComplete: () => _handleComplete(id, t),
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (_) => FollowupDetailPage(
                                   data: f,
                                   onComplete: () async {
-                                    await _handleComplete(id);
-                                    if (context.mounted) {
-                                      Navigator.pop(context);
-                                    }
+                                    await _handleComplete(id, t);
+                                    if (context.mounted) Navigator.pop(context);
                                   },
                                 ),
                               ),
@@ -345,6 +316,10 @@ class _FollowupPageState extends State<FollowupPage> {
     );
   }
 }
+
+// ── FollowUpCard ──────────────────────────────────────────────────────────────
+// This widget is used in other pages too, so it stays simple —
+// date and name are already localized before being passed in.
 
 class FollowUpCard extends StatelessWidget {
   final String name;
@@ -386,8 +361,7 @@ class FollowUpCard extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 44,
-              height: 44,
+              width: 44, height: 44,
               decoration: BoxDecoration(
                 color: _riskBg(risk),
                 borderRadius: BorderRadius.circular(12),
@@ -401,15 +375,12 @@ class FollowUpCard extends StatelessWidget {
                 children: [
                   Text(name,
                       style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 15,
-                          color: kTextDark)),
+                          fontWeight: FontWeight.w600, fontSize: 15, color: kTextDark)),
                   const SizedBox(height: 4),
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
                           color: _riskBg(risk),
                           borderRadius: BorderRadius.circular(8),
@@ -417,18 +388,13 @@ class FollowUpCard extends StatelessWidget {
                         child: Text(
                           risk.toUpperCase(),
                           style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: _riskColor(risk)),
+                              fontSize: 10, fontWeight: FontWeight.w700, color: _riskColor(risk)),
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Icon(Icons.calendar_today_outlined,
-                          size: 12, color: kTextMuted),
+                      Icon(Icons.calendar_today_outlined, size: 12, color: kTextMuted),
                       const SizedBox(width: 4),
-                      Text(date,
-                          style: GoogleFonts.nunito(
-                              fontSize: 12, color: kTextMuted)),
+                      Text(date, style: GoogleFonts.nunito(fontSize: 12, color: kTextMuted)),
                     ],
                   ),
                 ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_translations.dart';
 import '../screening/add_screening_page.dart';
 import '../../services/api_service.dart';
 import 'followup_page.dart';
@@ -146,6 +147,7 @@ class _DashboardViewState extends State<DashboardView> {
 
   @override
   Widget build(BuildContext context) {
+    String t(String key) => AppTranslations.t(context, key);
     final displayedFollowups = followups.take(4).toList();
 
     return SingleChildScrollView(
@@ -162,10 +164,10 @@ class _DashboardViewState extends State<DashboardView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Quick Add Screening",
+                 Text(t("quick_add_screening"),
                     style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 6),
-                const Text("No followups",
+                 Text(t("add_new_screening"),
                     style: TextStyle(color: Colors.grey)),
                 const SizedBox(height: 14),
                 SizedBox(
@@ -186,7 +188,7 @@ class _DashboardViewState extends State<DashboardView> {
                         loadFollowups(); // this already calls loadSummaryStats() internally
                       });
                     },
-                    child: const Text("Add New"),
+                    child: Text(t("add_new")),
                   ),
                 ),
               ],
@@ -194,7 +196,7 @@ class _DashboardViewState extends State<DashboardView> {
           ),
 
           const SizedBox(height: 24),
-          const Text("Dashboard Summary",
+          Text(t("dashboard_summary"),
               style: TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
 
@@ -203,7 +205,7 @@ class _DashboardViewState extends State<DashboardView> {
               Expanded(
                 child: _summaryCard(
                   Icons.check_box,
-                  "Screened Today",
+                  t("screened_today"),
                   screenedToday.toString(),
                 ),
               ),
@@ -211,7 +213,7 @@ class _DashboardViewState extends State<DashboardView> {
               Expanded(
                 child: _summaryCard(
                   Icons.warning,
-                  "High Risk Cases",
+                  t("high_risk_cases"),
                   highRiskCases.toString(),
                 ),
               ),
@@ -246,7 +248,7 @@ class _DashboardViewState extends State<DashboardView> {
           isLoading
               ? const Center(child: CircularProgressIndicator())
               : followups.isEmpty
-              ? const Text("No followups")
+              ? Text(t("no_followups_found"))
               : Column(
             children: [
               ...displayedFollowups.map((f) {
@@ -294,7 +296,7 @@ class _DashboardViewState extends State<DashboardView> {
                       MaterialPageRoute(
                           builder: (_) => const FollowupPage()),
                     ),
-                    child: const Text("View All Followups"),
+                    child: Text(t("view_all_followups")),
                   ),
                 ),
               ],
