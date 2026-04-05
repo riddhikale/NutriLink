@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'meal_plan_page.dart';
+import '../../widgets/app_bar_with_lang.dart';
 
 const _blue900 = Color(0xFF042C53);
 const _blue800 = Color(0xFF0C447C);
@@ -251,6 +252,7 @@ class RiskResultPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: _pageBg,
+      appBar: const AppBarWithLang(title: "NutriLink", showBackButton: false),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(

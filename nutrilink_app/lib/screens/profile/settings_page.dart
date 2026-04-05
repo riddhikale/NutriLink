@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/api_service.dart';
-import '../auth/login_page.dart'; // ← adjust path if your login page is elsewhere
+import '../auth/login_page.dart';
+import '../../widgets/app_bar_with_lang.dart';
 
 const Color kPrimary     = Color(0xFF1565C0);
 const Color kAccent      = Color(0xFF1E88E5);
@@ -168,6 +169,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kSurface,
+      appBar: const AppBarWithLang(title: "NutriLink", showBackButton: false),
       body: CustomScrollView(
         slivers: [
           // ── App Bar ────────────────────────────────────────

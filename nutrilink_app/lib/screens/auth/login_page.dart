@@ -4,6 +4,7 @@ import '../../main.dart';
 import '../home/home_dashboard.dart';
 import 'register_page.dart';
 import '../../services/api_service.dart';
+import '../../widgets/app_bar_with_lang.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({super.key});
@@ -23,6 +24,7 @@ class _LoginPageState extends State<LoginPage> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6F8),
+      appBar: const AppBarWithLang(title: "NutriLink", showBackButton: false),
 
       body: SingleChildScrollView(
         child: Column(
@@ -46,12 +48,6 @@ class _LoginPageState extends State<LoginPage> {
               ),
               child: Column(
                 children: [
-
-                  /// 🌐 Language Button (Top Right)
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: const LanguageSwitcherBtn(),
-                  ),
 
                   const SizedBox(height: 20),
 

@@ -1,20 +1,17 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-
 import '../../../services/audio_service.dart';
 import '../../../services/voice_service.dart';
 import '../../../services/tts_service.dart';
 import '../../../services/api_service.dart';
-
 import '../screening/add_screening_page.dart';
 import '../screening/child_screening_page.dart';
 import '../screening/pregnant_screening_page.dart';
-
 import '../profile/settings_page.dart';
 import '../profile/work_history_page.dart';
-
 import 'dashboard_view.dart';
 import 'profile_view.dart';
+import '../../widgets/app_bar_with_lang.dart';
 
 class HomeDashboard extends StatefulWidget {
   const HomeDashboard({super.key});
@@ -178,9 +175,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
     return Scaffold(
       backgroundColor: const Color(0xFFF2F4F7),
 
-      appBar: AppBar(
-        title: const Text("NutriLink"),
-      ),
+      appBar: const AppBarWithLang(title: "NutriLink", showBackButton: false),
 
       body: pages[_selectedIndex],
 
