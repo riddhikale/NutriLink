@@ -6,6 +6,12 @@ def ward_summary(data):
 
     df = pd.DataFrame(data)
 
+    if "wardNo" not in df.columns or "riskTag" not in df.columns:
+        return []
+
+    # Map tags to lowercase
+    df["riskTag"] = df["riskTag"].astype(str).str.lower()
+
     # Group by ward and risk level
     summary = (
         df.groupby("wardNo")["riskTag"]

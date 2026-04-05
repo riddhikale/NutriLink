@@ -1,107 +1,201 @@
 import { useEffect, useState } from "react";
-import { getSummary, getTrends } from "../services/api";
+import { getAnalytics, getFollowups } from "../services/api";
+
 import DashboardCard from "../components/DashboardCard";
 import TrendChart from "../components/TrendChart";
+import RiskPieChart from "../components/RiskPieChart";
+import WardChart from "../components/WardChart";
 import AreaTable from "../components/AreaTable";
 import FollowupList from "../components/FollowupList";
-import Heatmap from "../components/Heatmap";
+
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import "../styles/dashboard.css";
 
 function Dashboard() {
-  const [summary, setSummary] = useState({});
-  const [trend, setTrend] = useState([]);
+  const [analytics, setAnalytics] = useState(null);
+  const [followups, setFollowups] = useState([]);
+  const [error, setError] = useState(null);
   const [user, setUser] = useState({});
-  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const userData = JSON.parse(localStorage.getItem("user"));
-
-    if (!token) {
-      window.location.href = "/";
-    } else {
-      setUser(userData || {});
-      loadData();
+    // Load dynamic user info from local storage (saved during login)
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        console.error("Failed to parse user from local storage");
+      }
     }
+    loadData();
   }, []);
 
   async function loadData() {
-    const s = await getSummary();
-    const t = await getTrends();
-    setSummary(s);
-    setTrend(t);
+    try {
+      const res = await getAnalytics();
+      const flips = await getFollowups() || [];
+      if (res && res.analytics) {
+        setAnalytics(res.analytics);
+      } else {
+        setError("Invalid response from backend");
+      }
+      setFollowups(flips);
+    } catch (err) {
+      console.error(err);
+      setError("Server not reachable");
+    }
   }
 
-  function logout() {
-    localStorage.clear();
+  function handleSignOut() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     window.location.href = "/";
   }
 
+  // 🔴 ERROR STATE
+  if (error) {
+    return (
+      <div style={{ padding: "20px", color: "red" }}>
+        ❌ {error}
+      </div>
+    );
+  }
+
+  // 🟡 LOADING STATE
+  if (!analytics) {
+    return (
+      <div style={{ padding: "20px" }}>
+        <h3>Loading Dynamic Dashboard...</h3>
+      </div>
+    );
+  }
+
+  // 🟢 SAFE DATA EXTRACTION
+  const riskDist = analytics?.riskDistribution || [];
+
+  const high = riskDist.find(r => r.riskLevel === "high" || r.riskLevel === "High")?.count || 0;
+  const medium = riskDist.find(r => r.riskLevel === "medium" || r.riskLevel === "Medium")?.count || 0;
+  const low = riskDist.find(r => r.riskLevel === "low" || r.riskLevel === "Low")?.count || 0;
+
+  const total = high + medium + low;
+
+  // Prepare hotspot data from followups as requested
+  const highRiskFollowupsByWard = {};
+  followups.forEach(f => {
+    if ((f.risk || "").toLowerCase() === "high") {
+       const w = f.address || "Unknown Ward";
+       if(!highRiskFollowupsByWard[w]) highRiskFollowupsByWard[w] = [];
+       highRiskFollowupsByWard[w].push(f);
+    }
+  });
+
   return (
     <div className="layout">
-
       {/* SIDEBAR */}
-      <div className={`sidebar ${collapsed ? "collapsed" : ""}`}>
-
-        {/* COLLAPSE BUTTON */}
-        <button 
-          className="collapse-btn"
-          onClick={() => setCollapsed(!collapsed)}
-        >
-          ☰
-        </button>
-
-        {/* TITLE */}
-        <h2>NutriLink</h2>
-        <p>Supervisor Panel</p>
-
-        {/* PROFILE (BOTTOM) */}
+      <div className="sidebar">
+        <h2>🍁 NutriLink</h2>
+        <ul className="nav-links">
+          <li className="active">📊 Dashboard</li>
+          <li>🎯 Screening</li>
+          <li>🏥 Facility Map</li>
+          <li>⚙️ Settings</li>
+        </ul>
         <div className="profile-box">
-          <h4>{user?.name || "Supervisor"}</h4>
-          <p>{user?.role || "SUPERVISOR"}</p>
+          <p>{user.name || "Dr. Supervisor"}</p>
+          <small>{user.role ? user.role.replace("_", " ").toLowerCase() : "Admin Role"}</small>
+          <button className="sign-out-btn" onClick={handleSignOut}>Sign Out</button>
         </div>
-
       </div>
 
-      {/* MAIN */}
-      <div className={`main ${collapsed ? "expanded" : ""}`}>
-
-        {/* HEADER */}
+      {/* MAIN CONTENT */}
+      <div className="main">
         <div className="header">
-          <h2>Dashboard</h2>
+          <h2>Dashboard Overview</h2>
+        </div>
 
-          <div className="profile">
-            <span>{user?.name || "Supervisor"}</span>
-            <button onClick={logout}>Logout</button>
+        {/* 🔥 CARDS */}
+        <div className="cards">
+          <DashboardCard title="Total Screened" value={total} type="total" />
+          <DashboardCard title="High Risk" value={high} type="high" />
+          <DashboardCard title="Medium Risk" value={medium} type="medium" />
+          <DashboardCard title="Low Risk" value={low} type="low" />
+        </div>
+
+        {/* 🔥 ROW 1 */}
+        <div className="grid">
+          <div className="section">
+            <h3>Risk Distribution</h3>
+            <ResponsiveContainer width="100%" height={250}>
+              <RiskPieChart data={riskDist} />
+            </ResponsiveContainer>
+          </div>
+
+          <div className="section">
+            <h3>Trend Analysis</h3>
+            <ResponsiveContainer width="100%" height={250}>
+              <TrendChart data={analytics?.trend || []} />
+            </ResponsiveContainer>
           </div>
         </div>
 
-        {/* CARDS */}
-        <div className="cards">
-          <DashboardCard title="Total" value={summary.total} />
-          <DashboardCard title="High Risk" value={summary.high} type="high" />
-          <DashboardCard title="Medium Risk" value={summary.medium} type="medium" />
-          <DashboardCard title="Low Risk" value={summary.low} type="low" />
-        </div>
-
-        {/* TREND */}
-        <div className="section">
-          <h3>Trend Analysis</h3>
-          <TrendChart data={trend} />
-        </div>
-
-        {/* GRID */}
+        {/* 🔥 ROW 2 */}
         <div className="grid">
-          <AreaTable />
-          <FollowupList />
+          <div className="section">
+            <h3>Screening Coverage</h3>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={analytics?.coverage || []}>
+                <XAxis dataKey="wardNo" />
+                <YAxis />
+                <Tooltip cursor={{ fill: 'rgba(0,0,0,0.05)' }} />
+                <Bar dataKey="screenings" fill="#388e3c" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="section">
+            <h3>Ward Comparison</h3>
+            <ResponsiveContainer width="100%" height={250}>
+              <WardChart data={analytics?.wardSummary || []} />
+            </ResponsiveContainer>
+          </div>
         </div>
 
-        {/* HEATMAP */}
+        {/* 🔥 ROW 3: NEW METRICS & HOTSPOTS */}
+        <div className="grid">
+          {/* AREA TABLE */}
+          <div className="section">
+            <AreaTable />
+          </div>
+
+          {/* FOLLOWUPS */}
+          <div className="section">
+            <FollowupList data={followups} />
+          </div>
+        </div>
+
+        {/* 🔥 HOTSPOTS */}
         <div className="section">
-          <h3>Risk Heatmap</h3>
-          <Heatmap />
+          <h3>High Risk Hotspots (By Ward)</h3>
+          <div className="hotspots-list" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '15px' }}>
+            {Object.keys(highRiskFollowupsByWard).length === 0 ? (
+              <p>No high-risk hotspot data</p>
+            ) : (
+              Object.entries(highRiskFollowupsByWard).map(([ward, items]) => (
+                <div key={ward} className="hotspot-item" style={{ flexDirection: 'column', alignItems: 'flex-start', background: '#ffebee', padding: '15px', borderRadius: '8px', borderLeft: '4px solid #d32f2f' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px' }}>
+                    <span className="hotspot-name" style={{ fontSize: '16px' }}>{ward}</span>
+                    <span className="hotspot-val" style={{ background: '#d32f2f' }}>{items.length} Followups</span>
+                  </div>
+                  <ul style={{ margin: 0, paddingLeft: '20px', color: '#555', fontSize: '14px', width: '100%' }}>
+                    {items.map((f, i) => (
+                      <li key={i} style={{ marginBottom: '5px' }}>{f.name} <small>({f.date ? new Date(f.date).toLocaleDateString() : 'N/A'})</small></li>
+                    ))}
+                  </ul>
+                </div>
+              ))
+            )}
+          </div>
         </div>
-
       </div>
     </div>
   );

@@ -12,7 +12,7 @@ const voiceRoutes = require("./routes/voice");
 const followup = require("./routes/followupRouter");
 const alert = require("./routes/alertRoutes");
 //const supervisor = require("./routes/dashboardRoutesSupervisor");
-const supervisorAnalyticsRoute = require("./routes/supervisor_analytics");
+//const supervisorAnalyticsRoute = require("./routes/supervisor_analytics");
 const supervisorRoutes = require("./routes/supervisor/routeDashboard");
 
 const app = express();
@@ -33,7 +33,7 @@ app.use("/api", voiceRoutes);
 app.use("/api", followup);
 app.use("/alerts", alert);
 app.use("/api/supervisor", supervisorRoutes);
-app.use("/api", supervisorAnalyticsRoute);
+//app.use("/api", supervisorAnalyticsRoute);
 
 app.listen(port, "0.0.0.0", () => {
     console.log(`Server running on port ${port}`);
