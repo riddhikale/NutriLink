@@ -63,7 +63,9 @@ IconData _riskIcon(String risk) {
 }
 
 class FollowupPage extends StatefulWidget {
-  const FollowupPage({super.key});
+  final String? initialRisk;
+  const FollowupPage({super.key, this.initialRisk});
+
 
   @override
   State<FollowupPage> createState() => _FollowupPageState();
@@ -76,6 +78,9 @@ class _FollowupPageState extends State<FollowupPage> {
   @override
   void initState() {
     super.initState();
+    if (widget.initialRisk != null) {
+      _selectedRisk = widget.initialRisk!;
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<FollowUpProvider>().loadFollowups();
     });
