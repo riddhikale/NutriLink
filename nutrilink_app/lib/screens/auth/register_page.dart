@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../main.dart';
 import '../home/home_dashboard.dart';
 import '../../services/api_service.dart';
+import '../../widgets/app_bar_with_lang.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -90,6 +91,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6F8),
+      appBar: const AppBarWithLang(title: "NutriLink", showBackButton: false),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -111,12 +113,7 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
               child: Column(
                 children: [
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: const LanguageSwitcherBtn(),
-                  ),
                   const SizedBox(height: 20),
-
                   Container(
                     height: 140,
                     width: 140,

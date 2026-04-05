@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'followup_provider.dart';
 import 'followup_detail_page.dart';
+import '../../widgets/app_bar_with_lang.dart';
 
 String formatDate(dynamic value) {
   if (value == null) return "No Date";
@@ -185,6 +186,7 @@ class _FollowupPageState extends State<FollowupPage> {
 
         return Scaffold(
           backgroundColor: kSurface,
+          appBar: const AppBarWithLang(title: "NutriLink", showBackButton: false),
           body: CustomScrollView(
             slivers: [
               // ── App Bar ──────────────────────────────────

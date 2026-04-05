@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../services/api_service.dart';
 import 'risk_result_page.dart';
+import '../../widgets/app_bar_with_lang.dart';
 
 class ChildScreeningPage extends StatefulWidget {
   const ChildScreeningPage({super.key});
@@ -159,6 +160,7 @@ class _ChildScreeningPageState extends State<ChildScreeningPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: surfaceColor,
+      appBar: const AppBarWithLang(title: "NutriLink", showBackButton: false),
       body: CustomScrollView(
         slivers: [
           // ── Gradient App Bar ──────────────────────────────────────────

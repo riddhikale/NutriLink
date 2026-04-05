@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'child_screening_page.dart';
 import 'pregnant_screening_page.dart';
+import '../../widgets/app_bar_with_lang.dart';
 
 class AddScreeningPage extends StatelessWidget {
   const AddScreeningPage({super.key});
@@ -10,11 +11,8 @@ class AddScreeningPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF2F4F7),
 
-      appBar: AppBar(
-        title: const Text("Add Screening"),
-        backgroundColor: const Color(0xFFE9F2FF),
-        elevation: 0,
-      ),
+
+      appBar: const AppBarWithLang(title: "Add Screening"),
 
       body: Padding(
         padding: const EdgeInsets.all(16),

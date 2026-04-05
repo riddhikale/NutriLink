@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../home/followup_provider.dart'; // ← correct path from profile/
+import '../home/followup_provider.dart';
+import '../../widgets/app_bar_with_lang.dart';
 
 // ─────────────────────────────────────────────────────────────
 // Helpers
@@ -123,6 +124,7 @@ class _WorkHistoryPageState extends State<WorkHistoryPage> {
 
         return Scaffold(
           backgroundColor: kSurface,
+          appBar: const AppBarWithLang(title: "NutriLink", showBackButton: false),
           body: CustomScrollView(
             slivers: [
               // ── App Bar ──────────────────────────────────
