@@ -6,9 +6,9 @@ from faster_whisper import WhisperModel
 
 import shutil
 import os
-import subprocess
-
-os.environ["PATH"] += os.pathsep + r"D:\ffmeg-ML\ffmpeg-8.0.1-essentials_build\bin"
+import time
+import soundfile as sf
+import librosa
 
 app = FastAPI()
 
@@ -30,47 +30,62 @@ INITIAL_PROMPT = (
 @app.post("/transcribe")
 async def transcribe_audio(file: UploadFile = File(...)):
 
-    temp_audio = f"temp_{file.filename}"
+    t_total = time.time()
 
+    # ── 1. Save uploaded file ──────────────────────────────
+    t = time.time()
+    temp_audio = f"temp_{file.filename}"
     with open(temp_audio, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
+    print(f"⏱ File save:        {time.time() - t:.2f}s")
 
+    # ── 2. Convert audio ───────────────────────────────────
+    t = time.time()
     converted_audio = "converted_audio.wav"
+    try:
+        audio, sr = librosa.load(temp_audio, sr=16000, mono=True)
+        sf.write(converted_audio, audio, 16000)
+    except Exception as e:
+        print(f"❌ Audio conversion failed: {e}")
+        os.remove(temp_audio)
+        return {"error": "Audio conversion failed"}
+    print(f"⏱ Audio convert:    {time.time() - t:.2f}s")
 
-    subprocess.run([
-        "ffmpeg",
-        "-y",
-        "-i", temp_audio,
-        "-ac", "1",
-        "-ar", "16000",
-        converted_audio
-    ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
+    # ── 3. Transcribe ──────────────────────────────────────
+    t = time.time()
     segments, info = model.transcribe(
         converted_audio,
         beam_size=1,
         task="transcribe",
         initial_prompt=INITIAL_PROMPT,
-        vad_filter=True,
-        vad_parameters=dict(min_silence_duration_ms=500)
+
+        # KEY FIXES for runaway latency spikes:
+        condition_on_previous_text=False,  # stops hallucination loops
+        no_speech_threshold=0.6,           # skip silent/noise segments fast
+        compression_ratio_threshold=2.0,   # reject repetitive hallucinated output
+        temperature=0.0,                   # greedy — no sampling randomness
     )
-
+    segments = list(segments)  # force eager evaluation
     transcription = "".join([s.text for s in segments]).lower().strip()
+    print(f"⏱ Whisper:          {time.time() - t:.2f}s")
+    print(f"   Transcription:   {transcription}")
+    print(f"   Whisper lang:    {info.language} ({info.language_probability:.0%})")
 
-    print(f"Transcription: {transcription}")
-    print(f"Whisper raw language: {info.language} ({info.language_probability:.0%} confidence)")
-
+    # ── 4. Intent detection ────────────────────────────────
+    t = time.time()
     intent = detect_intent(transcription)
+    print(f"⏱ Intent detect:    {time.time() - t:.2f}s  →  {intent}")
 
-    # KEY FIX: always use script-aware detection
-    # Whisper confidence is consistently low (0.2–0.6) for short clips — don't trust it
+    # ── 5. Language detection ──────────────────────────────
+    t = time.time()
     language = detect_language(transcription)
+    print(f"⏱ Lang detect:      {time.time() - t:.2f}s  →  {language}")
 
-    print(f"Intent: {intent}")
-    print(f"Language: {language}")
-
+    # ── Cleanup ────────────────────────────────────────────
     os.remove(temp_audio)
     os.remove(converted_audio)
+
+    print(f"⏱ TOTAL:            {time.time() - t_total:.2f}s")
 
     return {
         "transcription": transcription,
