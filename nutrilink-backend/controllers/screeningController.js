@@ -31,7 +31,7 @@ async function childScreening(req, res) {
     await beneficiaryRef.set({
       name,
       address: address || "",
-      wardNo: wardNo || "",   // ← NEW
+      wardNo: wardNo || "",  
       type: "child",
       createdAt: new Date(),
     });
@@ -283,7 +283,7 @@ async function pregWomenScreening(req, res) {
       workerId,
       name,
       address: address || "",
-      wardNo: wardNo || "",   // ← NEW
+      wardNo: wardNo || "",  
       type: followupType,
       beneficiaryType: "pregnant",
       riskLevel: result.level,

@@ -4,7 +4,7 @@ const router = express.Router();
 const {
   createFollowUp,
   getDueFollowups,
-  getCompletedFollowups, // ← import new function
+  getCompletedFollowups,
   completeFollowup,
 } = require("../controllers/followupController");
 

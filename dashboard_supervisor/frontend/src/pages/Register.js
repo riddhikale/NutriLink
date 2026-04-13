@@ -38,13 +38,11 @@ function Register() {
   return (
     <div className="login-container">
       
-      {/* LEFT SIDE */}
       <div className="login-left">
         <h1>NutriLink</h1>
         <p>Create Supervisor / Worker Account</p>
       </div>
 
-      {/* RIGHT SIDE */}
       <div className="login-right">
         <div className="login-box">
 
@@ -69,7 +67,6 @@ function Register() {
             onChange={(e) => setPin(e.target.value)}
           />
 
-          {/* ROLE SELECT */}
           <select
             value={role}
             onChange={(e) => setRole(e.target.value)}

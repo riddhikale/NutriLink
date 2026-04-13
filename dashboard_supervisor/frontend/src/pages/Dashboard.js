@@ -18,7 +18,6 @@ function Dashboard() {
   const [user, setUser] = useState({});
 
   useEffect(() => {
-    // Load dynamic user info from local storage (saved during login)
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       try {
@@ -52,7 +51,6 @@ function Dashboard() {
     window.location.href = "/";
   }
 
-  // 🔴 ERROR STATE
   if (error) {
     return (
       <div style={{ padding: "20px", color: "red" }}>
@@ -61,7 +59,6 @@ function Dashboard() {
     );
   }
 
-  // 🟡 LOADING STATE
   if (!analytics) {
     return (
       <div style={{ padding: "20px" }}>
@@ -70,7 +67,6 @@ function Dashboard() {
     );
   }
 
-  // 🟢 SAFE DATA EXTRACTION
   const riskDist = analytics?.riskDistribution || [];
 
   const high = riskDist.find(r => r.riskLevel === "high" || r.riskLevel === "High")?.count || 0;
@@ -79,7 +75,6 @@ function Dashboard() {
 
   const total = high + medium + low;
 
-  // Prepare hotspot data from followups as requested
   const highRiskFollowupsByWard = {};
   followups.forEach(f => {
     if ((f.risk || "").toLowerCase() === "high") {
@@ -91,14 +86,10 @@ function Dashboard() {
 
   return (
     <div className="layout">
-      {/* SIDEBAR */}
       <div className="sidebar">
         <h2>🍁 NutriLink</h2>
         <ul className="nav-links">
           <li className="active">📊 Dashboard</li>
-          <li>🎯 Screening</li>
-          <li>🏥 Facility Map</li>
-          <li>⚙️ Settings</li>
         </ul>
         <div className="profile-box">
           <p>{user.name || "Dr. Supervisor"}</p>
@@ -107,13 +98,11 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* MAIN CONTENT */}
       <div className="main">
         <div className="header">
           <h2>Dashboard Overview</h2>
         </div>
 
-        {/* 🔥 CARDS */}
         <div className="cards">
           <DashboardCard title="Total Screened" value={total} type="total" />
           <DashboardCard title="High Risk" value={high} type="high" />
@@ -121,7 +110,6 @@ function Dashboard() {
           <DashboardCard title="Low Risk" value={low} type="low" />
         </div>
 
-        {/* 🔥 ROW 1 */}
         <div className="grid">
           <div className="section">
             <h3>Risk Distribution</h3>
@@ -138,7 +126,6 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* 🔥 ROW 2 */}
         <div className="grid">
           <div className="section">
             <h3>Screening Coverage</h3>
@@ -160,20 +147,16 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* 🔥 ROW 3: NEW METRICS & HOTSPOTS */}
         <div className="grid">
-          {/* AREA TABLE */}
           <div className="section">
             <AreaTable />
           </div>
 
-          {/* FOLLOWUPS */}
           <div className="section">
             <FollowupList data={followups} />
           </div>
         </div>
 
-        {/* 🔥 HOTSPOTS */}
         <div className="section">
           <h3>High Risk Hotspots (By Ward)</h3>
           <div className="hotspots-list" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '15px' }}>

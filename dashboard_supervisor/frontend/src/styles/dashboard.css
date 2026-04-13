@@ -5,20 +5,17 @@ body {
   color: #333;
 }
 
-/* MAIN LAYOUT */
 .layout {
   display: flex;
   min-height: 100vh;
 }
 
-/* PREMIUM SIDEBAR */
 .sidebar {
   width: 250px;
   position: fixed;
   left: 0;
   top: 0;
   height: 100vh;
-  /* Rich gradient matching login */
   background: linear-gradient(145deg, #2e7d32, #1b5e20);
   color: white;
   padding: 24px;
@@ -65,7 +62,6 @@ body {
   transform: translateX(5px);
 }
 
-/* User profile box at bottom of sidebar */
 .profile-box {
   margin-top: auto;
   background: rgba(255, 255, 255, 0.1);
@@ -102,7 +98,6 @@ body {
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* MAIN CONTENT AREA */
 .main {
   margin-left: 250px;
   padding: 30px;
@@ -123,7 +118,6 @@ body {
   margin: 0;
 }
 
-/* CARDS */
 .cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -170,7 +164,6 @@ body {
 .card.medium p { color: #f57c00; }
 .card.low p { color: #388e3c; }
 
-/* SECTIONS AND CHARTS */
 .grid {
   display: grid;
   grid-template-columns: 1fr 2fr;
@@ -194,7 +187,6 @@ body {
   padding-bottom: 10px;
 }
 
-/* HOTSPOTS */
 .hotspot-item {
   padding: 12px 15px;
   border-left: 4px solid #ef5350;

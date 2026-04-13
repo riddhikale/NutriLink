@@ -75,7 +75,6 @@ async function getDueFollowups(req, res) {
   }
 }
 
-// ── NEW: fetch completed followups for Work History ──────────
 async function getCompletedFollowups(req, res) {
   try {
     const workerId = req.user.phone;
@@ -134,6 +133,6 @@ async function completeFollowup(req, res) {
 module.exports = {
   createFollowUp,
   getDueFollowups,
-  getCompletedFollowups, // ← export new function
+  getCompletedFollowups, 
   completeFollowup,
 };

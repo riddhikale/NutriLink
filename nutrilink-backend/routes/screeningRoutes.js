@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { db } = require("../config/firebaseConfig"); // ← correct path
+const { db } = require("../config/firebaseConfig"); 
 const { childScreening, pregWomenScreening } = require("../controllers/screeningController");
 const { authMiddleware } = require("../middlewares/authMiddleware");
 

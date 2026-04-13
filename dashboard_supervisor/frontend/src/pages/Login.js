@@ -32,13 +32,11 @@ function Login() {
   return (
     <div className="login-container">
       
-      {/* LEFT SIDE (BRANDING) */}
       <div className="login-left">
         <h1>NutriLink</h1>
         <p>Supervisor Monitoring System</p>
       </div>
 
-      {/* RIGHT SIDE (FORM) */}
       <div className="login-right">
         <div className="login-box">
 

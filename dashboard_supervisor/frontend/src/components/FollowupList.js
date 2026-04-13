@@ -5,7 +5,6 @@ function FollowupList({ data = [] }) {
   return (
     <>
       <h3>Followups</h3>
-      {/* Scrollable list that roughly keeps the first 5 visible (~350px) */}
       <div className="followup-list" style={{ marginTop: '15px', maxHeight: '350px', overflowY: 'auto', paddingRight: '5px' }}>
         {data.length === 0 && <p style={{ color: '#888' }}>No pending followups...</p>}
         {data.map((f, i) => (

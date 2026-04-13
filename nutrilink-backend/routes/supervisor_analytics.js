@@ -10,8 +10,6 @@ router.post("/supervisor-analytics", async (req, res) => {
         const db = admin.firestore();
 
         let screeningData = [];
-
-        // Get all beneficiaries
         const beneficiariesSnapshot = await db.collection("beneficiaries").get();
 
         for (const doc of beneficiariesSnapshot.docs) {
@@ -24,7 +22,7 @@ router.post("/supervisor-analytics", async (req, res) => {
 
                 screeningData.push({
                     wardNo: Number(data.wardNo),
-                    riskTag: data.riskLevel,  // mapping Firestore -> analytics
+                    riskTag: data.riskLevel,
                     screeningDate: data.createdAt
                         ? data.createdAt.toDate().toISOString()
                         : null,
@@ -35,7 +33,6 @@ router.post("/supervisor-analytics", async (req, res) => {
 
         }
 
-        // Run Python analytics
         const pythonProcess = spawn("python", ["../supervisor_analytics/main.py"]);
 
         let result = "";
