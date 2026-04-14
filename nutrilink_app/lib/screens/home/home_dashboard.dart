@@ -9,6 +9,7 @@ import '../screening/child_screening_page.dart';
 import '../screening/pregnant_screening_page.dart';
 import '../profile/settings_page.dart';
 import '../profile/work_history_page.dart';
+import 'followup_page.dart';
 import 'dashboard_view.dart';
 import 'profile_view.dart';
 import '../../widgets/app_bar_with_lang.dart';
@@ -93,6 +94,29 @@ class _HomeDashboardState extends State<HomeDashboard> {
         "hi": "प्रोफाइल खोल रहा हूँ",
         "mr": "प्रोफाइल उघडत आहे"
       },
+      "view_followups": {
+        "en": "Opening followups",
+        "hi": "फॉलोअप्स खोल रहा हूँ",
+        "mr": "फॉलोअप्स उघडत आहे"
+      },
+
+      "view_high_risk": {
+        "en": "Opening high risk cases",
+        "hi": "उच्च जोखिम मामले खोल रहा हूँ",
+        "mr": "उच्च जोखमीची प्रकरणे उघडत आहे"
+      },
+
+      "view_medium_risk": {
+        "en": "Opening medium risk cases",
+        "hi": "मध्यम जोखिम मामले खोल रहा हूँ",
+        "mr": "मध्यम जोखमीची प्रकरणे उघडत आहे"
+      },
+
+      "view_low_risk": {
+        "en": "Opening low risk cases",
+        "hi": "कम जोखिम मामले खोल रहा हूँ",
+        "mr": "कमी जोखमीची प्रकरणे उघडत आहे"
+      },
     };
 
     final Map<String, Widget Function()> intentRoutes = {
@@ -102,6 +126,10 @@ class _HomeDashboardState extends State<HomeDashboard> {
       "add_screening":           () => const AddScreeningPage(),
       "navigation_settings":     () => const SettingsPage(),
       "navigation_work_history": () => const WorkHistoryPage(),
+      "view_followups": () => const FollowupPage(),
+      "view_high_risk": () => const FollowupPage(initialRisk: "high"),
+      "view_medium_risk": () => const FollowupPage(initialRisk: "medium"),
+      "view_low_risk": () => const FollowupPage(initialRisk: "low"),
     };
 
     // Speak response in correct language

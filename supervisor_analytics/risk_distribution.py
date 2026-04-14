@@ -2,8 +2,6 @@
 
 import pandas as pd
 
-import pandas as pd
-
 def risk_distribution(data):
 
     df = pd.DataFrame(data)
