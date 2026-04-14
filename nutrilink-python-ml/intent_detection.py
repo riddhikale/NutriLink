@@ -17,9 +17,7 @@ def normalize_text(text):
 
     replacements = {
 
-        # ---- Whisper garbled Devanagari → English ----
-
-        # Register / new
+        # ---- Register / new ----
         "रजिस्टर": "register",
         "रजीस्टर": "register",
         "निव": "new",
@@ -28,7 +26,7 @@ def normalize_text(text):
         "नवी": "new",
         "नया": "new",
 
-        # Child variants
+        # ---- Child ----
         "चाल": "child",
         "चालिल्द": "child",
         "चाएलद": "child",
@@ -38,94 +36,105 @@ def normalize_text(text):
         "मुलाचे": "child",
         "मुलाची": "child",
 
-        # Beneficiary — KEY FIX: added all garbled variants from logs
+        # ---- Beneficiary ----
         "लाभार्थी": "beneficiary",
-        "भीच्छरी": "beneficiary",      # नवीन भीच्छरी → new beneficiary
-        "बनिप्षरीव": "beneficiary",    # ख्रीएड बनिप्षरीव → create beneficiary
+        "भीच्छरी": "beneficiary",
+        "बनिप्षरीव": "beneficiary",
         "बनिफिशरी": "beneficiary",
         "बेनिफिशरी": "beneficiary",
 
-        # Pregnant
+        # ---- Pregnant ----
         "गर्बवती": "pregnant",
         "गर्भवती": "pregnant",
         "गर्भ्वती": "pregnant",
 
-        # Woman
+        # ---- Woman ----
         "महीराज्क्": "woman",
         "महिला": "woman",
 
-        # Screening — longer variants first
+        # ---- Screening ----
         "स्क्रीनिंकरा": "screening",
         "स्क्रीनिंग": "screening",
         "स्क्रीनिं": "screening",
 
-        # Followups
+        # ---- Followups ----
         "फो लोबस": "followups",
         "फोलोबस": "followups",
         "फॉलोअप्स": "followups",
         "फोलोअप्स": "followups",
 
-        # Settings — longer variants first to avoid partial match
+        # ---- Settings — longer first ----
         "सेट्टिंग्स": "settings",
         "सेटिंग्स": "settings",
         "सेट्टिंग": "settings",
         "सेटिंग": "settings",
 
-        # Open variants
+        # ---- Open ----
         "स्खोलो": "open",
         "खोलो": "open",
         "उघडा": "open",
         "उगडा": "open",
         "उबडा": "open",
 
-        # Home
+        # ---- Home ----
         "होम": "home",
 
-        # Profile — KEY FIX: added all garbled variants from logs
+        # ---- Profile — KEY FIX: added all garbled variants ----
+        "प्रोँप्टाल": "profile",       # from latest log
         "प्रोफाइल": "profile",
         "प्रोफाईल": "profile",
         "प्रोफाएल": "profile",
-        "प्रोँपाई": "profile",         # प्रोँपाई लुग्डा → profile open
-        "प्रोपाल": "profile",          # अपन प्रोपाल → open profile
+        "प्रोँपाई": "profile",
+        "प्रोपाल": "profile",
         "प्रोफाल": "profile",
         "प्रोपाइल": "profile",
+        "प्रोपालिए": "profile",        # अपन प्रोपालिए from latest log
 
-        # History
+        # ---- History / work ----
         "हिस्ट्री": "history",
+        "हिस्टरी": "history",
+        "वर्ख": "work",
+        "आज़ीजना": "history",
 
-        # Meal / diet
+        # ---- Risk levels — KEY FIX ----
+        # Devanagari risk words
+        "हाय रिस्क": "high risk",
+        "हाई रिस्क": "high risk",
+        "मीडियम रिस्क": "medium risk",
+        "मीडिअम रिस्क": "medium risk",
+        "लो रिस्क": "low risk",
+        "लोव रिस्क": "low risk",
+        "रिस्क": "risk",               # bare "risk" word
+        "जोखमीची": "high risk",
+        "जोखिम": "high risk",
+        # है + रिस्क pattern (from log: "है, रिस्क")
+        "है रिस्क": "risk",
+        "है": "",                       # strip filler "है"
+
+        # ---- Meal / diet ----
         "आहार": "meal",
         "योजना": "plan",
         "डाइट": "diet",
 
-        # Risk
-        "जोखमीची": "high risk",
-        "जोखिम": "high risk",
-
-        # Show
+        # ---- Show ----
         "दाखवा": "show",
         "दिखाओ": "show",
         "दिकाो": "show",
 
-        # Add
+        # ---- Add ----
         "जोड़ो": "add",
         "जोडो": "add",
         "जोडा": "add",
 
-        # Create — KEY FIX: ख्रीएड is garbled "create"
+        # ---- Create ----
         "ख्रीएड": "create",
         "क्रिएट": "create",
 
-        # Misc
+        # ---- Misc ----
         "करा": "",
         "पन्जिकरंग": "register",
-        "अपन": "",                      # Whisper prefix garbage
+        "अपन": "",
         "अपना": "",
-
-        # Work history garbled variants
-        "वर्ख": "work",
-        "आज़ीजना": "history",          # अपन वर्ख आज़ीजना → work history
-        "हिस्टरी": "history",
 
         # ---- Marathi romanization ----
         "mulache": "child",
@@ -225,12 +234,38 @@ intents = {
     ],
 
     "view_high_risk": [
-        "show high risk children",
+        "show high risk",
         "high risk cases",
         "high risk children",
+        "high risk",
         "risk children",
         "जोखिम वाले बच्चे दिखाओ",
         "जोखमीची मुले दाखवा"
+    ],
+
+    "view_medium_risk": [
+        "show medium risk",
+        "medium risk cases",
+        "medium risk children",
+        "medium risk",
+        "moderate risk",
+        "medium risk followups",
+        "मध्यम जोखिम",
+        "मध्यम जोखिम वाले बच्चे दिखाओ",
+        "मध्यम जोखमीची मुले दाखवा",
+        "मध्यम जोखीम"
+    ],
+
+    "view_low_risk": [
+        "show low risk",
+        "low risk cases",
+        "low risk children",
+        "low risk",
+        "low risk followups",
+        "कम जोखिम",
+        "कम जोखिम वाले बच्चे दिखाओ",
+        "कमी जोखमीची मुले दाखवा",
+        "कमी जोखीम"
     ],
 
     "navigation_home": [
@@ -275,7 +310,7 @@ keyword_rules = [
     ("add_beneficiary",         ["beneficiary"]),
     ("view_followups",          ["followup"]),
     ("generate_meal_plan",      ["meal", "diet", "nutrition"]),
-    ("view_high_risk",          ["risk"]),
+    ("view_high_risk",          ["high risk", "risk"]),   # KEY FIX: "risk" alone → high risk
     ("navigation_home",         ["home"]),
     ("navigation_profile",      ["profile"]),
     ("navigation_settings",     ["settings", "setting"]),
@@ -294,7 +329,7 @@ for intent, phrases in intents.items():
         convert_to_tensor=True
     )
 
-# Warmup — prevents first-request JIT lag
+# Warmup
 _ = model.encode("warmup", convert_to_tensor=True)
 print("✅ Intent model warmed up")
 
@@ -306,7 +341,7 @@ def detect_intent(text):
     normalized = normalize_text(text)
     print(f"Normalized text: '{normalized}'")
 
-    # Priority keyword rules — most specific combos first
+    # Priority rules
     if "child" in normalized and ("screening" in normalized or "register" in normalized or "new" in normalized):
         return "add_child_screening"
 
@@ -319,6 +354,10 @@ def detect_intent(text):
     if "followup" in normalized or "follow up" in normalized:
         return "view_followups"
 
+    # KEY FIX: risk check before settings/history to avoid wrong semantic match
+    if "high risk" in normalized or "medium risk" in normalized or "low risk" in normalized or "risk" in normalized:
+        return "view_high_risk"
+
     if "settings" in normalized or "setting" in normalized:
         return "navigation_settings"
 
@@ -330,9 +369,6 @@ def detect_intent(text):
 
     if "profile" in normalized:
         return "navigation_profile"
-
-    if "high risk" in normalized or "risk" in normalized:
-        return "view_high_risk"
 
     if "meal" in normalized or "diet" in normalized or "nutrition" in normalized:
         return "generate_meal_plan"
