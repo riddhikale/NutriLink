@@ -9,6 +9,7 @@ import os
 import time
 import soundfile as sf
 import librosa
+import numpy as np
 
 app = FastAPI()
 
@@ -21,10 +22,31 @@ model = WhisperModel(
 INITIAL_PROMPT = (
     "This is a voice command in Hindi, Marathi, or English. "
     "Commands include: register child, pregnant screening, add beneficiary, "
-    "followups, meal plan, high risk, home, profile, settings, work history. "
+    "followups, meal plan, high risk, medium risk, low risk, home, profile, settings, work history. "
     "मुलाचे स्क्रीनिंग, गर्भवती महिला, नवीन लाभार्थी, फॉलोअप्स दाखवा, "
-    "आहार योजना, होम उघडा, सेटिंग उघडा."
+    "आहार योजना, होम उघडा, सेटिंग उघडा, हाय रिस्क, मीडियम रिस्क."
 )
+
+# ── Librosa warmup — prevents 3s cold-start on first request ──
+_dummy = np.zeros(16000, dtype=np.float32)
+sf.write("warmup.wav", _dummy, 16000)
+librosa.load("warmup.wav", sr=16000, mono=True)
+os.remove("warmup.wav")
+print("✅ Librosa warmed up")
+
+
+def is_hallucination(text: str) -> bool:
+    """Detect Whisper hallucination loops — repeated words/phrases."""
+    if not text or len(text) < 5:
+        return True
+    words = text.split()
+    if len(words) < 2:
+        return False
+    # If any single word repeats more than 4 times it's a loop
+    for word in set(words):
+        if words.count(word) > 4:
+            return True
+    return False
 
 
 @app.post("/transcribe")
@@ -58,30 +80,38 @@ async def transcribe_audio(file: UploadFile = File(...)):
         beam_size=1,
         task="transcribe",
         initial_prompt=INITIAL_PROMPT,
-
-        # KEY FIXES for runaway latency spikes:
-        condition_on_previous_text=False,  # stops hallucination loops
-        no_speech_threshold=0.6,           # skip silent/noise segments fast
-        compression_ratio_threshold=2.0,   # reject repetitive hallucinated output
-        temperature=0.0,                   # greedy — no sampling randomness
+        condition_on_previous_text=False,
+        no_speech_threshold=0.6,
+        compression_ratio_threshold=1.8,   # tighter — kills loops sooner
+        temperature=0.0,
     )
-    segments = list(segments)  # force eager evaluation
+    segments = list(segments)
     transcription = "".join([s.text for s in segments]).lower().strip()
     print(f"⏱ Whisper:          {time.time() - t:.2f}s")
     print(f"   Transcription:   {transcription}")
     print(f"   Whisper lang:    {info.language} ({info.language_probability:.0%})")
 
-    # ── 4. Intent detection ────────────────────────────────
+    # ── 4. Hallucination check ─────────────────────────────
+    if is_hallucination(transcription):
+        print("⚠️  Hallucination detected — returning unknown")
+        os.remove(temp_audio)
+        os.remove(converted_audio)
+        return {
+            "transcription": transcription,
+            "language": "en",
+            "language_confidence": 0.0,
+            "intent": "unknown"
+        }
+
+    # ── 5. Intent + language detection ────────────────────
     t = time.time()
     intent = detect_intent(transcription)
     print(f"⏱ Intent detect:    {time.time() - t:.2f}s  →  {intent}")
 
-    # ── 5. Language detection ──────────────────────────────
     t = time.time()
     language = detect_language(transcription)
     print(f"⏱ Lang detect:      {time.time() - t:.2f}s  →  {language}")
 
-    # ── Cleanup ────────────────────────────────────────────
     os.remove(temp_audio)
     os.remove(converted_audio)
 
