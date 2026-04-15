@@ -41,25 +41,33 @@ def normalize_text(text):
         "बनिफिशरी": "beneficiary",
         "बेनिफिशरी": "beneficiary",
 
-        # ---- Pregnant ----
+        # ---- Pregnant — KEY FIX: added Devanagari transliterations ----
         "गर्बवती": "pregnant",
         "गर्भवती": "pregnant",
         "गर्भ्वती": "pregnant",
+        "प्रगनेड": "pregnant",       # प्रगनेड वोमन स्क्रीनिंग from log
+        "प्रेगनेंट": "pregnant",
+        "प्रेग्नेंट": "pregnant",
 
         # ---- Woman ----
         "महीराज्क्": "woman",
         "महिला": "woman",
+        "वोमन": "woman",             # Devanagari "woman"
+        "वुमन": "woman",
 
         # ---- Screening ----
         "स्क्रीनिंकरा": "screening",
         "स्क्रीनिंग": "screening",
         "स्क्रीनिं": "screening",
 
-        # ---- Followups ----
+        # ---- Followups — KEY FIX: added more garbled variants ----
         "फो लोबस": "followups",
         "फोलोबस": "followups",
         "फॉलोअप्स": "followups",
         "फोलोअप्स": "followups",
+        "फॉलोप्स": "followups",      # शो फॉलोप्स from log
+        "फोलोप्स": "followups",
+        "फॉलोउप्स": "followups",
 
         # ---- Settings ----
         "सेट्टिंग्स": "settings",
@@ -73,11 +81,13 @@ def normalize_text(text):
         "उघडा": "open",
         "उगडा": "open",
         "उबडा": "open",
+        "उग़़ा": "open",             # प्रोफाईल उग़़ा from log
 
         # ---- Home ----
         "होम": "home",
 
-        # ---- Profile — all garbled variants ----
+        # ---- Profile — KEY FIX: added all garbled variants ----
+        "प्रुफाएल": "profile",       # अपन प्रुफाएल from log
         "प्रोँप्टाल": "profile",
         "प्रोफाइल": "profile",
         "प्रोफाईल": "profile",
@@ -87,22 +97,25 @@ def normalize_text(text):
         "प्रोफाल": "profile",
         "प्रोपाइल": "profile",
         "प्रोपालिए": "profile",
-        "उप्वाईल": "profile",      # from latest log: अपन उप्वाईल
+        "उप्वाईल": "profile",
+        "चुट्रोफाडल": "profile",     # गो चुट्रोफाडल from log — garbled "go to profile"
 
         # ---- History / work ----
         "हिस्ट्री": "history",
         "हिस्टरी": "history",
+        "लिएस्ट्री": "history",      # वर्क लिएस्ट्री from log
+        "लिएख़िस्ट्री": "history",   # अपन्वार्ख लिएख़िस्ट्री from log
         "वर्ख": "work",
         "आज़ीजना": "history",
 
-        # ---- Risk levels — longer phrases first ----
+        # ---- Risk levels ----
         "हाय रिस्क": "high risk",
         "हाई रिस्क": "high risk",
         "मीडियम रिस्क": "medium risk",
         "मीडिअम रिस्क": "medium risk",
         "लो रिस्क": "low risk",
         "लोव रिस्क": "low risk",
-        "शो लो रिस्क": "show low risk",    # from log: शो लो रिस्क
+        "शो लो रिस्क": "show low risk",
         "शो हाय रिस्क": "show high risk",
         "रिस्क": "risk",
         "जोखमीची": "high risk",
@@ -115,8 +128,9 @@ def normalize_text(text):
         "योजना": "plan",
         "डाइट": "diet",
 
-        # ---- Show ----
-        "शो": "show",               # Hindi/Marathi "show" command
+        # ---- Show / go ----
+        "शो": "show",
+        "गो": "go",
         "दाखवा": "show",
         "दिखाओ": "show",
         "दिकाो": "show",
@@ -133,6 +147,7 @@ def normalize_text(text):
         # ---- Misc ----
         "करा": "",
         "पन्जिकरंग": "register",
+        "अपन्वार्ख": "work",         # अपन्वार्ख from log
         "अपन": "",
         "अपना": "",
 
@@ -170,7 +185,6 @@ def normalize_text(text):
 # ================= INTENTS ================= #
 
 intents = {
-
     "add_child_screening": [
         "child screening", "add child", "register child",
         "new child", "register new child",
@@ -212,7 +226,7 @@ intents = {
     ],
     "navigation_profile": [
         "open profile", "go to profile", "profile screen", "profile open",
-        "प्रोफाइल उघडा"
+        "profile", "प्रोफाइल उघडा"
     ],
     "navigation_settings": [
         "open settings", "go to settings", "settings screen", "settings open",
@@ -231,7 +245,6 @@ keyword_rules = [
     ("add_child_screening",     ["child"]),
     ("add_pregnant_screening",  ["pregnant"]),
     ("add_beneficiary",         ["beneficiary"]),
-    # KEY FIX: risk before followups — "medium risk followups" should be risk
     ("view_high_risk",          ["high risk", "medium risk", "low risk", "risk"]),
     ("view_followups",          ["followup"]),
     ("generate_meal_plan",      ["meal", "diet", "nutrition"]),
@@ -260,7 +273,7 @@ def detect_intent(text):
     normalized = normalize_text(text)
     print(f"Normalized text: '{normalized}'")
 
-    # KEY FIX: risk checked before followups
+    # Priority rules — order matters
     if "child" in normalized and ("screening" in normalized or "register" in normalized or "new" in normalized):
         return "add_child_screening"
     if "pregnant" in normalized:
