@@ -31,7 +31,6 @@ class ApiService {
     );
 
     final data = jsonDecode(response.body);
-
     authToken        = data["token"];
     currentUserName  = data["user"]?["name"]  ?? name;
     currentUserPhone = data["user"]?["phone"] ?? phone;
@@ -54,9 +53,6 @@ class ApiService {
     authToken        = data["token"];
     currentUserName  = data["user"]?["name"];
     currentUserRole  = data["user"]?["role"];
-
-    // ✅ Backend doesn't return phone in user object,
-    // so use the phone the user typed in directly
     currentUserPhone = phone;
 
     return data;
@@ -108,38 +104,28 @@ class ApiService {
     throw Exception("Failed to submit screening");
   }
 
-  // ── Pending follow-ups ───────────────────────────────────
   static Future<List<dynamic>> getFollowups() async {
     final response = await http.get(
       Uri.parse("$baseUrl/api/followups/due"),
       headers: _headers,
     );
-    print("📋 [API] getFollowups status: ${response.statusCode}");
     return jsonDecode(response.body);
   }
 
-  // ── Completed follow-ups (Work History) ─────────────────
   static Future<List<dynamic>> getCompletedFollowups() async {
-
     final response = await http.get(
       Uri.parse("$baseUrl/api/followups/completed"),
       headers: _headers,
     );
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      print("⚠️ [API] Completed endpoint failed: ${response.statusCode}");
-      return [];
-    }
+    if (response.statusCode == 200) return jsonDecode(response.body);
+    return [];
   }
 
   static Future completeFollowup(String id) async {
-    final response = await http.patch(
+    await http.patch(
       Uri.parse("$baseUrl/api/followup/complete/$id"),
       headers: _headers,
     );
-    print("📋 [API] completeFollowup status: ${response.statusCode}, body: ${response.body}");
   }
 
   static Future<List<dynamic>> getAlerts() async {
@@ -168,13 +154,12 @@ class ApiService {
     if (response.statusCode == 200) return jsonDecode(response.body);
     throw Exception("Failed to fetch screening");
   }
+
   static Future<void> deleteAccount() async {
     final response = await http.delete(
-      Uri.parse("$baseUrl/api/auth/user/account"), // ← add /auth/
+      Uri.parse("$baseUrl/api/auth/user/account"),
       headers: _headers,
     );
-   if (response.statusCode != 200) {
-     throw Exception("Failed to delete account");
+    if (response.statusCode != 200) throw Exception("Failed to delete account");
   }
-}
 }

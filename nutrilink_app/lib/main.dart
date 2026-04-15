@@ -5,9 +5,8 @@ import 'screens/auth/login_page.dart';
 import 'package:provider/provider.dart';
 import 'screens/home/followup_provider.dart';
 import 'screens/home/home_dashboard.dart';
-import 'l10n/app_translations.dart'; // ← new import
+import 'l10n/app_translations.dart';
 
-// --- CONSTANTS ---
 const Color kPrimaryBlue = Color(0xFF1976D2);
 const Color kLightBlueBg = Color(0xFFE3F2FD);
 const Color kTextColor = Color(0xFF2D2D2D);
@@ -25,8 +24,7 @@ void main() {
 
 class NutriLinkApp extends StatefulWidget {
   static void setLocale(BuildContext context, Locale newLocale) {
-    _NutriLinkAppState? state =
-    context.findAncestorStateOfType<_NutriLinkAppState>();
+    _NutriLinkAppState? state = context.findAncestorStateOfType<_NutriLinkAppState>();
     state?.setLocale(newLocale);
   }
 
@@ -40,9 +38,7 @@ class _NutriLinkAppState extends State<NutriLinkApp> {
   Locale _locale = const Locale('en');
 
   void setLocale(Locale locale) {
-    setState(() {
-      _locale = locale;
-    });
+    setState(() => _locale = locale);
   }
 
   @override
@@ -64,9 +60,7 @@ class _NutriLinkAppState extends State<NutriLinkApp> {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      home: LoginPage(
-        key: ValueKey(_locale.languageCode),
-      ),
+      home: LoginPage(key: ValueKey(_locale.languageCode)),
       theme: ThemeData(
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.white,
@@ -76,29 +70,27 @@ class _NutriLinkAppState extends State<NutriLinkApp> {
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: Colors.white,
-          contentPadding:
-          const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
           border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade300)),
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade300),
+          ),
           enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide:
-              BorderSide(color: Colors.grey.shade300, width: 1.5)),
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade300, width: 1.5),
+          ),
           focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide:
-              const BorderSide(color: kPrimaryBlue, width: 2.5)),
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: kPrimaryBlue, width: 2.5),
+          ),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: kPrimaryBlue,
             foregroundColor: Colors.white,
             minimumSize: const Size(double.infinity, 56),
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12)),
-            textStyle: GoogleFonts.notoSans(
-                fontSize: 18, fontWeight: FontWeight.w700),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            textStyle: GoogleFonts.notoSans(fontSize: 18, fontWeight: FontWeight.w700),
           ),
         ),
       ),
@@ -106,43 +98,35 @@ class _NutriLinkAppState extends State<NutriLinkApp> {
   }
 }
 
-// --- LANGUAGE SWITCHER ---
 class LanguageSwitcherBtn extends StatelessWidget {
   const LanguageSwitcherBtn({super.key});
 
   @override
   Widget build(BuildContext context) {
-    Locale currentLocale = Localizations.localeOf(context);
+    final currentLocale = Localizations.localeOf(context);
 
-    String label;
-    if (currentLocale.languageCode == 'en') {
-      label = 'EN';
-    } else if (currentLocale.languageCode == 'hi') {
-      label = 'हिंदी';
-    } else {
-      label = 'मराठी';
-    }
+    final label = currentLocale.languageCode == 'en'
+        ? 'EN'
+        : currentLocale.languageCode == 'hi'
+        ? 'हिंदी'
+        : 'मराठी';
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
         onTap: () {
-          Locale current = Localizations.localeOf(context);
-          Locale newLocale;
-          if (current.languageCode == 'en') {
-            newLocale = const Locale('hi');
-          } else if (current.languageCode == 'hi') {
-            newLocale = const Locale('mr');
-          } else {
-            newLocale = const Locale('en');
-          }
+          final current = Localizations.localeOf(context);
+          final newLocale = current.languageCode == 'en'
+              ? const Locale('hi')
+              : current.languageCode == 'hi'
+              ? const Locale('mr')
+              : const Locale('en');
           NutriLinkApp.setLocale(context, newLocale);
         },
         child: Container(
           margin: const EdgeInsets.only(right: 10),
-          padding:
-          const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
             color: kPrimaryBlue.withOpacity(0.1),
             borderRadius: BorderRadius.circular(20),
@@ -153,13 +137,7 @@ class LanguageSwitcherBtn extends StatelessWidget {
             children: [
               const Icon(Icons.translate, color: kPrimaryBlue, size: 18),
               const SizedBox(width: 6),
-              Text(
-                label,
-                style: GoogleFonts.notoSans(
-                  color: kPrimaryBlue,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Text(label, style: GoogleFonts.notoSans(color: kPrimaryBlue, fontWeight: FontWeight.bold)),
               const Icon(Icons.arrow_drop_down, color: kPrimaryBlue),
             ],
           ),

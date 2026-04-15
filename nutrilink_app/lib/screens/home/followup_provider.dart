@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../services/api_service.dart'; // ← correct path from screens/home/
+import '../../services/api_service.dart';
 
 class FollowUpProvider extends ChangeNotifier {
   List _pendingFollowups = [];
@@ -30,19 +30,12 @@ class FollowUpProvider extends ChangeNotifier {
   }
 
   Future<void> loadFollowups() async {
-    print("🔄 [Provider] loadFollowups() called");
     isLoading = true;
     notifyListeners();
 
     try {
-      print("🌐 [Provider] Fetching pending...");
       final pending = await ApiService.getFollowups();
-      print("✅ [Provider] Pending count: ${pending.length}");
-
-      print("🌐 [Provider] Fetching completed...");
       final completed = await ApiService.getCompletedFollowups();
-      print("✅ [Provider] Completed count: ${completed.length}");
-      print("📦 [Provider] Completed data: $completed");
 
       pending.sort((a, b) {
         final sA = (a["followUpDate"] ?? a["followupDate"])?["_seconds"] ?? 0;
@@ -50,31 +43,17 @@ class FollowUpProvider extends ChangeNotifier {
         return sA.compareTo(sB);
       });
 
-      _pendingFollowups   = pending;
+      _pendingFollowups = pending;
       _completedFollowups = completed;
-
-    } catch (e, stack) {
-      print("❌ [Provider] Error: $e");
-      print("📍 [Provider] Stack: $stack");
-    }
+    } catch (_) {}
 
     isLoading = false;
     notifyListeners();
-    print("🏁 [Provider] Done. pending=${_pendingFollowups.length}, completed=${_completedFollowups.length}");
   }
 
   Future<void> completeFollowup(String id) async {
-    print("✅ [Provider] completeFollowup() id=$id");
-
-    final index = _pendingFollowups.indexWhere(
-          (f) => f["id"]?.toString() == id,
-    );
-    print("🔍 [Provider] Found at index=$index");
-
-    if (index == -1) {
-      print("⚠️ [Provider] ID not found in pending list!");
-      return;
-    }
+    final index = _pendingFollowups.indexWhere((f) => f["id"]?.toString() == id);
+    if (index == -1) return;
 
     final followup = Map<String, dynamic>.from(_pendingFollowups[index]);
     followup["completedAt"] = DateTime.now().toIso8601String();
@@ -83,13 +62,10 @@ class FollowUpProvider extends ChangeNotifier {
     _pendingFollowups.removeAt(index);
     _completedFollowups.insert(0, followup);
     notifyListeners();
-    print("⚡ [Provider] Optimistic update. completed=${_completedFollowups.length}");
 
     try {
       await ApiService.completeFollowup(id);
-      print("✅ [Provider] API success");
     } catch (e) {
-      print("❌ [Provider] API failed, rolling back: $e");
       _completedFollowups.removeWhere((f) => f["id"]?.toString() == id);
       _pendingFollowups.insert(index, followup);
       notifyListeners();

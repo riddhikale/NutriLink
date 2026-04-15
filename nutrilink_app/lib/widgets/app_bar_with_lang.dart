@@ -3,8 +3,8 @@ import '../main.dart';
 import '../../l10n/app_translations.dart';
 
 class AppBarWithLang extends StatelessWidget implements PreferredSizeWidget {
-  final String? title;       // static fallback
-  final String? titleKey;    // translation key  ← new
+  final String? title;
+  final String? titleKey;
   final bool showBackButton;
 
   const AppBarWithLang({
@@ -16,7 +16,6 @@ class AppBarWithLang extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Use translated key if provided, else fall back to raw title
     final label = titleKey != null
         ? AppTranslations.t(context, titleKey!)
         : (title ?? '');
