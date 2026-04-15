@@ -3,84 +3,92 @@ import re
 
 DetectorFactory.seed = 0
 
-# Matches any Devanagari Unicode character
 DEVANAGARI_PATTERN = re.compile(r'[\u0900-\u097F]')
 
-# Marathi-specific words that won't appear in standard Hindi
+# Words that are genuinely Marathi (not transliterated English)
 MARATHI_SPECIFIC = [
-    "उघडा", "उगडा", "उबडा",   # open (all Whisper variants)
-    "दाखवा",                    # show
-    "करा",                      # do/imperative
-    "जोडा",                     # add
-    "नोंदवा",                   # register
-    "बाळ",                      # child
-    "मुल", "मुलाचे", "मुलाची",  # child variants
-    "आहार",                     # food/meal
-    "नवीन", "नवी",              # new
-    "महिलांचे",                 # women's
+    "उघडा", "उगडा", "उबडा",
+    "दाखवा", "करा", "जोडा", "नोंदवा",
+    "बाळ", "मुल", "मुलाचे", "मुलाची",
+    "आहार", "नवीन", "नवी", "महिलांचे",
 ]
 
-# Hindi-specific words
+# Words that are genuinely Hindi (not transliterated English)
 HINDI_SPECIFIC = [
-    "जोड़ो",
-    "दिखाओ",
-    "बनाओ",
-    "बच्चा",
-    "नया",
-    "डाइट",
+    "जोड़ो", "दिखाओ", "बनाओ", "बच्चा", "नया", "डाइट",
+    "गर्भवती", "लाभार्थी", "स्क्रीनिंग", "फॉलोअप्स",
+]
+
+# These are English words Whisper wrote in Devanagari — NOT Indic language
+TRANSLITERATED_ENGLISH = [
+    "प्रोफाइल", "प्रोफाईल", "प्रोफाएल", "प्रोँप्टाल",
+    "प्रोपाल", "प्रोपालिए", "प्रोँपाई", "उप्वाईल",
+    "सेटिंग", "सेटिंग्स", "होम", "हिस्ट्री",
+    "रिस्क", "स्क्रीनिंग", "फॉलोअप्स",
+    "बेनिफिशरी", "बनिफिशरी",
 ]
 
 
-def detect_language(text: str) -> str:
+def detect_language(text: str, whisper_lang: str = "en", whisper_confidence: float = 0.0) -> str:
     """
-    Detect language of NutriLink voice commands.
-    Priority: Devanagari script detection > keyword matching > langdetect
+    Detect language using a combination of Whisper's detection and script analysis.
+    whisper_lang and whisper_confidence come directly from Whisper's info object.
     """
 
     if not text:
         return "en"
 
-    text_stripped = text.lower().strip()
+    text_clean = text.lower().strip()
 
-    # --- Step 1: If Devanagari script is present, classify as hi or mr ---
-    # This overrides Whisper's language guess which is unreliable for short clips
-    if DEVANAGARI_PATTERN.search(text):
+    # --- Step 1: If Whisper is reasonably confident, trust it ---
+    if whisper_confidence >= 0.5 and whisper_lang in ["hi", "mr", "en"]:
+        # But verify: if Whisper says "en" but there are genuine Indic words, override
+        if whisper_lang == "en":
+            for word in MARATHI_SPECIFIC:
+                if word in text:
+                    return "mr"
+            for word in HINDI_SPECIFIC:
+                if word in text:
+                    return "hi"
+        return whisper_lang
 
-        # Check Marathi-specific words first
+    # --- Step 2: Low confidence — use script + keyword analysis ---
+    has_devanagari = bool(DEVANAGARI_PATTERN.search(text))
+
+    if has_devanagari:
+        # Check if ALL Devanagari is just transliterated English
+        temp = text
+        for word in TRANSLITERATED_ENGLISH:
+            temp = temp.replace(word, "")
+        remaining_devanagari = bool(DEVANAGARI_PATTERN.search(temp))
+
+        if not remaining_devanagari:
+            # Only transliterated English remains — this was an English command
+            return "en"
+
+        # Genuine Indic script — classify as mr or hi
         for word in MARATHI_SPECIFIC:
             if word in text:
                 return "mr"
-
-        # Check Hindi-specific words
         for word in HINDI_SPECIFIC:
             if word in text:
                 return "hi"
 
-        # Devanagari present but no specific marker — default to Marathi
-        # since your app is primarily used in Maharashtra
+        # Devanagari present, no specific marker — default Marathi (Maharashtra app)
         return "mr"
 
-    # --- Step 2: Roman script — check for Marathi/Hindi romanization ---
-
-    marathi_roman = [
-        "kara", "ughada", "dakhva", "dakhawa",
-        "navin", "aahar", "yojana", "noondah", "nond",
-    ]
-
-    hindi_roman = [
-        "karo", "dikhao", "naya", "bachcha",
-        "baccha", "jodo", "banao",
-    ]
+    # --- Step 3: Pure Roman script ---
+    marathi_roman = ["kara", "ughada", "dakhva", "navin", "aahar"]
+    hindi_roman   = ["karo", "dikhao", "naya", "bachcha", "jodo"]
 
     for word in marathi_roman:
-        if word in text_stripped:
+        if word in text_clean:
             return "mr"
-
     for word in hindi_roman:
-        if word in text_stripped:
+        if word in text_clean:
             return "hi"
 
-    # --- Step 3: langdetect as last resort ---
+    # --- Step 4: langdetect fallback ---
     try:
         lang = detect(text)
         if lang in ["hi", "mr"]:
