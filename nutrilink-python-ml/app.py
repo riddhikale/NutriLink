@@ -27,7 +27,7 @@ INITIAL_PROMPT = (
     "आहार योजना, होम उघडा, सेटिंग उघडा, हाय रिस्क, मीडियम रिस्क."
 )
 
-# ── Librosa warmup — prevents 3s cold-start on first request ──
+# Warmup librosa
 _dummy = np.zeros(16000, dtype=np.float32)
 sf.write("warmup.wav", _dummy, 16000)
 librosa.load("warmup.wav", sr=16000, mono=True)
@@ -36,13 +36,11 @@ print("✅ Librosa warmed up")
 
 
 def is_hallucination(text: str) -> bool:
-    """Detect Whisper hallucination loops — repeated words/phrases."""
     if not text or len(text) < 5:
         return True
     words = text.split()
     if len(words) < 2:
         return False
-    # If any single word repeats more than 4 times it's a loop
     for word in set(words):
         if words.count(word) > 4:
             return True
@@ -54,14 +52,12 @@ async def transcribe_audio(file: UploadFile = File(...)):
 
     t_total = time.time()
 
-    # ── 1. Save uploaded file ──────────────────────────────
     t = time.time()
     temp_audio = f"temp_{file.filename}"
     with open(temp_audio, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     print(f"⏱ File save:        {time.time() - t:.2f}s")
 
-    # ── 2. Convert audio ───────────────────────────────────
     t = time.time()
     converted_audio = "converted_audio.wav"
     try:
@@ -73,7 +69,6 @@ async def transcribe_audio(file: UploadFile = File(...)):
         return {"error": "Audio conversion failed"}
     print(f"⏱ Audio convert:    {time.time() - t:.2f}s")
 
-    # ── 3. Transcribe ──────────────────────────────────────
     t = time.time()
     segments, info = model.transcribe(
         converted_audio,
@@ -82,7 +77,7 @@ async def transcribe_audio(file: UploadFile = File(...)):
         initial_prompt=INITIAL_PROMPT,
         condition_on_previous_text=False,
         no_speech_threshold=0.6,
-        compression_ratio_threshold=1.8,   # tighter — kills loops sooner
+        compression_ratio_threshold=1.8,
         temperature=0.0,
     )
     segments = list(segments)
@@ -91,7 +86,6 @@ async def transcribe_audio(file: UploadFile = File(...)):
     print(f"   Transcription:   {transcription}")
     print(f"   Whisper lang:    {info.language} ({info.language_probability:.0%})")
 
-    # ── 4. Hallucination check ─────────────────────────────
     if is_hallucination(transcription):
         print("⚠️  Hallucination detected — returning unknown")
         os.remove(temp_audio)
@@ -103,13 +97,17 @@ async def transcribe_audio(file: UploadFile = File(...)):
             "intent": "unknown"
         }
 
-    # ── 5. Intent + language detection ────────────────────
     t = time.time()
     intent = detect_intent(transcription)
     print(f"⏱ Intent detect:    {time.time() - t:.2f}s  →  {intent}")
 
     t = time.time()
-    language = detect_language(transcription)
+    # KEY FIX: pass Whisper's own language + confidence
+    language = detect_language(
+        transcription,
+        whisper_lang=info.language,
+        whisper_confidence=info.language_probability
+    )
     print(f"⏱ Lang detect:      {time.time() - t:.2f}s  →  {language}")
 
     os.remove(temp_audio)
