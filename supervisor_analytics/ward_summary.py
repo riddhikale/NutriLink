@@ -9,7 +9,7 @@ def ward_summary(data):
     if "wardNo" not in df.columns or "riskTag" not in df.columns:
         return []
 
-    # Map tags to lowercase
+
     df["riskTag"] = df["riskTag"].astype(str).str.lower()
 
     # Group by ward and risk level
@@ -20,7 +20,6 @@ def ward_summary(data):
         .reset_index()
     )
 
-    # Convert to JSON format
     return summary.to_dict(orient="records")
 
 #TESTING

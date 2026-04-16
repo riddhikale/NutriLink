@@ -15,7 +15,7 @@ def monthly_trend(data):
     # Extract month
     df["month"] = df["screeningDate"].dt.to_period("M")
 
-    # Count high risk cases per month (case insensitive)
+
     trend = (
         df.groupby("month")["riskTag"]
         .apply(lambda x: (x.astype(str).str.lower() == "high").sum())

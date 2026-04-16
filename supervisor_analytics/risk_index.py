@@ -22,7 +22,6 @@ def risk_index(data):
         .reset_index(name="riskIndex")
     )
 
-    # Replace NaN with 0 so JSON stays valid
     index["riskIndex"] = index["riskIndex"].fillna(0)
 
     index["riskIndex"] = index["riskIndex"].round(2)
