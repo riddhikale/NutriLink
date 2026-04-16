@@ -16,7 +16,7 @@ HINDI_SPECIFIC = [
     "डाइट", "गर्भवती", "लाभार्थी", "फॉलोअप्स",
 ]
 
-# English words Whisper writes in Devanagari — not real Indic language
+
 TRANSLITERATED_ENGLISH = [
     "प्रोफाइल", "प्रोफाईल", "प्रोफाएल", "प्रुफाएल",
     "प्रोँप्टाल", "प्रोपाल", "प्रोपालिए", "प्रोँपाई",
@@ -35,17 +35,16 @@ def detect_language(text: str, whisper_lang: str = "en", whisper_confidence: flo
 
     text_clean = text.lower().strip()
 
-    # KEY FIX: short-circuit for pure ASCII — skip all Devanagari checks
-    # This fixes the 1.07s langdetect slowdown on English text
+
     if text_clean.isascii():
         if whisper_confidence >= 0.4 and whisper_lang in ["hi", "mr", "en"]:
             return whisper_lang
         return "en"
 
-    # --- Trust Whisper when confident ---
+
     if whisper_confidence >= 0.5 and whisper_lang in ["hi", "mr", "en"]:
         if whisper_lang == "en":
-            # Verify: genuine Indic words override Whisper's "en"
+
             for word in MARATHI_SPECIFIC:
                 if word in text:
                     return "mr"
@@ -54,10 +53,10 @@ def detect_language(text: str, whisper_lang: str = "en", whisper_confidence: flo
                     return "hi"
         return whisper_lang
 
-    # --- Low confidence: use script analysis ---
+
     if DEVANAGARI_PATTERN.search(text):
 
-        # Strip transliterated English — if nothing genuine remains, it's English
+
         temp = text_clean
         for word in TRANSLITERATED_ENGLISH:
             temp = temp.replace(word.lower(), "")
@@ -65,7 +64,6 @@ def detect_language(text: str, whisper_lang: str = "en", whisper_confidence: flo
         if not DEVANAGARI_PATTERN.search(temp):
             return "en"
 
-        # Genuine Indic — classify mr vs hi
         for word in MARATHI_SPECIFIC:
             if word in text:
                 return "mr"
@@ -75,7 +73,7 @@ def detect_language(text: str, whisper_lang: str = "en", whisper_confidence: flo
 
         return "mr"  # default to Marathi (Maharashtra app)
 
-    # --- Pure Roman script ---
+
     marathi_roman = ["kara", "ughada", "dakhva", "navin", "aahar"]
     hindi_roman   = ["karo", "dikhao", "naya", "bachcha", "jodo"]
 
@@ -86,7 +84,7 @@ def detect_language(text: str, whisper_lang: str = "en", whisper_confidence: flo
         if word in text_clean:
             return "hi"
 
-    # --- langdetect only as absolute last resort, only for non-ASCII ---
+
     try:
         lang = detect(text)
         if lang in ["hi", "mr"]:

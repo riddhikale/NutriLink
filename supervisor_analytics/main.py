@@ -12,10 +12,8 @@ from risk_index import risk_index
 
 def run_all_analytics(data):
 
-    # Convert incoming JSON to DataFrame
     df = pd.DataFrame(data)
 
-    # If required columns are missing, return empty analytics
     required_columns = ["wardNo", "riskTag", "screeningDate"]
 
     for col in required_columns:
@@ -42,15 +40,11 @@ def run_all_analytics(data):
 if __name__ == "__main__":
 
     try:
-
         input_data = json.loads(sys.stdin.read())
-
         result = run_all_analytics(input_data)
-
         print(json.dumps(result))
 
     except Exception as e:
-
         print(json.dumps({
             "error": str(e)
         }))

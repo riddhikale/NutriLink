@@ -32,7 +32,7 @@ _dummy = np.zeros(16000, dtype=np.float32)
 sf.write("warmup.wav", _dummy, 16000)
 librosa.load("warmup.wav", sr=16000, mono=True)
 os.remove("warmup.wav")
-print("✅ Librosa warmed up")
+print("Librosa warmed up")
 
 
 def is_hallucination(text: str) -> bool:
@@ -64,10 +64,10 @@ async def transcribe_audio(file: UploadFile = File(...)):
         audio, sr = librosa.load(temp_audio, sr=16000, mono=True)
         sf.write(converted_audio, audio, 16000)
     except Exception as e:
-        print(f"❌ Audio conversion failed: {e}")
+        print(f"Audio conversion failed: {e}")
         os.remove(temp_audio)
         return {"error": "Audio conversion failed"}
-    print(f"⏱ Audio convert:    {time.time() - t:.2f}s")
+    print(f"Audio convert:    {time.time() - t:.2f}s")
 
     t = time.time()
     segments, info = model.transcribe(
@@ -82,12 +82,12 @@ async def transcribe_audio(file: UploadFile = File(...)):
     )
     segments = list(segments)
     transcription = "".join([s.text for s in segments]).lower().strip()
-    print(f"⏱ Whisper:          {time.time() - t:.2f}s")
-    print(f"   Transcription:   {transcription}")
-    print(f"   Whisper lang:    {info.language} ({info.language_probability:.0%})")
+    print(f"Whisper:          {time.time() - t:.2f}s")
+    print(f"Transcription:   {transcription}")
+    print(f"Whisper lang:    {info.language} ({info.language_probability:.0%})")
 
     if is_hallucination(transcription):
-        print("⚠️  Hallucination detected — returning unknown")
+        print("Hallucination detected — returning unknown")
         os.remove(temp_audio)
         os.remove(converted_audio)
         return {
@@ -99,7 +99,7 @@ async def transcribe_audio(file: UploadFile = File(...)):
 
     t = time.time()
     intent = detect_intent(transcription)
-    print(f"⏱ Intent detect:    {time.time() - t:.2f}s  →  {intent}")
+    print(f"Intent detect:    {time.time() - t:.2f}s  →  {intent}")
 
     t = time.time()
     # KEY FIX: pass Whisper's own language + confidence
@@ -108,7 +108,7 @@ async def transcribe_audio(file: UploadFile = File(...)):
         whisper_lang=info.language,
         whisper_confidence=info.language_probability
     )
-    print(f"⏱ Lang detect:      {time.time() - t:.2f}s  →  {language}")
+    print(f"Lang detect:      {time.time() - t:.2f}s  →  {language}")
 
     os.remove(temp_audio)
     os.remove(converted_audio)

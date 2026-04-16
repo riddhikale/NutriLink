@@ -3,9 +3,6 @@ import re
 
 model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
 
-
-# ================= TEXT NORMALIZATION ================= #
-
 def normalize_text(text):
 
     text = text.lower().strip()
@@ -15,7 +12,6 @@ def normalize_text(text):
 
     replacements = {
 
-        # ---- Register / new ----
         "रजिस्टर": "register",
         "रजीस्टर": "register",
         "निव": "new",
@@ -24,7 +20,6 @@ def normalize_text(text):
         "नवी": "new",
         "नया": "new",
 
-        # ---- Child ----
         "चाल": "child",
         "चालिल्द": "child",
         "चाएलद": "child",
@@ -34,60 +29,51 @@ def normalize_text(text):
         "मुलाचे": "child",
         "मुलाची": "child",
 
-        # ---- Beneficiary ----
         "लाभार्थी": "beneficiary",
         "भीच्छरी": "beneficiary",
         "बनिप्षरीव": "beneficiary",
         "बनिफिशरी": "beneficiary",
         "बेनिफिशरी": "beneficiary",
 
-        # ---- Pregnant — KEY FIX: added Devanagari transliterations ----
         "गर्बवती": "pregnant",
         "गर्भवती": "pregnant",
         "गर्भ्वती": "pregnant",
-        "प्रगनेड": "pregnant",       # प्रगनेड वोमन स्क्रीनिंग from log
+        "प्रगनेड": "pregnant",
         "प्रेगनेंट": "pregnant",
         "प्रेग्नेंट": "pregnant",
 
-        # ---- Woman ----
         "महीराज्क्": "woman",
         "महिला": "woman",
-        "वोमन": "woman",             # Devanagari "woman"
+        "वोमन": "woman",
         "वुमन": "woman",
 
-        # ---- Screening ----
         "स्क्रीनिंकरा": "screening",
         "स्क्रीनिंग": "screening",
         "स्क्रीनिं": "screening",
 
-        # ---- Followups — KEY FIX: added more garbled variants ----
         "फो लोबस": "followups",
         "फोलोबस": "followups",
         "फॉलोअप्स": "followups",
         "फोलोअप्स": "followups",
-        "फॉलोप्स": "followups",      # शो फॉलोप्स from log
+        "फॉलोप्स": "followups",
         "फोलोप्स": "followups",
         "फॉलोउप्स": "followups",
 
-        # ---- Settings ----
         "सेट्टिंग्स": "settings",
         "सेटिंग्स": "settings",
         "सेट्टिंग": "settings",
         "सेटिंग": "settings",
 
-        # ---- Open ----
         "स्खोलो": "open",
         "खोलो": "open",
         "उघडा": "open",
         "उगडा": "open",
         "उबडा": "open",
-        "उग़़ा": "open",             # प्रोफाईल उग़़ा from log
+        "उग़़ा": "open",
 
-        # ---- Home ----
         "होम": "home",
 
-        # ---- Profile — KEY FIX: added all garbled variants ----
-        "प्रुफाएल": "profile",       # अपन प्रुफाएल from log
+        "प्रुफाएल": "profile",
         "प्रोँप्टाल": "profile",
         "प्रोफाइल": "profile",
         "प्रोफाईल": "profile",
@@ -98,17 +84,15 @@ def normalize_text(text):
         "प्रोपाइल": "profile",
         "प्रोपालिए": "profile",
         "उप्वाईल": "profile",
-        "चुट्रोफाडल": "profile",     # गो चुट्रोफाडल from log — garbled "go to profile"
+        "चुट्रोफाडल": "profile",
 
-        # ---- History / work ----
         "हिस्ट्री": "history",
         "हिस्टरी": "history",
-        "लिएस्ट्री": "history",      # वर्क लिएस्ट्री from log
-        "लिएख़िस्ट्री": "history",   # अपन्वार्ख लिएख़िस्ट्री from log
+        "लिएस्ट्री": "history",
+        "लिएख़िस्ट्री": "history",
         "वर्ख": "work",
         "आज़ीजना": "history",
 
-        # ---- Risk levels ----
         "हाय रिस्क": "high risk",
         "हाई रिस्क": "high risk",
         "मीडियम रिस्क": "medium risk",
@@ -123,35 +107,25 @@ def normalize_text(text):
         "है रिस्क": "risk",
         "है": "",
 
-        # ---- Meal / diet ----
-        "आहार": "meal",
-        "योजना": "plan",
-        "डाइट": "diet",
-
-        # ---- Show / go ----
         "शो": "show",
         "गो": "go",
         "दाखवा": "show",
         "दिखाओ": "show",
         "दिकाो": "show",
 
-        # ---- Add ----
         "जोड़ो": "add",
         "जोडो": "add",
         "जोडा": "add",
 
-        # ---- Create ----
         "ख्रीएड": "create",
         "क्रिएट": "create",
 
-        # ---- Misc ----
         "करा": "",
         "पन्जिकरंग": "register",
-        "अपन्वार्ख": "work",         # अपन्वार्ख from log
+        "अपन्वार्ख": "work",
         "अपन": "",
         "अपना": "",
 
-        # ---- Marathi romanization ----
         "mulache": "child",
         "mulachi": "child",
         "mulacha": "child",
@@ -169,7 +143,6 @@ def normalize_text(text):
         "dakhva": "show",
         "dakhawa": "show",
 
-        # ---- Hindi romanization ----
         "bachcha": "child",
         "baccha": "child",
         "bachche": "child",
@@ -182,7 +155,6 @@ def normalize_text(text):
     return text
 
 
-# ================= INTENTS ================= #
 
 intents = {
     "add_child_screening": [
@@ -239,8 +211,6 @@ intents = {
 }
 
 
-# ================= KEYWORD RULES ================= #
-
 keyword_rules = [
     ("add_child_screening",     ["child"]),
     ("add_pregnant_screening",  ["pregnant"]),
@@ -256,8 +226,6 @@ keyword_rules = [
 ]
 
 
-# ================= EMBEDDINGS ================= #
-
 intent_embeddings = {}
 for intent, phrases in intents.items():
     intent_embeddings[intent] = model.encode(phrases, convert_to_tensor=True)
@@ -266,14 +234,12 @@ _ = model.encode("warmup", convert_to_tensor=True)
 print("✅ Intent model warmed up")
 
 
-# ================= DETECT INTENT ================= #
 
 def detect_intent(text):
 
     normalized = normalize_text(text)
     print(f"Normalized text: '{normalized}'")
 
-    # Priority rules — order matters
     if "child" in normalized and ("screening" in normalized or "register" in normalized or "new" in normalized):
         return "add_child_screening"
     if "pregnant" in normalized:
@@ -297,7 +263,6 @@ def detect_intent(text):
     if "screening" in normalized:
         return "add_screening"
 
-    # Semantic match
     text_embedding = model.encode(normalized, convert_to_tensor=True)
     best_intent = "unknown"
     best_score = 0
