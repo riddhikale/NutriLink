@@ -1,16 +1,14 @@
 <div align="center">
 
-# 🌿 NutriLink
+# NutriLink
 
 ### Smart Nutrition Screening & Monitoring System
 
 ![Tech](https://img.shields.io/badge/stack-Flutter%20%7C%20Node%20%7C%20React%20%7C%20Python-blue)
-![Status](https://img.shields.io/badge/status-Active-success)
-![License](https://img.shields.io/badge/license-Academic-lightgrey)
 
 ---
 
-A modular full-stack system for **nutrition screening, tracking, and reporting**
+A full-stack system for **nutrition screening, tracking, and reporting**
 designed for community health workflows.
 
 </div>
@@ -53,13 +51,11 @@ React Dashboard
 NutriLink/
 │
 ├── nutrilink_app/            # Flutter mobile app
-├── supervisor_dashboard/     # React dashboard
+├── dashboard_supervisor/     # React dashboard
 ├── nutrilink-backend/        # Node.js backend
 ├── nutrilink-voicebot/       # Python voicebot (FastAPI)
-├── analytics/                # Python analytics
+├── supervisor_analytics/     # Python analytics
 │
-├── assets/
-├── docs/
 └── README.md
 ```
 
@@ -107,6 +103,7 @@ cd NutriLink
 cd nutrilink-backend
 npm install
 npm start
+node server.js
 ```
 
 ---
@@ -139,7 +136,7 @@ uvicorn app:app --reload --port 8001
 ### 🔹 Analytics
 
 ```bash id="mb7tql"
-cd analytics
+cd supervisor_analytics
 
 python -m venv venv
 venv\Scripts\activate
