@@ -5,7 +5,7 @@ function FollowupList({ data = [] }) {
   return (
     <>
       <h3>Followups</h3>
-      <div className="followup-list" style={{ marginTop: '15px', maxHeight: '350px', overflowY: 'auto', paddingRight: '5px' }}>
+      <div className="followup-list" style={{ marginTop: '15px', maxHeight: '700px', overflowY: 'auto', paddingRight: '5px' }}>
         {data.length === 0 && <p style={{ color: '#888' }}>No pending followups...</p>}
         {data.map((f, i) => (
           <div key={i} className="follow-item" style={{ 
