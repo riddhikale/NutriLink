@@ -34,10 +34,12 @@ async function getSupervisorAnalytics(req, res) {
     python.stdin.end();
 
     python.stdout.on("data", (data) => {
+      console.log("PYTHON OUTPUT= ", data.toString());
       result += data.toString();
     });
 
     python.stderr.on("data", (data) => {
+      console.error("Python Error = ", data.toString());
       error += data.toString();
     });
 
