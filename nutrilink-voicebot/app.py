@@ -27,7 +27,7 @@ INITIAL_PROMPT = (
     "आहार योजना, होम उघडा, सेटिंग उघडा, हाय रिस्क, मीडियम रिस्क."
 )
 
-# Warmup librosa
+
 _dummy = np.zeros(16000, dtype=np.float32)
 sf.write("warmup.wav", _dummy, 16000)
 librosa.load("warmup.wav", sr=16000, mono=True)
@@ -102,7 +102,7 @@ async def transcribe_audio(file: UploadFile = File(...)):
     print(f"Intent detect:    {time.time() - t:.2f}s  →  {intent}")
 
     t = time.time()
-    # KEY FIX: pass Whisper's own language + confidence
+
     language = detect_language(
         transcription,
         whisper_lang=info.language,
