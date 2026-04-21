@@ -1,11 +1,10 @@
 <div align="center">
 
-# 🌿 NutriLink
+# NutriLink
 
 ### Smart Nutrition Screening & Monitoring System
 
 ![Tech](https://img.shields.io/badge/stack-Flutter%20%7C%20Node%20%7C%20React%20%7C%20Python-blue)
-![Version](https://img.shields.io/badge/version-v1.0-blue)
 
 ---
 
