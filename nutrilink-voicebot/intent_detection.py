@@ -4,8 +4,6 @@ import re
 model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
 
 
-# ================= TEXT NORMALIZATION ================= #
-
 def normalize_text(text):
 
     text = text.lower().strip()
@@ -15,17 +13,18 @@ def normalize_text(text):
 
     replacements = {
 
-        # ---- Register / new ----
         "रजिस्टर": "register",
         "रजीस्टर": "register",
+        "वेजिस्टर": "register",
         "निव": "new",
         "निएव": "new",
         "नवीन": "new",
         "नवी": "new",
         "नया": "new",
 
-        # ---- Child — KEY FIX: added चाएल्ड ----
+
         "चाएल्ड": "child",
+        "चाल्ड": "child",
         "चाल": "child",
         "चालिल्द": "child",
         "चाएलद": "child",
@@ -35,7 +34,7 @@ def normalize_text(text):
         "मुलाचे": "child",
         "मुलाची": "child",
 
-        # ---- Beneficiary — KEY FIX: added बनिविश्व्रीव ----
+
         "बनिविश्व्रीव": "beneficiary",
         "लाभार्थी": "beneficiary",
         "भीच्छरी": "beneficiary",
@@ -43,7 +42,7 @@ def normalize_text(text):
         "बनिफिशरी": "beneficiary",
         "बेनिफिशरी": "beneficiary",
 
-        # ---- Pregnant ----
+
         "गर्बवती": "pregnant",
         "गर्भवती": "pregnant",
         "गर्भ्वती": "pregnant",
@@ -51,18 +50,19 @@ def normalize_text(text):
         "प्रेगनेंट": "pregnant",
         "प्रेग्नेंट": "pregnant",
 
-        # ---- Woman ----
+
         "महीराज्क्": "woman",
         "महिला": "woman",
         "वोमन": "woman",
         "वुमन": "woman",
 
-        # ---- Screening ----
+
         "स्क्रीनिंकरा": "screening",
         "स्क्रीनिंग": "screening",
         "स्क्रीनिं": "screening",
+        "आद्स्क्रीनिंग": "add screening",
 
-        # ---- Followups ----
+
         "फो लोबस": "followups",
         "फोलोबस": "followups",
         "फॉलोअप्स": "followups",
@@ -71,25 +71,34 @@ def normalize_text(text):
         "फोलोप्स": "followups",
         "फॉलोउप्स": "followups",
 
-        # ---- Settings ----
+
         "सेट्टिंग्स": "settings",
         "सेटिंग्स": "settings",
+        "सेटिंग्ष": "settings",
+        "सेटिंगष": "settings",
         "सेट्टिंग": "settings",
         "सेटिंग": "settings",
 
-        # ---- Open ----
+
         "स्खोलो": "open",
         "खोलो": "open",
         "उघडा": "open",
         "उगडा": "open",
         "उबडा": "open",
         "उग़़ा": "open",
+        "उग़डा": "open",
+        "उग्डडा": "open",
+        "उग्डा": "open",
+        "उग़ा": "open",
 
-        # ---- Home ----
+
         "होम": "home",
+        "तो": "",
 
-        # ---- Profile — KEY FIX: handle fused अपन+profile ----
-        "अपन्ट्रोफाएल": "profile",    # fused अपन + profile from log
+
+        "अपन्प्रोफाद": "profile",
+        "प्रोँफाईल": "profile",
+        "प्रोप्पाल": "profile",
         "प्रुफाएल": "profile",
         "प्रोँप्टाल": "profile",
         "प्रोफाइल": "profile",
@@ -102,72 +111,100 @@ def normalize_text(text):
         "प्रोपालिए": "profile",
         "उप्वाईल": "profile",
         "चुट्रोफाडल": "profile",
-        "ट्रोफाएल": "profile",        # leftover after अपन strip
+        "ट्रोफाएल": "profile",
+        "प्रोफाद": "profile",
 
-        # ---- History / work ----
+
         "हिस्ट्री": "history",
         "हिस्टरी": "history",
         "लिएस्ट्री": "history",
         "लिएख़िस्ट्री": "history",
+        "इस्ट्री": "history",
         "वर्ख": "work",
+        "वर्क": "work",
         "आज़ीजना": "history",
         "अपन्वार्ख": "work",
 
-        # ---- Risk levels ----
+
         "हाय रिस्क": "high risk",
         "हाई रिस्क": "high risk",
+        "शो हाय रिस्क": "show high risk",
+        "शो हाई रिस्क": "show high risk",
         "मीडियम रिस्क": "medium risk",
         "मीडिअम रिस्क": "medium risk",
         "लो रिस्क": "low risk",
         "लोव रिस्क": "low risk",
         "शो लो रिस्क": "show low risk",
-        "शो हाय रिस्क": "show high risk",
+        "ठाए रिस्क": "high risk",
+        "राए रिस्क": "high risk",
+        "एडिस": "high risk",
         "रिस्क": "risk",
         "जोखमीची": "high risk",
         "जोखिम": "high risk",
-        "है रिस्क": "risk",
-        "है": "",
+        "मीचे मुले": "high risk children",
+        "चोकि": "show",
 
-        # ---- Meal / diet ----
-        "आहार": "meal",
-        "योजना": "plan",
-        "डाइट": "diet",
 
-        # ---- Show / go ----
         "शो": "show",
-        "चेख": "check",              # चेख फॉलोअप्स → check followups
+        "चेख": "check",
         "गो": "go",
         "दाखवा": "show",
+        "डाखवा": "show",
         "दिखाओ": "show",
         "दिकाो": "show",
 
-        # ---- Add ----
+
         "जोड़ो": "add",
         "जोडो": "add",
         "जोडा": "add",
 
-        # ---- Create ----
+
         "ख्रीएड": "create",
         "क्रिएट": "create",
 
-        # ---- Misc ----
+
         "करा": "",
+        "है": "",
         "पन्जिकरंग": "register",
+        "अपन्": "",
         "अपन": "",
         "अपना": "",
+
+
+        "mulache": "child",
+        "mulachi": "child",
+        "mulacha": "child",
+        "navin": "new",
+        "nond": "register",
+        "noond": "register",
+        "noondah": "register",
+        "screen kara": "screening",
+        "screening kara": "screening",
+        "screening karah": "screening",
+        "garbhavati": "pregnant",
+        "garbhava": "pregnant",
+        "garbohoti": "pregnant",
+        "ughada": "open",
+        "dakhva": "show",
+        "dakhawa": "show",
+
+
+        "bachcha": "child",
+        "baccha": "child",
+        "bachche": "child",
     }
+
 
     for k, v in sorted(replacements.items(), key=lambda x: len(x[0]), reverse=True):
         text = text.replace(k, v)
 
-    # Clean up any dangling Devanagari matras left after replacement
-    # e.g. "pregnant्च्क्रीनिंग" → strip leading matras
-    text = re.sub(r'^[\u0900-\u097F\s]+(?=[a-z])', '', text)
+    text = re.sub(r'([a-z]+)([\u0900-\u097F]+)', r'\1', text)
+
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 
 
-# ================= INTENTS ================= #
+
 
 intents = {
     "add_child_screening": [
@@ -195,11 +232,7 @@ intents = {
         "today followups", "followups show",
         "followups दिखाओ", "followups दाखवा"
     ],
-    "generate_meal_plan": [
-        "generate meal plan", "create diet plan", "nutrition plan",
-        "diet plan", "meal plan",
-        "डाइट प्लान बनाओ", "आहार योजना तयार करा"
-    ],
+
     "view_high_risk": [
         "show high risk", "high risk cases", "high risk children",
         "high risk", "medium risk", "low risk", "risk children",
@@ -224,7 +257,6 @@ intents = {
 }
 
 
-# ================= KEYWORD RULES ================= #
 
 keyword_rules = [
     ("add_child_screening",     ["child"]),
@@ -241,8 +273,6 @@ keyword_rules = [
 ]
 
 
-# ================= EMBEDDINGS ================= #
-
 intent_embeddings = {}
 for intent, phrases in intents.items():
     intent_embeddings[intent] = model.encode(phrases, convert_to_tensor=True)
@@ -251,13 +281,12 @@ _ = model.encode("warmup", convert_to_tensor=True)
 print("✅ Intent model warmed up")
 
 
-# ================= DETECT INTENT ================= #
-
 def detect_intent(text):
 
     normalized = normalize_text(text)
     print(f"Normalized text: '{normalized}'")
 
+    # Priority rules
     if "child" in normalized and ("screening" in normalized or "register" in normalized or "new" in normalized):
         return "add_child_screening"
     if "pregnant" in normalized:
@@ -266,7 +295,7 @@ def detect_intent(text):
         return "add_beneficiary"
     if "high risk" in normalized or "medium risk" in normalized or "low risk" in normalized or "risk" in normalized:
         return "view_high_risk"
-    if "followup" in normalized or "follow up" in normalized or "check" in normalized:
+    if "followup" in normalized or "follow up" in normalized:
         return "view_followups"
     if "settings" in normalized or "setting" in normalized:
         return "navigation_settings"
@@ -281,7 +310,7 @@ def detect_intent(text):
     if "screening" in normalized:
         return "add_screening"
 
-    # Semantic match
+
     text_embedding = model.encode(normalized, convert_to_tensor=True)
     best_intent = "unknown"
     best_score = 0
