@@ -5,7 +5,6 @@ DetectorFactory.seed = 0
 
 DEVANAGARI_PATTERN = re.compile(r'[\u0900-\u097F]')
 
-# Genuinely Marathi words — never appear when speaking English
 MARATHI_GENUINE = [
     "उघडा", "उगडा", "उबडा", "दाखवा",
     "जोडा", "नोंदवा", "बाळ", "मुलाचे", "मुलाची",
@@ -13,13 +12,11 @@ MARATHI_GENUINE = [
     "लाभार्थी", "जोखमीची",
 ]
 
-# Genuinely Hindi words — never appear when speaking English
 HINDI_GENUINE = [
     "जोड़ो", "दिखाओ", "बनाओ", "बच्चा",
     "नया", "डाइट", "फॉलोअप्स",
 ]
 
-# All words that are just English spoken in Devanagari by Whisper
 TRANSLITERATED_ENGLISH = [
     "प्रोफाइल", "प्रोफाईल", "प्रोफाएल", "प्रुफाएल",
     "प्रोँप्टाल", "प्रोपाल", "प्रोपालिए", "प्रोँपाई",
@@ -46,11 +43,10 @@ def detect_language(
 
     text_clean = text.lower().strip()
 
-    # Short-circuit: pure ASCII is always English
     if text_clean.isascii():
         return "en"
 
-    # Check for genuine Indic words first — these are definitive
+
     for word in MARATHI_GENUINE:
         if word in text:
             return "mr"
@@ -58,8 +54,7 @@ def detect_language(
         if word in text:
             return "hi"
 
-    # No genuine Indic words found — strip transliterated English
-    # and check if anything real remains
+
     temp = text_clean
     for word in [w.lower() for w in TRANSLITERATED_ENGLISH]:
         temp = temp.replace(word, " ")
@@ -68,14 +63,14 @@ def detect_language(
     remaining_devanagari = bool(DEVANAGARI_PATTERN.search(temp))
 
     if not remaining_devanagari:
-        # All Devanagari was just transliterated English — user spoke English
+
         return "en"
 
-    # Remaining Devanagari that we don't recognize — use Whisper as tiebreaker
+
     if whisper_lang in ["hi", "mr", "en"]:
         return whisper_lang
 
-    # Last resort
+
     try:
         lang = detect(text)
         if lang in ["hi", "mr"]:
