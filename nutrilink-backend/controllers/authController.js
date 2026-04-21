@@ -98,8 +98,9 @@ async function loginTest(req, res) {
     });
 
   } catch (error) {
-    res.status(500).json({ success: false, message: "Login failed" });
-  }
+      console.error("LOGIN ERROR:", error);
+      res.status(500).json({ success: false, message: error.message });
+    }
 }
 
 async function deleteAccount(req, res) {
