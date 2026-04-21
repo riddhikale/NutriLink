@@ -1,10 +1,11 @@
 <div align="center">
 
-# NutriLink
+# 🌿 NutriLink
 
 ### Smart Nutrition Screening & Monitoring System
 
 ![Tech](https://img.shields.io/badge/stack-Flutter%20%7C%20Node%20%7C%20React%20%7C%20Python-blue)
+![Version](https://img.shields.io/badge/version-v1.0-blue)
 
 ---
 
@@ -29,9 +30,19 @@ The system focuses on **structured data flow and actionable insights**.
 
 ---
 
+## ⚡ Quick Start
+
+1. Configure Firebase credentials
+2. Set up environment variables
+3. Start backend server
+4. Run dashboard and mobile app
+5. Login using registered credentials
+
+---
+
 ## 🧩 Architecture
 
-```text id="6ewm1a"
+```text
 Flutter App
    ↓
 Node Backend
@@ -47,14 +58,14 @@ React Dashboard
 
 ## 📁 Project Structure
 
-```text id="z7b5fp"
+```text
 NutriLink/
 │
-├── nutrilink_app/            # Flutter mobile app
-├── dashboard_supervisor/     # React dashboard
-├── nutrilink-backend/        # Node.js backend
-├── nutrilink-voicebot/       # Python voicebot (FastAPI)
-├── supervisor_analytics/     # Python analytics
+├── nutrilink_app/              # Flutter mobile app
+├── dashboard_supervisor/       # React dashboard
+├── nutrilink-backend/          # Node.js backend
+├── nutrilink-voicebot/         # Python voicebot (FastAPI)
+├── supervisor_analytics/       # Python analytics
 │
 └── README.md
 ```
@@ -90,28 +101,34 @@ NutriLink/
 
 ### 🔹 Clone
 
-```bash id="o7hv8k"
+```bash
 git clone https://github.com/riddhikale/NutriLink.git
 cd NutriLink
 ```
 
 ---
 
-### 🔹 Backend
+### 🔹 Backend (Node.js)
 
-```bash id="v3vtd8"
+```bash
 cd nutrilink-backend
 npm install
 npm start
-node server.js
+```
+
+Runs on:
+
+```
+http://localhost:8080
 ```
 
 ---
 
-### 🔹 Dashboard
+### 🔹 Dashboard (React)
 
-```bash id="2k5m1j"
-cd supervisor_dashboard
+```bash
+cd dashboard_supervisor
+cd frontend
 npm install
 npm start
 ```
@@ -120,7 +137,7 @@ npm start
 
 ### 🔹 Voicebot (FastAPI)
 
-```bash id="r9x5q3"
+```bash
 cd nutrilink-voicebot
 
 python -m venv venv
@@ -135,7 +152,7 @@ uvicorn app:app --reload --port 8001
 
 ### 🔹 Analytics
 
-```bash id="mb7tql"
+```bash
 cd supervisor_analytics
 
 python -m venv venv
@@ -147,7 +164,7 @@ pip install -r requirements.txt
 
 ### 🔹 Mobile App
 
-```bash id="j0bbld"
+```bash
 cd nutrilink_app
 flutter pub get
 flutter run
@@ -155,21 +172,81 @@ flutter run
 
 ---
 
+## ⚙️ Environment Variables
+
+Create a `.env` file inside `nutrilink-backend`:
+
+```env
+PORT=8080
+JWT_SECRET=your_secret_key_here
+```
+
+---
+
+## 🔐 Firebase Setup
+
+This project uses Firebase Admin SDK.
+
+### ⚠️ Important
+
+The `serviceAccount.json` file is **not included in this repository**.
+
+---
+
+### Setup Steps:
+
+1. Go to Firebase Console
+2. Select your project
+3. Navigate to:
+
+```
+Project Settings → Service Accounts
+```
+
+4. Click:
+
+```
+Generate new private key
+```
+
+5. Rename file to:
+
+```
+serviceAccount.json
+```
+
+6. Place it inside:
+
+```
+nutrilink-backend/
+```
+
+---
+
+### 🔒 Security Note
+
+* Never commit `serviceAccount.json`
+* Ensure it is added to `.gitignore`
+
+---
+
 ## 🔌 API
 
-```text id="j0r0pl"
+```text
 GET  /api/dashboard-summary
 GET  /api/trend-analysis
 GET  /api/followups-due
 POST /api/screening
 POST /api/voice-command
+POST /api/auth/login-test
+POST /api/auth/register
 ```
 
 ---
 
 ## 🔄 Data Flow
 
-```text id="nh1y9l"
+```text
 Mobile → Backend → Database → Analytics → Dashboard
 ```
 
@@ -178,15 +255,15 @@ Mobile → Backend → Database → Analytics → Dashboard
 ## 🧪 Development Notes
 
 * Backend acts as an API bridge between frontend and Python services
-* Analytics generates JSON outputs for dashboard consumption
-* Voicebot runs as an independent FastAPI service
-* Dashboard only handles visualization (no heavy processing)
+* Analytics generates processed data for dashboard consumption
+* Voicebot runs independently using FastAPI
+* Dashboard focuses on visualization only
 
 ---
 
 ## 📦 Requirements
 
-```text id="y8e13y"
+```text
 Node.js >= 18
 Python >= 3.11
 Flutter SDK
@@ -195,6 +272,14 @@ npm / pip
 
 ---
 
+## ⚠️ Important Notes
+
+* Backend must be running before frontend/mobile
+* Ensure correct API endpoints (`/api/auth/login-test`)
+* Firebase credentials must be configured properly
+* Do not expose sensitive files (`.env`, `serviceAccount.json`)
+
+---
 
 ## 🔮 Future Work
 
@@ -211,7 +296,6 @@ npm / pip
 * Riddhi Chauhan
 
 ---
-
 
 <div align="center">
 
